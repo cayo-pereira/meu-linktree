@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Administração</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h2>Editar Perfil</h2>
+    <form method="POST">
+      <input type="text" name="nome" value="{{ dados.nome }}" placeholder="Nome"><br><br>
+      <input type="text" name="foto" value="{{ dados.foto }}" placeholder="Nome do arquivo da foto"><br><br>
+      <input type="text" name="instagram" value="{{ dados.instagram }}" placeholder="Link Instagram"><br><br>
+      <input type="text" name="linkedin" value="{{ dados.linkedin }}" placeholder="Link LinkedIn"><br><br>
+      <input type="text" name="github" value="{{ dados.github }}" placeholder="Link GitHub"><br><br>
+      <input type="text" name="email" value="{{ dados.email }}" placeholder="Link E-mail"><br><br>
+      <input type="text" name="whatsapp" value="{{ dados.whatsapp }}" placeholder="Link WhatsApp"><br><br>
+      <input type="text" name="curriculo" value="{{ dados.curriculo }}" placeholder="Link Currículo"><br><br>
+      <button type="submit">Salvar</button>
+    </form>
+    <br>
+    <a href="{{ url_for('logout') }}">Sair</a>
+  </div>
+</body>
+</html>
