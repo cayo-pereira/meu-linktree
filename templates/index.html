@@ -4,88 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>{{ dados.nome }}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-sVSPt6y5iD07+hEQN6y6HvYBqdkSZOr02AYX84quym6+RExF3dPKOHD5ZQ+ZoGw1M5YHTwKe25R+ExU83NzO4w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Inter', sans-serif;
-      background-color: #000;
-      color: #fff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  
+  
 
-    .container {
-      text-align: center;
-      width: 100%;
-      max-width: 400px;
-      padding: 30px 20px;
-    }
-
-    .profile-pic {
-      width: 120px;
-      height: 120px;
-      object-fit: cover;
-      border-radius: 50%;
-      border: 2px solid #444;
-      margin-bottom: 15px;
-    }
-
-    h1 {
-      font-size: 24px;
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-
-    .social-icons {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-bottom: 30px;
-    }
-
-    .social-icons a {
-      color: white;
-      font-size: 20px;
-      background: #1a1a1a;
-      padding: 10px;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-    }
-
-    .social-icons a:hover {
-      background-color: #333;
-      transform: scale(1.1);
-    }
-
-    .link-button {
-      display: block;
-      width: 100%;
-      padding: 14px;
-      margin: 10px 0;
-      background-color: #1da1f2;
-      color: white;
-      text-decoration: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: 500;
-      transition: background 0.3s ease;
-    }
-
-    .link-button:hover {
-      background-color: #0d8ddb;
-    }
-
-    footer {
-      margin-top: 40px;
-      font-size: 12px;
-      color: #666;
-    }
-  </style>
 </head>
 <body>
   <div class="container">
@@ -93,18 +15,29 @@
     <h1>{{ dados.nome }}</h1>
 
     <div class="social-icons">
-        <a href="{{ dados.instagram }}" target="_blank"><i class="fab fa-instagram"></i></a>
-        <a href="{{ dados.linkedin }}" target="_blank"><i class="fab fa-linkedin"></i></a>
-        <a href="{{ dados.github }}" target="_blank"><i class="fab fa-github"></i></a>
-        <a href="mailto:{{ dados.email }}"><i class="fas fa-envelope"></i></a>
-        <a href="{{ dados.whatsapp }}" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="{{ dados.instagram }}" target="_blank">
+        <img src="{{ url_for('static', filename='icons/instagram.png') }}" alt="Instagram" class="icon" />
+      </a>
+      <a href="{{ dados.linkedin }}" target="_blank">
+        <img src="{{ url_for('static', filename='icons/linkedin.png') }}" alt="LinkedIn" class="icon" />
+      </a>
+      <a href="{{ dados.github }}" target="_blank">
+        <img src="{{ url_for('static', filename='icons/github.png') }}" alt="GitHub" class="icon" />
+      </a>
+      <a href="mailto:{{ dados.email }}">
+        <img src="{{ url_for('static', filename='icons/gmail.png') }}" alt="E-mail" class="icon" />
+      </a>
+      <a href="{{ dados.whatsapp }}" target="_blank">
+        <img src="{{ url_for('static', filename='icons/whatsapp.png') }}" alt="WhatsApp" class="icon" />
+      </a>
     </div>
+
       
 
     <a href="{{ dados.curriculo }}" class="link-button" target="_blank">Currículo Web</a>
 
     <footer>
-      Desenvolvido por você ✨
+      Desenvolvido por Cayo Pereira ✨
     </footer>
   </div>
 </body>
