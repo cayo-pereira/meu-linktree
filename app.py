@@ -6,8 +6,8 @@ app = Flask(__name__)
 app.secret_key = 'chave-super-secreta'  # Altere isso para algo mais seguro
 
 CONFIG_FILE = 'config.json'
-USERNAME = 'admin'
-PASSWORD = '123456'  # Altere a senha aqui
+USERNAME = 'choraomps'
+PASSWORD = 'Cayo!nf0rm4c03sADM'  # Altere a senha aqui
 
 def carregar_dados():
     with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
