@@ -1,11 +1,16 @@
 from flask import Flask, render_template, request, redirect, session, url_for
-from config import USERNAME, PASSWORD
 from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
 import json
 import os
 
+load_dotenv()
+
 app = Flask(__name__)
 app.secret_key = 'chave-super-secreta'  # Altere isso para algo mais seguro
+
+USERNAME = os.getenv("ADMIN_USERNAME")
+PASSWORD = os.getenv("ADMIN_PASSWORD")
 
 CONFIG_FILE = 'config.json'
 
