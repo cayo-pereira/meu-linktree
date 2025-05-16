@@ -9,10 +9,11 @@
   
 
 </head>
-<body>
+<body {% if dados.background %}style="background-image: url('{{ url_for('static', filename=dados.background) }}'); background-size: cover; background-position: center;"{% endif %}>
   <div class="container">
     <img src="{{ url_for('static', filename=dados.foto) }}" alt="Foto" class="profile-pic"/>
     <h1>{{ dados.nome }}</h1>
+    <p class="bio">{{ dados.bio }}</p>
 
     <div class="social-icons">
       <a href="{{ dados.instagram }}" target="_blank">

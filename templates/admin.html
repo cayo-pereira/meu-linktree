@@ -8,19 +8,31 @@
 <body>
   <div class="container">
     <h2>Editar Perfil</h2>
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
       <input type="text" name="nome" value="{{ dados.nome }}" placeholder="Nome"><br><br>
-      <input type="text" name="foto" value="{{ dados.foto }}" placeholder="Nome do arquivo da foto"><br><br>
+      <textarea name="bio" placeholder="Bio">{{ dados.bio }}</textarea><br><br>
+
+      <label>Foto de Perfil (arraste ou selecione um arquivo):</label><br>
+      <input type="file" name="foto_upload" accept="image/*"><br><br>
+
+      <label>Imagem de Background (arraste ou selecione um arquivo):</label><br>
+      <input type="file" name="background_upload" accept="image/*"><br><br>
+
+      <!-- Se quiser manter o campo texto para nome do arquivo (opcional) -->
+      <!-- <input type="text" name="foto" value="{{ dados.foto }}" placeholder="Nome do arquivo da foto"><br><br> -->
+
       <input type="text" name="instagram" value="{{ dados.instagram }}" placeholder="Link Instagram"><br><br>
       <input type="text" name="linkedin" value="{{ dados.linkedin }}" placeholder="Link LinkedIn"><br><br>
       <input type="text" name="github" value="{{ dados.github }}" placeholder="Link GitHub"><br><br>
       <input type="text" name="email" value="{{ dados.email }}" placeholder="Link E-mail"><br><br>
       <input type="text" name="whatsapp" value="{{ dados.whatsapp }}" placeholder="Link WhatsApp"><br><br>
       <input type="text" name="curriculo" value="{{ dados.curriculo }}" placeholder="Link Currículo"><br><br>
+
       <button type="submit">Salvar</button>
     </form>
     <br>
     <a href="{{ url_for('logout') }}">Sair</a>
   </div>
 </body>
+
 </html>

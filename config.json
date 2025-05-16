@@ -1,10 +1,12 @@
 {
   "nome": "Cayo Pereira",
-  "foto": "foto.jpg",
+  "foto": "uploads/foto.jpg",
   "instagram": "https://www.instagram.com/cayopereira_/?hl=pt",
   "linkedin": "https://www.linkedin.com/in/cayo-pereira-b26387194/",
   "github": "https://github.com/cayo-pereira",
   "email": "mailto:cayopereira9.8@gmail.com",
   "whatsapp": "https://wa.me/5521993181241",
-  "curriculo": "https://seudominio.com/curriculo"
+  "curriculo": "https://curriculo-portfolio.onrender.com",
+  "background": "uploads/background.jpg",
+  "bio": "Engenheiro da computação\r\nGovernança de T.I\r\nGestão de Projetos\r\nAnalise e desenvolvimento de sistemas."
 }
