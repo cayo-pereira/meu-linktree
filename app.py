@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, session, url_for
+from config import USERNAME, PASSWORD
 import json
 import os
 
@@ -6,8 +7,7 @@ app = Flask(__name__)
 app.secret_key = 'chave-super-secreta'  # Altere isso para algo mais seguro
 
 CONFIG_FILE = 'config.json'
-USERNAME = 'choraomps'
-PASSWORD = 'Cayo!nf0rm4c03sADM'  # Altere a senha aqui
+
 
 def carregar_dados():
     with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
