@@ -2,37 +2,106 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Administração</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel Administrativo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-  <div class="container">
-    <h2>Editar Perfil</h2>
-    <form method="POST" enctype="multipart/form-data">
-      <input type="text" name="nome" value="{{ dados.nome }}" placeholder="Nome"><br><br>
-      <textarea name="bio" placeholder="Bio">{{ dados.bio }}</textarea><br><br>
-
-      <label>Foto de Perfil (arraste ou selecione um arquivo):</label><br>
-      <input type="file" name="foto_upload" accept="image/*"><br><br>
-
-      <label>Imagem de Background (arraste ou selecione um arquivo):</label><br>
-      <input type="file" name="background_upload" accept="image/*"><br><br>
-
-      <!-- Se quiser manter o campo texto para nome do arquivo (opcional) -->
-      <!-- <input type="text" name="foto" value="{{ dados.foto }}" placeholder="Nome do arquivo da foto"><br><br> -->
-
-      <input type="text" name="instagram" value="{{ dados.instagram }}" placeholder="Link Instagram"><br><br>
-      <input type="text" name="linkedin" value="{{ dados.linkedin }}" placeholder="Link LinkedIn"><br><br>
-      <input type="text" name="github" value="{{ dados.github }}" placeholder="Link GitHub"><br><br>
-      <input type="text" name="email" value="{{ dados.email }}" placeholder="Link E-mail"><br><br>
-      <input type="text" name="whatsapp" value="{{ dados.whatsapp }}" placeholder="Link WhatsApp"><br><br>
-      <input type="text" name="curriculo" value="{{ dados.curriculo }}" placeholder="Link Currículo"><br><br>
-
-      <button type="submit">Salvar</button>
+  <div class="admin-container">
+    <div class="admin-header">
+      <h1><i class="fas fa-cog"></i> Painel Administrativo</h1>
+      <p>Edite suas informações pessoais</p>
+    </div>
+    
+    <form method="POST" enctype="multipart/form-data" class="admin-form">
+      <div class="form-grid">
+        <!-- Seção de Informações Básicas -->
+        <div class="form-section">
+          <h2><i class="fas fa-user"></i> Informações Pessoais</h2>
+          
+          <div class="form-group">
+            <label for="nome">Nome Completo</label>
+            <input type="text" id="nome" name="nome" value="{{ dados.nome }}" class="form-input">
+          </div>
+          
+          <div class="form-group">
+            <label for="bio">Biografia</label>
+            <textarea id="bio" name="bio" class="form-textarea">{{ dados.bio }}</textarea>
+          </div>
+        </div>
+        
+        <!-- Seção de Imagens -->
+        <div class="form-section">
+          <h2><i class="fas fa-images"></i> Imagens</h2>
+          
+          <div class="form-group">
+            <label for="foto_upload">Foto de Perfil</label>
+            <div class="file-upload">
+              <input type="file" id="foto_upload" name="foto_upload" accept="image/*" class="file-input">
+              <label for="foto_upload" class="file-label">
+                <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
+              </label>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="background_upload">Imagem de Fundo</label>
+            <div class="file-upload">
+              <input type="file" id="background_upload" name="background_upload" accept="image/*" class="file-input">
+              <label for="background_upload" class="file-label">
+                <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Seção de Links -->
+        <div class="form-section">
+          <h2><i class="fas fa-link"></i> Links Sociais</h2>
+          
+          <div class="form-group">
+            <label for="instagram"><i class="fab fa-instagram"></i> Instagram</label>
+            <input type="text" id="instagram" name="instagram" value="{{ dados.instagram }}" class="form-input">
+          </div>
+          
+          <div class="form-group">
+            <label for="linkedin"><i class="fab fa-linkedin"></i> LinkedIn</label>
+            <input type="text" id="linkedin" name="linkedin" value="{{ dados.linkedin }}" class="form-input">
+          </div>
+          
+          <div class="form-group">
+            <label for="github"><i class="fab fa-github"></i> GitHub</label>
+            <input type="text" id="github" name="github" value="{{ dados.github }}" class="form-input">
+          </div>
+          
+          <div class="form-group">
+            <label for="email"><i class="fas fa-envelope"></i> E-mail</label>
+            <input type="text" id="email" name="email" value="{{ dados.email }}" class="form-input">
+          </div>
+          
+          <div class="form-group">
+            <label for="whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</label>
+            <input type="text" id="whatsapp" name="whatsapp" value="{{ dados.whatsapp }}" class="form-input">
+          </div>
+          
+          <div class="form-group">
+            <label for="curriculo"><i class="fas fa-file-alt"></i> Currículo</label>
+            <input type="text" id="curriculo" name="curriculo" value="{{ dados.curriculo }}" class="form-input">
+          </div>
+        </div>
+      </div>
+      
+      <div class="form-actions">
+        <button type="submit" class="btn-save">
+          <i class="fas fa-save"></i> Salvar Alterações
+        </button>
+        <a href="{{ url_for('logout') }}" class="btn-logout">
+          <i class="fas fa-sign-out-alt"></i> Sair
+        </a>
+      </div>
     </form>
-    <br>
-    <a href="{{ url_for('logout') }}">Sair</a>
   </div>
 </body>
-
 </html>
