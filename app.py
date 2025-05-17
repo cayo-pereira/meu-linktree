@@ -16,7 +16,7 @@ app.secret_key = 'chave-super-secreta'  # Troque por uma chave mais forte em pro
 SUPABASE_URL = "https://loqxzvelrlpabcnocbyv.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvcXh6dmVscmxwYWJjbm9jYnl2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc0MTYzMTcsImV4cCI6MjA2Mjk5MjMxN30.cOeb8vnFlNYvrBPGjLB-Yyrj48zXSofZNvywdtqvk6w"
 SUPABASE_AUTH_URL = f"{SUPABASE_URL}/auth/v1/authorize"
-REDIRECT_URL = "https://cpages.onrender.com/callback"
+REDIRECT_URL = "https://loqxzvelrlpabcnocbyv.supabase.co/auth/v1/callback"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
