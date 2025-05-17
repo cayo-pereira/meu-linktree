@@ -115,38 +115,23 @@ def logout():
 
 @app.route('/login/google')
 def login_google():
-    url_login = f"{SUPABASE_AUTH_URL}?provider=google&redirect_uri={REDIRECT_URL}"
+    url_login = f"{SUPABASE_AUTH_URL}?provider=google&redirect_to={REDIRECT_URL}"
     return redirect(url_login)
 
 
 @app.route('/callback')
 def callback():
-    code = request.args.get('code')
-    if not code:
-        return "Erro: Código não recebido", 400
+    access_token = request.cookies.get('sb-access-token')
+    if not access_token:
+        return "Erro: token de acesso não encontrado", 400
 
-    token_url = f"{SUPABASE_URL}/auth/v1/token"
-    headers = {
-        "apikey": SUPABASE_KEY,
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
-    data = {
-        "grant_type": "authorization_code",
-        "client_id": os.getenv("SUPABASE_CLIENT_ID"),
-        "client_secret": os.getenv("SUPABASE_CLIENT_SECRET"),
-        "code": code,
-        "redirect_uri": REDIRECT_URL
-    }
-
-    resp = requests.post(token_url, headers=headers, data=data)
-    if resp.status_code != 200:
-        return f"Erro ao autenticar: {resp.text}", 400
-
-    token_data = resp.json()
-    access_token = token_data.get("access_token")
     session['access_token'] = access_token
 
-    user_resp = requests.get(f"{SUPABASE_URL}/auth/v1/user", headers={"Authorization": f"Bearer {access_token}"})
+    user_resp = requests.get(
+        f"{SUPABASE_URL}/auth/v1/user",
+        headers={"Authorization": f"Bearer {access_token}"}
+    )
+
     if user_resp.status_code != 200:
         return "Erro ao obter dados do usuário", 400
 
@@ -155,6 +140,7 @@ def callback():
     session['email'] = user_data['email']
 
     return redirect(url_for('admin'))
+
 
 
 if __name__ == '__main__':
