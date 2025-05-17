@@ -9,6 +9,22 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+  <form method="POST" action="/delete_page" onsubmit="return confirm('Tem certeza?')">
+    <button type="submit" class="btn-delete">
+      <i class="fas fa-trash"></i> Apagar Página
+    </button>
+  </form>
+  
+  <style>
+    .btn-delete {
+      background: #ff4444;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
   <div class="admin-container">
     <div class="admin-header">
       <h1><i class="fas fa-cog"></i> Painel Administrativo</h1>

@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, session, url_for
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from supabase import create_client, Client
+from uuid import uuid4
 import json
 import os
 import requests
@@ -116,6 +117,7 @@ def logout():
 @app.route('/login/google')
 def login_google():
     url_login = f"{SUPABASE_AUTH_URL}?provider=google&redirect_to={REDIRECT_URL}"
+    print("🔗 Redirecionando para:", url_login)
     return redirect(url_login)
 
 

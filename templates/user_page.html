@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{{ dados.nome }}</title>
+  <style>
+    body {
+      background: url('{{ dados.background or "default-bg.jpg" }}');
+      font-family: Arial, sans-serif;
+    }
+    .profile {
+      text-align: center;
+      margin-top: 50px;
+    }
+    /* Adicione mais estilos conforme os campos preenchidos */
+  </style>
+</head>
+<body>
+  <div class="profile">
+    {% if dados.foto %}
+      <img src="{{ dados.foto }}" width="100">
+    {% endif %}
+    
+    {% if dados.nome %}
+      <h1>{{ dados.nome }}</h1>
+    {% endif %}
+    
+    {% if dados.bio %}
+      <p>{{ dados.bio }}</p>
+    {% endif %}
+    
+    <!-- Links (só aparecem se preenchidos) -->
+    <div class="links">
+      {% if dados.instagram %}
+        <a href="{{ dados.instagram }}">Instagram</a>
+      {% endif %}
+      {% if dados.whatsapp %}
+        <a href="https://wa.me/{{ dados.whatsapp }}">WhatsApp</a>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
