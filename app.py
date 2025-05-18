@@ -177,12 +177,15 @@ def callback():
         # Configurar sessão
         session['user_id'] = user.id
         session['access_token'] = access_token
-        session['profile'] = user_data['profile']
+        session['profile'] = user_data['profile']  # Adiciona o profile na sessão
+        session['logado'] = True
+        
         logger.info(f"Sessão configurada para: {user_data['profile']}")
         
         # Retornar URL para redirecionamento
         return jsonify({
-            "redirect": url_for('admin_panel', username=user_data['profile'])
+            "redirect": url_for('admin_panel', username=user_data['profile']),
+            "profile": user_data['profile']
         }), 200
         
     except Exception as e:

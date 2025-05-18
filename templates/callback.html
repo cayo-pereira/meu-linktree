@@ -3,37 +3,57 @@
 <head>
     <title>Processando Login...</title>
     <script>
-        // Extrai o token do fragmento da URL
         function extractToken() {
             const hash = window.location.hash.substring(1);
             const params = new URLSearchParams(hash);
             const token = params.get('access_token');
             
             if (token) {
-                // Envia o token para o backend
+                console.log("Token encontrado, enviando para o servidor...");
+                
                 fetch('/callback', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ access_token: token })
-                }).then(response => {
-                    if (response.redirected) {
-                        window.location.href = response.url;
-                    } else {
-                        window.location.href = '/';
+                    body: JSON.stringify({ access_token: token }),
+                    credentials: 'include'
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Erro na resposta do servidor');
                     }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.redirect) {
+                        console.log("Redirecionando para:", data.redirect);
+                        window.location.href = data.redirect;
+                    } else {
+                        console.error("Resposta inesperada:", data);
+                        window.location.href = '/?error=no_redirect';
+                    }
+                })
+                .catch(error => {
+                    console.error("Erro:", error);
+                    window.location.href = '/?error=auth_failed';
                 });
             } else {
-                window.location.href = '/';
+                console.error("Token não encontrado na URL");
+                window.location.href = '/?error=no_token';
             }
         }
         
-        // Executa quando a página carrega
         window.onload = extractToken;
     </script>
 </head>
 <body>
     <p>Processando login, por favor aguarde...</p>
+    <p>Se você não for redirecionado em 5 segundos, <a href="/">clique aqui</a>.</p>
+    
+    <script>
+        // Debug: Mostra o hash da URL
+        console.log("Hash da URL:", window.location.hash);
+    </script>
 </body>
 </html>
