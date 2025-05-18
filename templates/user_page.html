@@ -6,14 +6,17 @@
   <title>{{ dados.nome }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body {% if dados.background %}style="background-image: url('{{ url_for('static', filename=dados.background) }}');"{% endif %}>
+<body {% if dados.background %}style="background-image: url('{{ dados.background if dados.background.startswith('http') else url_for('static', filename=dados.background) }}'); background-size: cover; background-position: center;"{% endif %}>
   <div class="container">
     {% if dados.foto %}
     <img src="{{ dados.foto if dados.foto.startswith('http') else url_for('static', filename=dados.foto) }}" alt="Foto" class="profile-pic"/>
     {% endif %}
     
     <h1>{{ dados.nome }}</h1>
+    
+    {% if dados.bio %}
     <p class="bio">{{ dados.bio }}</p>
+    {% endif %}
 
     <div class="social-icons">
       {% if dados.instagram %}
@@ -22,7 +25,13 @@
       </a>
       {% endif %}
       
-      <!-- Repita para outros links sociais -->
+      {% if dados.linkedin %}
+      <a href="{{ dados.linkedin }}" target="_blank">
+        <img src="{{ url_for('static', filename='icons/linkedin.png') }}" alt="LinkedIn" class="icon"/>
+      </a>
+      {% endif %}
+      
+      <!-- Adicione outros ícones sociais conforme necessário -->
     </div>
 
     {% if dados.curriculo %}

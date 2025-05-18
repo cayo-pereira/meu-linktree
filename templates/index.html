@@ -1,45 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>{{ dados.nome }}</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CPages - Sua página pessoal</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  
-  
-
 </head>
-<body {% if dados.background %}style="background-image: url('{{ url_for('static', filename=dados.background) }}'); background-size: cover; background-position: center;"{% endif %}>
+<body>
   <div class="container">
-    <img src="{{ url_for('static', filename=dados.foto) }}" alt="Foto" class="profile-pic"/>
-    <h1>{{ dados.nome }}</h1>
-    <p class="bio">{{ dados.bio }}</p>
-
-    <div class="social-icons">
-      <a href="{{ dados.instagram }}" target="_blank">
-        <img src="{{ url_for('static', filename='icons/instagram.png') }}" alt="Instagram" class="icon" />
-      </a>
-      <a href="{{ dados.linkedin }}" target="_blank">
-        <img src="{{ url_for('static', filename='icons/linkedin.png') }}" alt="LinkedIn" class="icon" />
-      </a>
-      <a href="{{ dados.github }}" target="_blank">
-        <img src="{{ url_for('static', filename='icons/github.png') }}" alt="GitHub" class="icon" />
-      </a>
-      <a href="mailto:{{ dados.email }}">
-        <img src="{{ url_for('static', filename='icons/gmail.png') }}" alt="E-mail" class="icon" />
-      </a>
-      <a href="{{ dados.whatsapp }}" target="_blank">
-        <img src="{{ url_for('static', filename='icons/whatsapp.png') }}" alt="WhatsApp" class="icon" />
-      </a>
-    </div>
-
-      
-
-    <a href="{{ dados.curriculo }}" class="link-button" target="_blank">Currículo Web</a>
-
-    <footer>
-      Desenvolvido por Cayo Pereira ✨
-    </footer>
+    <h1>Bem-vindo ao CPages</h1>
+    <p>Crie sua página pessoal em minutos</p>
+    
+    <a href="{{ url_for('login_google') }}" class="btn-google-login">
+      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" style="height: 18px; margin-right: 8px;">
+      Criar minha página com Google
+    </a>
   </div>
 </body>
 </html>
