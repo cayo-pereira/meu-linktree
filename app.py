@@ -80,6 +80,46 @@ def generate_unique_slug(base_slug):
         counter += 1
 
 # Rotas públicas
+
+# ROTA DE TESTE
+@app.route('/test-insert', methods=['GET'])
+def test_insert():
+    try:
+        # Dados do usuário de teste
+        test_user = {
+            'id': '169f9536-132e-4095-b00f-44538b9bc7a3',  # Substitua pelo ID real
+            'nome': 'Teste API Python',
+            'profile': 'teste-python',
+            'email': 'teste-python@api.com',
+            'active': True,
+            'instagram': '',
+            'linkedin': '',
+            'github': '',
+            'whatsapp': '',
+            'curriculo': '',
+            'bio': 'Teste de inserção via Python'
+        }
+
+        # Faz a inserção
+        response = supabase.table('usuarios').insert(test_user).execute()
+        
+        if response.data:
+            return jsonify({
+                "status": "success",
+                "data": response.data
+            })
+        else:
+            return jsonify({
+                "status": "error",
+                "error": str(response.error)
+            }), 400
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e)
+        }), 500
+
 @app.route('/')
 def index():
     """Página inicial"""
