@@ -63,6 +63,12 @@ def generate_unique_slug(base_slug):
         counter += 1
 
 # Rotas públicas
+
+@app.route('/callback_handler')
+def callback_handler():
+    """Rota que renderiza a página de processamento do token"""
+    return render_template('callback.html')
+
 @app.route('/')
 def index():
     # Página inicial pode ser um landing page ou redirecionar para um usuário padrão
@@ -82,50 +88,53 @@ def user_page(profile):
 # Autenticação
 @app.route('/login/google')
 def login_google():
-    return redirect(f"{SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to={url_for('callback', _external=True)}")
+    redirect_url = url_for('callback_handler', _external=True)
+    return redirect(f"{SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to={redirect_url}")
 
 @app.route('/callback')
 def callback():
-    # Pega o token da URL
-    access_token = request.args.get('access_token')
-    if not access_token:
-        return "Falha na autenticação: token não encontrado", 400
-    
-    # Obtém os dados do usuário do Supabase
-    user_resp = supabase.auth.get_user(access_token)
-    if not user_resp.user:
-        return "Falha ao obter dados do usuário", 400
-    
-    user = user_resp.user
-    user_id = user.id
-    email = user.email
-    name = user.user_metadata.get('full_name', email.split('@')[0])
-    
-    # Verifica se o usuário já existe
-    existing_user = get_user_by_id(user_id)
-    
-    if not existing_user:
-        # Cria um novo usuário
-        slug = generate_unique_slug(name)
-        new_user = {
-            'id': user_id,
-            'nome': name,
-            'profile': slug,
-            'email': email,
-            'active': True,
-            'foto': user.user_metadata.get('avatar_url', ''),
-            # Outros campos padrão podem ser adicionados aqui
-        }
-        create_user(new_user)
+    # O token será enviado via POST pelo frontend
+    if request.method == 'POST':
+        access_token = request.json.get('access_token')
     else:
-        slug = existing_user['profile']
+        # Fallback para desenvolvimento
+        access_token = request.args.get('access_token')
     
-    # Configura a sessão
-    session['user_id'] = user_id
-    session['access_token'] = access_token
+    if not access_token:
+        return "Token de acesso não encontrado", 400
     
-    # Redireciona para o painel do usuário
-    return redirect(url_for('admin_panel', username=slug))
+    try:
+        # Obtém os dados do usuário
+        user_resp = supabase.auth.get_user(access_token)
+        user = user_resp.user
+        
+        # Verifica se o usuário já existe
+        res = supabase.table('usuarios').select('*').eq('id', user.id).execute()
+        user_data = res.data[0] if res.data else None
+        
+        if not user_data:
+            # Cria novo usuário
+            slug = generate_unique_slug(user.user_metadata.get('full_name', user.email.split('@')[0]))
+            new_user = {
+                'id': user.id,
+                'nome': user.user_metadata.get('full_name', user.email),
+                'profile': slug,
+                'email': user.email,
+                'foto': user.user_metadata.get('avatar_url', ''),
+                'active': True
+            }
+            supabase.table('usuarios').insert(new_user).execute()
+            user_data = new_user
+        
+        # Configura a sessão
+        session['user_id'] = user.id
+        session['access_token'] = access_token
+        
+        return redirect(url_for('admin_panel', username=user_data['profile']))
+    
+    except Exception as e:
+        app.logger.error(f"Erro na autenticação: {str(e)}")
+        return "Falha na autenticação", 400
 
 # Painel administrativo
 @app.route('/admin/<username>')

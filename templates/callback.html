@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Processando Login...</title>
+    <script>
+        // Extrai o token do fragmento da URL
+        function extractToken() {
+            const hash = window.location.hash.substring(1);
+            const params = new URLSearchParams(hash);
+            const token = params.get('access_token');
+            
+            if (token) {
+                // Envia o token para o backend
+                fetch('/callback', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ access_token: token })
+                }).then(response => {
+                    if (response.redirected) {
+                        window.location.href = response.url;
+                    } else {
+                        window.location.href = '/';
+                    }
+                });
+            } else {
+                window.location.href = '/';
+            }
+        }
+        
+        // Executa quando a página carrega
+        window.onload = extractToken;
+    </script>
+</head>
+<body>
+    <p>Processando login, por favor aguarde...</p>
+</body>
+</html>
