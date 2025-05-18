@@ -47,6 +47,29 @@
             <textarea id="bio" name="bio" class="form-textarea">{{ dados.bio }}</textarea>
           </div>
         </div>
+
+          <!-- Adicione isso na seção de informações pessoais -->
+          <div class="form-group">
+            <label for="profile">URL da sua página</label>
+            <div class="profile-url">
+              <span class="url-prefix">cpages.onrender.com/</span>
+              <input type="text" id="profile" name="profile" value="{{ dados.profile }}" class="form-input" pattern="[a-z0-9-]+" title="Apenas letras minúsculas, números e hífens">
+            </div>
+          </div>
+
+          <style>
+          .profile-url {
+            display: flex;
+            align-items: center;
+          }
+          .url-prefix {
+            padding: 8px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+          }
+          </style>
         
         <!-- Seção de Imagens -->
         <div class="form-section">

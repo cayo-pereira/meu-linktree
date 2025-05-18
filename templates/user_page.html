@@ -1,42 +1,33 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ dados.nome }}</title>
-  <style>
-    body {
-      background: url('{{ dados.background or "default-bg.jpg" }}');
-      font-family: Arial, sans-serif;
-    }
-    .profile {
-      text-align: center;
-      margin-top: 50px;
-    }
-    /* Adicione mais estilos conforme os campos preenchidos */
-  </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-  <div class="profile">
+<body {% if dados.background %}style="background-image: url('{{ url_for('static', filename=dados.background) }}');"{% endif %}>
+  <div class="container">
     {% if dados.foto %}
-      <img src="{{ dados.foto }}" width="100">
+    <img src="{{ dados.foto if dados.foto.startswith('http') else url_for('static', filename=dados.foto) }}" alt="Foto" class="profile-pic"/>
     {% endif %}
     
-    {% if dados.nome %}
-      <h1>{{ dados.nome }}</h1>
-    {% endif %}
-    
-    {% if dados.bio %}
-      <p>{{ dados.bio }}</p>
-    {% endif %}
-    
-    <!-- Links (só aparecem se preenchidos) -->
-    <div class="links">
+    <h1>{{ dados.nome }}</h1>
+    <p class="bio">{{ dados.bio }}</p>
+
+    <div class="social-icons">
       {% if dados.instagram %}
-        <a href="{{ dados.instagram }}">Instagram</a>
+      <a href="{{ dados.instagram }}" target="_blank">
+        <img src="{{ url_for('static', filename='icons/instagram.png') }}" alt="Instagram" class="icon"/>
+      </a>
       {% endif %}
-      {% if dados.whatsapp %}
-        <a href="https://wa.me/{{ dados.whatsapp }}">WhatsApp</a>
-      {% endif %}
+      
+      <!-- Repita para outros links sociais -->
     </div>
+
+    {% if dados.curriculo %}
+    <a href="{{ dados.curriculo }}" class="link-button" target="_blank">Currículo Web</a>
+    {% endif %}
   </div>
 </body>
 </html>
