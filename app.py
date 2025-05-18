@@ -85,20 +85,21 @@ def generate_unique_slug(base_slug):
 @app.route('/test-insert', methods=['GET'])
 def test_insert():
     try:
-        # Dados do usuário de teste
+        # Verifica se o usuário está autenticado
+        if 'user_id' not in session:
+            return jsonify({"error": "Não autenticado"}), 401
+
         test_user = {
-            'id': '169f9536-132e-4095-b00f-44538b9bc7a3',  # Substitua pelo ID real
+            'id': session['user_id'],  # Usa o ID da sessão
             'nome': 'Teste API Python',
             'profile': 'teste-python',
             'email': 'teste-python@api.com',
             'active': True,
-            'instagram': '',
-            'linkedin': '',
-            'github': '',
-            'whatsapp': '',
-            'curriculo': '',
-            'bio': 'Teste de inserção via Python'
+            # ... outros campos obrigatórios
         }
+
+        # Debug: Mostra o usuário que será inserido
+        print("Tentando inserir:", test_user)
 
         # Faz a inserção
         response = supabase.table('usuarios').insert(test_user).execute()
@@ -111,13 +112,15 @@ def test_insert():
         else:
             return jsonify({
                 "status": "error",
-                "error": str(response.error)
+                "error": str(response.error),
+                "details": str(response)
             }), 400
 
     except Exception as e:
         return jsonify({
             "status": "error",
-            "error": str(e)
+            "error": str(e),
+            "session_user": session.get('user_id')
         }), 500
 
 @app.route('/')
