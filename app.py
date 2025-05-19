@@ -237,14 +237,15 @@ def admin_panel(username):
         return redirect(url_for('login'))
 
     try:
-        # Configuração de autenticação forçada
+        # Configura autenticação
         supabase.postgrest.auth(SUPABASE_KEY)
         
         # Busca dados atuais
         res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
-        if not res.data:
-            abort(404)
-        user_data = res.data[0]
+        user_data = res.data[0] if res.data else None
+        
+        if not user_data or user_data['profile'] != username:
+            abort(403)
 
         if request.method == 'POST':
             update_data = {
@@ -280,23 +281,19 @@ def admin_panel(username):
             response = requests.patch(api_url, json=update_data, headers=headers)
             
             if response.status_code == 200:
-                # Força a limpeza do cache
-                cache_buster = str(uuid4())[:8]
-                user_page_url = f"{url_for('user_page', username=update_data.get('profile', username))}?v={cache_buster}"
-                
-                # Verificação imediata
+                # Recarrega os dados atualizados
                 res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
-                if res.data:
-                    flash("✅ Dados salvos com sucesso! Atualize a página", "success")
-                    return redirect(user_page_url)
-                else:
-                    flash("⚠️ Dados salvos, mas não foram recuperados", "warning")
+                user_data = res.data[0]
+                
+                # Redireciona para a página pública com cache buster
+                new_profile = update_data.get('profile', username)
+                return redirect(f"/{new_profile}?v={uuid4().hex[:8]}")
             else:
-                flash(f"❌ Erro {response.status_code} ao salvar", "error")
+                flash("❌ Erro ao salvar dados", "error")
 
     except Exception as e:
-        logger.error(f"ERRO: {str(e)}")
-        flash("⚡ Erro inesperado", "danger")
+        logger.error(f"ERRO: {str(e)}", exc_info=True)
+        flash("⚠️ Erro durante o processamento", "warning")
 
     return render_template('admin.html', dados=user_data)
 
