@@ -242,58 +242,71 @@ def admin_panel(username):
         
         # Busca dados atuais
         res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
-        user_data = res.data[0] if res.data else None
         
-        if not user_data or user_data['profile'] != username:
+        if not res.data:
+            logger.error(f"Usuário não encontrado: {session['user_id']}")
+            abort(404)
+            
+        user_data = res.data[0]
+        
+        # Verifica se o perfil na URL corresponde ao perfil do usuário logado
+        if user_data.get('profile') != username:
+            logger.warning(f"Tentativa de acessar perfil não autorizado: {username}")
             abort(403)
 
-        if request.method == 'POST':
-            update_data = {
-                'nome': request.form.get('nome'),
-                'profile': request.form.get('profile'),
-                'bio': request.form.get('bio'),
-                'instagram': request.form.get('instagram'),
-                'linkedin': request.form.get('linkedin'),
-                'github': request.form.get('github'),
-                'whatsapp': request.form.get('whatsapp'),
-                'curriculo': request.form.get('curriculo'),
-                'email': request.form.get('email')
-            }
-
-            # Processamento de arquivos
-            for field in ['foto', 'background']:
-                file = request.files.get(f'{field}_upload')
-                if file and arquivo_permitido(file.filename):
-                    filename = f"{session['user_id']}_{secure_filename(file.filename)}"
-                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    file.save(filepath)
-                    update_data[field] = f"uploads/{filename}"
-
-            # Atualização via API REST direta
-            api_url = f"{SUPABASE_URL}/rest/v1/usuarios?id=eq.{session['user_id']}"
-            headers = {
-                "apikey": SUPABASE_KEY,
-                "Authorization": f"Bearer {SUPABASE_KEY}",
-                "Content-Type": "application/json",
-                "Prefer": "return=representation"
-            }
+        # Se for GET, apenas mostra a página
+        if request.method == 'GET':
+            return render_template('admin.html', dados=user_data)
             
-            response = requests.patch(api_url, json=update_data, headers=headers)
+        # Processamento do POST (alterações)
+        update_data = {
+            'nome': request.form.get('nome', user_data['nome']),
+            'profile': request.form.get('profile', user_data['profile']),
+            'bio': request.form.get('bio', user_data['bio']),
+            'instagram': request.form.get('instagram', user_data['instagram']),
+            'linkedin': request.form.get('linkedin', user_data['linkedin']),
+            'github': request.form.get('github', user_data['github']),
+            'whatsapp': request.form.get('whatsapp', user_data['whatsapp']),
+            'curriculo': request.form.get('curriculo', user_data['curriculo']),
+            'email': request.form.get('email', user_data['email'])
+        }
+
+        # Processamento de arquivos
+        for field in ['foto', 'background']:
+            file = request.files.get(f'{field}_upload')
+            if file and arquivo_permitido(file.filename):
+                filename = f"{session['user_id']}_{secure_filename(file.filename)}"
+                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                file.save(filepath)
+                update_data[field] = f"uploads/{filename}"
+
+        # Atualização via API REST
+        api_url = f"{SUPABASE_URL}/rest/v1/usuarios?id=eq.{session['user_id']}"
+        headers = {
+            "apikey": SUPABASE_KEY,
+            "Authorization": f"Bearer {SUPABASE_KEY}",
+            "Content-Type": "application/json",
+            "Prefer": "return=representation"
+        }
+        
+        response = requests.patch(api_url, json=update_data, headers=headers)
+        
+        if response.status_code == 200:
+            # Atualiza o profile na sessão se foi alterado
+            if 'profile' in update_data and update_data['profile'] != username:
+                session['profile'] = update_data['profile']
             
-            if response.status_code == 200:
-                # Recarrega os dados atualizados
-                res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
-                user_data = res.data[0]
-                
-                # Redireciona para a página pública com cache buster
-                new_profile = update_data.get('profile', username)
-                return redirect(f"/{new_profile}?v={uuid4().hex[:8]}")
-            else:
-                flash("❌ Erro ao salvar dados", "error")
+            # Redireciona para a página pública com cache buster
+            return redirect(f"/{update_data['profile']}?v={uuid4().hex[:8]}")
+        else:
+            flash("❌ Erro ao salvar dados", "error")
 
     except Exception as e:
         logger.error(f"ERRO: {str(e)}", exc_info=True)
         flash("⚠️ Erro durante o processamento", "warning")
+        # Em caso de erro, recarrega os dados atuais
+        res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
+        user_data = res.data[0] if res.data else None
 
     return render_template('admin.html', dados=user_data)
 
