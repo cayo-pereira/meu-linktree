@@ -248,11 +248,12 @@ def admin_panel(username):
             abort(404)
             
         user_data = res.data[0]
+        current_profile = user_data.get('profile')
         
-        # Verifica se o perfil na URL corresponde ao perfil do usuário logado
-        if user_data.get('profile') != username:
-            logger.warning(f"Tentativa de acessar perfil não autorizado: {username}")
-            abort(403)
+        # Redireciona automaticamente se a URL não corresponder ao perfil atual
+        if current_profile != username:
+            logger.info(f"Redirecionando de {username} para {current_profile}")
+            return redirect(url_for('admin_panel', username=current_profile))
 
         # Se for GET, apenas mostra a página
         if request.method == 'GET':
@@ -261,7 +262,7 @@ def admin_panel(username):
         # Processamento do POST (alterações)
         update_data = {
             'nome': request.form.get('nome', user_data['nome']),
-            'profile': request.form.get('profile', user_data['profile']),
+            'profile': request.form.get('profile', current_profile),
             'bio': request.form.get('bio', user_data['bio']),
             'instagram': request.form.get('instagram', user_data['instagram']),
             'linkedin': request.form.get('linkedin', user_data['linkedin']),
@@ -293,7 +294,7 @@ def admin_panel(username):
         
         if response.status_code == 200:
             # Atualiza o profile na sessão se foi alterado
-            if 'profile' in update_data and update_data['profile'] != username:
+            if 'profile' in update_data and update_data['profile'] != current_profile:
                 session['profile'] = update_data['profile']
             
             # Redireciona para a página pública com cache buster
