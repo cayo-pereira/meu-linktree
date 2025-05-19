@@ -31,7 +31,7 @@
       <p>Edite suas informações pessoais</p>
     </div>
     
-    <form method="POST" enctype="multipart/form-data" class="admin-form">
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_panel', username=dados.profile) }}" class="admin-form">
       <div class="form-grid">
         <!-- Seção de Informações Básicas -->
         <div class="form-section">

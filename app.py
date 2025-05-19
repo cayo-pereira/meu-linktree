@@ -236,29 +236,61 @@ def callback():
         return jsonify({"error": "Erro interno no servidor"}), 500
 
 # Painel administrativo
-@app.route('/admin/<username>')
+@app.route('/admin/<username>', methods=['GET', 'POST'])
 def admin_panel(username):
-    """Painel de administração do usuário"""
-    try:
-        if 'user_id' not in session or 'profile' not in session:
-            logger.warning("Acesso não autorizado - sessão inválida")
-            return redirect(url_for('login'))
-        
-        if session['profile'] != username:
-            logger.warning(f"Acesso não autorizado: {session['profile']} tentou acessar {username}")
-            abort(403)
-        
-        user_data = get_user_by_id(session['user_id'])
-        if not user_data:
-            logger.error(f"Usuário não encontrado na base: {session['user_id']}")
-            session.clear()
-            return redirect(url_for('login'))
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    # Busca os dados atuais do usuário
+    res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
+    user_data = res.data[0] if res.data else None
+    
+    if not user_data or user_data['profile'] != username:
+        abort(403)
+
+    if request.method == 'POST':
+        try:
+            # Processa os dados do formulário
+            update_data = {
+                'nome': request.form.get('nome'),
+                'profile': request.form.get('profile'),
+                'bio': request.form.get('bio'),
+                'instagram': request.form.get('instagram'),
+                'linkedin': request.form.get('linkedin'),
+                'github': request.form.get('github'),
+                'whatsapp': request.form.get('whatsapp'),
+                'curriculo': request.form.get('curriculo'),
+                'email': request.form.get('email')
+            }
+
+            # Processamento de arquivos (foto e background)
+            if 'foto_upload' in request.files:
+                foto = request.files['foto_upload']
+                if foto and arquivo_permitido(foto.filename):
+                    filename = secure_filename(foto.filename)
+                    foto.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    update_data['foto'] = f"uploads/{filename}"
+
+            if 'background_upload' in request.files:
+                background = request.files['background_upload']
+                if background and arquivo_permitido(background.filename):
+                    filename = secure_filename(background.filename)
+                    background.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    update_data['background'] = f"uploads/{filename}"
+
+            # Atualiza no Supabase
+            supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
             
-        return render_template('admin.html', dados=user_data)
-        
-    except Exception as e:
-        logger.error(f"Erro no painel admin: {str(e)}")
-        abort(500)
+            # Atualiza a sessão se o profile mudou
+            if 'profile' in update_data:
+                session['profile'] = update_data['profile']
+                return redirect(url_for('admin_panel', username=update_data['profile']))
+            
+        except Exception as e:
+            logger.error(f"Erro ao atualizar perfil: {str(e)}")
+            abort(500)
+
+    return render_template('admin.html', dados=user_data)
 
 # Logout
 @app.route('/logout')
