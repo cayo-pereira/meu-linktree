@@ -9,6 +9,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
+
+  <div class="flash-messages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
+
   <form method="POST" action="/delete_page" onsubmit="return confirm('Tem certeza?')">
     <button type="submit" class="btn-delete">
       <i class="fas fa-trash"></i> Apagar Página

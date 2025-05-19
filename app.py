@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for, abort, jsonify
+from flask import Flask, render_template, request, redirect, session, url_for, abort, jsonify, flash
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from supabase import create_client, Client
@@ -248,65 +248,67 @@ def admin_panel(username):
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
-    # Busca os dados atuais do usuário
-    res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
-    user_data = res.data[0] if res.data else None
-    
-    if not user_data or user_data['profile'] != username:
-        abort(403)
+    try:
+        # Busca dados atuais (com tratamento de erro)
+        res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
+        if not res.data:
+            logger.error(f"Usuário não encontrado: {session['user_id']}")
+            abort(404)
+            
+        user_data = res.data[0]
+        
+        if user_data['profile'] != username:
+            abort(403)
 
-    if request.method == 'POST':
-        try:
-            # Processa os dados do formulário
+        if request.method == 'POST':
             update_data = {
-                'nome': request.form.get('nome'),
-                'profile': request.form.get('profile'),
-                'bio': request.form.get('bio'),
-                'instagram': request.form.get('instagram'),
-                'linkedin': request.form.get('linkedin'),
-                'github': request.form.get('github'),
-                'whatsapp': request.form.get('whatsapp'),
-                'curriculo': request.form.get('curriculo'),
-                'email': request.form.get('email')
+                'nome': request.form.get('nome', user_data['nome']),
+                'profile': request.form.get('profile', user_data['profile']),
+                'bio': request.form.get('bio', user_data['bio']),
+                'instagram': request.form.get('instagram', user_data['instagram']),
+                'linkedin': request.form.get('linkedin', user_data['linkedin']),
+                'github': request.form.get('github', user_data['github']),
+                'whatsapp': request.form.get('whatsapp', user_data['whatsapp']),
+                'curriculo': request.form.get('curriculo', user_data['curriculo']),
+                'email': request.form.get('email', user_data['email'])
             }
 
-            # Processamento de arquivos (foto e background)
+            # Processamento de arquivos (mantido igual)
             if 'foto_upload' in request.files:
                 foto = request.files['foto_upload']
                 if foto and arquivo_permitido(foto.filename):
                     filename = secure_filename(foto.filename)
-                    foto.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    foto_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    foto.save(foto_path)
                     update_data['foto'] = f"uploads/{filename}"
 
-            if 'background_upload' in request.files:
-                background = request.files['background_upload']
-                if background and arquivo_permitido(background.filename):
-                    filename = secure_filename(background.filename)
-                    background.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                    update_data['background'] = f"uploads/{filename}"
+            # DEBUG: Log dos dados
+            logger.info(f"Dados para atualização: {update_data}")
 
-            # Atualiza no Supabase
-            supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
-            
-            # Atualiza a sessão se o profile mudou
-            if 'profile' in update_data:
-                session['profile'] = update_data['profile']
-                return redirect(url_for('admin_panel', username=update_data['profile']))
-            
-            logger.info(f"Atualizando dados: {update_data}")
+            # Atualização no Supabase
             response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
-            logger.info(f"Resposta do Supabase: {response}")
             
-            # Verifique se os dados foram realmente atualizados
-            updated_user = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
-            logger.info(f"Dados após atualização: {updated_user.data[0] if updated_user.data else None}")
-            
-        except Exception as e:
-            logger.error(f"Erro ao atualizar: {str(e)}")
-            
-        except Exception as e:
-            logger.error(f"Erro ao atualizar perfil: {str(e)}")
-            abort(500)
+            if not response.data:
+                logger.error(f"Falha na atualização: {response}")
+                flash("❌ Erro ao salvar as alterações", "error")
+            else:
+                logger.info(f"Atualização bem-sucedida: {response.data}")
+                
+                # Atualiza session se profile mudou
+                new_profile = update_data.get('profile')
+                if new_profile and new_profile != username:
+                    session['profile'] = new_profile
+                    return redirect(url_for('admin_panel', username=new_profile))
+                
+                flash("✅ Alterações salvas com sucesso!", "success")
+                
+                # Recarrega os dados atualizados
+                res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
+                user_data = res.data[0]
+
+    except Exception as e:
+        logger.error(f"Erro no painel admin: {str(e)}", exc_info=True)
+        flash("⚠️ Erro interno no servidor", "error")
 
     return render_template('admin.html', dados=user_data)
 
