@@ -92,16 +92,6 @@ def generate_unique_slug(base_slug):
             return new_slug
         counter += 1
 
-@app.route('/admin')
-def admin_root():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-    
-    # Redireciona para o perfil atual do usuário
-    res = supabase.table('usuarios').select('profile').eq('id', session['user_id']).execute()
-    if res.data:
-        return redirect(url_for('admin_panel', username=res.data[0]['profile']))
-    abort(404)
 
 @app.route('/test-supabase')
 def test_supabase():
