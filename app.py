@@ -259,51 +259,74 @@ def admin_panel(username):
         return redirect(url_for('login'))
 
     try:
-        # Busca dados atuais com service_role para contornar RLS temporariamente
+        # 1. Busca dados atuais (com tratamento de erro reforçado)
         res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
-        user_data = res.data[0] if res.data else None
+        if not res.data:
+            logger.error(f"Usuário não encontrado no banco: {session['user_id']}")
+            abort(404)
         
-        if not user_data or user_data['profile'] != username:
+        user_data = res.data[0]
+        
+        if user_data['profile'] != username:
             abort(403)
 
         if request.method == 'POST':
+            # 2. Prepara dados com fallback para valores existentes
             update_data = {
-                'nome': request.form.get('nome'),
-                'profile': request.form.get('profile'),
-                'bio': request.form.get('bio'),
-                'instagram': request.form.get('instagram'),
-                'linkedin': request.form.get('linkedin'),
-                'github': request.form.get('github'),
-                'whatsapp': request.form.get('whatsapp'),
-                'curriculo': request.form.get('curriculo'),
-                'email': request.form.get('email')
+                'nome': request.form.get('nome', user_data['nome']),
+                'profile': request.form.get('profile', user_data['profile']),
+                'bio': request.form.get('bio', user_data['bio']),
+                'instagram': request.form.get('instagram', user_data['instagram']),
+                'linkedin': request.form.get('linkedin', user_data['linkedin']),
+                'github': request.form.get('github', user_data['github']),
+                'whatsapp': request.form.get('whatsapp', user_data['whatsapp']),
+                'curriculo': request.form.get('curriculo', user_data['curriculo']),
+                'email': request.form.get('email', user_data['email']),
+                'updated_at': 'now()'  # Campo especial do Supabase
             }
 
-            # Processamento de arquivos (mantido igual)
-            if 'foto_upload' in request.files:
-                foto = request.files['foto_upload']
-                if foto and arquivo_permitido(foto.filename):
-                    filename = secure_filename(foto.filename)
-                    foto.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                    update_data['foto'] = f"uploads/{filename}"
+            # 3. Processamento de arquivos (com verificação reforçada)
+            for file_field in ['foto_upload', 'background_upload']:
+                if file_field in request.files:
+                    file = request.files[file_field]
+                    if file and arquivo_permitido(file.filename):
+                        filename = f"{session['user_id']}_{secure_filename(file.filename)}"
+                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                        update_data[file_field.split('_')[0]] = f"uploads/{filename}"
 
-            # DEBUG: Mostra dados antes do update
-            print("Dados a serem atualizados:", update_data)
+            # 4. DEBUG Avançado (registra TUDO)
+            logger.info(f"Update payload: {update_data}")
+            print("Dados preparados para update:", update_data)
 
-            # Atualização FORÇADA com service_role
-            response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
-            
-            # Verificação EXPLÍCITA
-            if not response.data:
-                print("Erro detalhado do Supabase:", response)
-                flash("Erro ao salvar: verifique os logs", "error")
-            else:
-                flash("Dados atualizados com sucesso!", "success")
-                return redirect(url_for('admin_panel', username=update_data.get('profile', username)))
+            # 5. Executa o UPDATE com tratamento especial
+            try:
+                response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
+                
+                # Verificação PROFUNDA da resposta
+                if hasattr(response, 'data') and response.data:
+                    logger.info(f"Update bem-sucedido! Resposta: {response.data}")
+                    flash("✅ Dados salvos com sucesso!", "success")
+                    
+                    # Atualiza cache imediatamente
+                    new_profile = update_data.get('profile')
+                    if new_profile and new_profile != username:
+                        session['profile'] = new_profile
+                        return redirect(url_for('admin_panel', username=new_profile))
+                    
+                    # Recarrega dados atualizados
+                    res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
+                    user_data = res.data[0]
+                else:
+                    logger.error(f"Resposta inesperada: {response}")
+                    flash("⚠️ Dados foram salvos, mas não houve confirmação", "warning")
+
+            except Exception as update_error:
+                logger.error(f"ERRO no update: {str(update_error)}")
+                flash("❌ Falha crítica ao salvar - contate o suporte", "error")
 
     except Exception as e:
-        print("Erro completo:", str(e))
-        flash("Erro interno no servidor", "error")
+        logger.error(f"ERRO GERAL: {str(e)}", exc_info=True)
+        flash("⚡ Erro inesperado - tente novamente", "danger")
 
     return render_template('admin.html', dados=user_data)
 
