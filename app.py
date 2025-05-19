@@ -282,8 +282,22 @@ def admin_panel(username):
                 'whatsapp': request.form.get('whatsapp', user_data['whatsapp']),
                 'curriculo': request.form.get('curriculo', user_data['curriculo']),
                 'email': request.form.get('email', user_data['email']),
-                'updated_at': 'now()'  # Campo especial do Supabase
             }
+
+            try:
+                response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
+    
+                # Verificação reforçada
+                if not response.data:
+                    logger.error(f"Supabase response: {response.__dict__}")  # Mostra TUDO
+                    flash("❌ Erro no banco de dados - tente novamente", "error")
+                else:
+                    flash("✅ Dados salvos com sucesso!", "success")
+                    return redirect(url_for('admin_panel', username=update_data.get('profile', username)))
+
+            except Exception as e:
+                logger.error(f"Supabase error details: {str(e)}")
+                flash("⚠️ Problema de conexão com o banco", "warning")
 
             # 3. Processamento de arquivos (com verificação reforçada)
             for file_field in ['foto_upload', 'background_upload']:
