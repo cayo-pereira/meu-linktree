@@ -1,42 +1,107 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ dados.nome }}</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ dados.nome if dados.nome else 'Perfil' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .social-icons a {
+            margin: 0 10px;
+            transition: transform 0.3s;
+        }
+        .social-icons a:hover {
+            transform: scale(1.2);
+        }
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .link-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+        .link-button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
-<body {% if dados.background %}style="background-image: url('{{ dados.background if dados.background.startswith('http') else url_for('static', filename=dados.background) }}'); background-size: cover; background-position: center;"{% endif %}>
-  <div class="container">
-    {% if dados.foto %}
-    <img src="{{ dados.foto if dados.foto.startswith('http') else url_for('static', filename=dados.foto) }}" alt="Foto" class="profile-pic"/>
-    {% endif %}
-    
-    <h1>{{ dados.nome }}</h1>
-    
-    {% if dados.bio %}
-    <p class="bio">{{ dados.bio }}</p>
-    {% endif %}
+<body {% if dados.background %}style="background-image: url('{{ url_for('static', filename=dados.background) if dados.background.startswith('uploads/') else dados.background }}'); background-size: cover; background-position: center; background-attachment: fixed;"{% endif %}>
+    <div class="container">
+        {% if dados.foto %}
+        <img src="{{ url_for('static', filename=dados.foto) if dados.foto.startswith('uploads/') else dados.foto }}" 
+             alt="Foto de perfil" class="profile-pic">
+        {% endif %}
+        
+        <h1>{{ dados.nome if dados.nome else 'Usuário' }}</h1>
+        
+        {% if dados.bio %}
+        <p class="bio">{{ dados.bio }}</p>
+        {% endif %}
 
-    <div class="social-icons">
-      {% if dados.instagram %}
-      <a href="{{ dados.instagram }}" target="_blank">
-        <img src="{{ url_for('static', filename='icons/instagram.png') }}" alt="Instagram" class="icon"/>
-      </a>
-      {% endif %}
-      
-      {% if dados.linkedin %}
-      <a href="{{ dados.linkedin }}" target="_blank">
-        <img src="{{ url_for('static', filename='icons/linkedin.png') }}" alt="LinkedIn" class="icon"/>
-      </a>
-      {% endif %}
-      
-      <!-- Adicione outros ícones sociais conforme necessário -->
+        <div class="social-icons">
+            {% if dados.instagram %}
+            <a href="{{ dados.instagram }}" target="_blank" title="Instagram">
+                <i class="fab fa-instagram fa-2x"></i>
+            </a>
+            {% endif %}
+            
+            {% if dados.linkedin %}
+            <a href="{{ dados.linkedin }}" target="_blank" title="LinkedIn">
+                <i class="fab fa-linkedin fa-2x"></i>
+            </a>
+            {% endif %}
+            
+            {% if dados.github %}
+            <a href="{{ dados.github }}" target="_blank" title="GitHub">
+                <i class="fab fa-github fa-2x"></i>
+            </a>
+            {% endif %}
+            
+            {% if dados.email %}
+            <a href="mailto:{{ dados.email }}" title="E-mail">
+                <i class="fas fa-envelope fa-2x"></i>
+            </a>
+            {% endif %}
+            
+            {% if dados.whatsapp %}
+            <a href="https://wa.me/{{ dados.whatsapp }}" target="_blank" title="WhatsApp">
+                <i class="fab fa-whatsapp fa-2x"></i>
+            </a>
+            {% endif %}
+        </div>
+
+        {% if dados.curriculo %}
+        <a href="{{ dados.curriculo }}" class="link-button" target="_blank">
+            <i class="fas fa-file-alt"></i> Currículo
+        </a>
+        {% endif %}
+
+        <footer style="margin-top: 30px;">
+            <p>Página criada com CPages</p>
+        </footer>
     </div>
 
-    {% if dados.curriculo %}
-    <a href="{{ dados.curriculo }}" class="link-button" target="_blank">Currículo Web</a>
-    {% endif %}
-  </div>
+    <script>
+        // Efeito de carregamento suave
+        document.body.style.opacity = 0;
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 0.5s';
+                document.body.style.opacity = 1;
+            }, 100);
+        });
+    </script>
 </body>
 </html>

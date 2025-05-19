@@ -130,17 +130,24 @@ def index():
 
 @app.route('/<profile>')
 def user_page(profile):
-    """Página pública do usuário"""
     try:
+        # Busca os dados do usuário pelo profile (slug)
         res = supabase.table('usuarios').select('*').eq('profile', profile).eq('active', True).execute()
+        
         if not res.data:
             logger.warning(f"Perfil não encontrado: {profile}")
             abort(404)
         
         user_data = res.data[0]
+        logger.info(f"Dados carregados para {profile}: {user_data}")
+        
+        # Debug: Verifique os dados antes de renderizar
+        print("Dados sendo enviados para o template:", user_data)
+        
         return render_template('user_page.html', dados=user_data)
+    
     except Exception as e:
-        logger.error(f"Erro ao carregar perfil: {str(e)}")
+        logger.error(f"Erro ao carregar perfil {profile}: {str(e)}")
         abort(500)
 
 # Autenticação
@@ -285,6 +292,17 @@ def admin_panel(username):
             if 'profile' in update_data:
                 session['profile'] = update_data['profile']
                 return redirect(url_for('admin_panel', username=update_data['profile']))
+            
+            logger.info(f"Atualizando dados: {update_data}")
+            response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
+            logger.info(f"Resposta do Supabase: {response}")
+            
+            # Verifique se os dados foram realmente atualizados
+            updated_user = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
+            logger.info(f"Dados após atualização: {updated_user.data[0] if updated_user.data else None}")
+            
+        except Exception as e:
+            logger.error(f"Erro ao atualizar: {str(e)}")
             
         except Exception as e:
             logger.error(f"Erro ao atualizar perfil: {str(e)}")
