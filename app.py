@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, session, url_for, a
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from supabase import create_client, Client
+from supabase.lib.client_options import ClientOptions
 from uuid import uuid4
 import json
 import os
@@ -22,6 +23,15 @@ logger = logging.getLogger(__name__)
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+supabase: Client = create_client(
+    SUPABASE_URL,
+    SUPABASE_KEY,
+    options=ClientOptions(
+        postgrest_client_timeout=10,
+        headers={'Prefer': 'return=representation'}
+    )
+)
 
 # Configurações do app
 UPLOAD_FOLDER = 'static/uploads'
@@ -247,30 +257,26 @@ def callback():
 def admin_panel(username):
     if 'user_id' not in session:
         return redirect(url_for('login'))
-    
+
     try:
-        # Busca dados atuais (com tratamento de erro)
+        # Busca dados atuais com service_role para contornar RLS temporariamente
         res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
-        if not res.data:
-            logger.error(f"Usuário não encontrado: {session['user_id']}")
-            abort(404)
-            
-        user_data = res.data[0]
+        user_data = res.data[0] if res.data else None
         
-        if user_data['profile'] != username:
+        if not user_data or user_data['profile'] != username:
             abort(403)
 
         if request.method == 'POST':
             update_data = {
-                'nome': request.form.get('nome', user_data['nome']),
-                'profile': request.form.get('profile', user_data['profile']),
-                'bio': request.form.get('bio', user_data['bio']),
-                'instagram': request.form.get('instagram', user_data['instagram']),
-                'linkedin': request.form.get('linkedin', user_data['linkedin']),
-                'github': request.form.get('github', user_data['github']),
-                'whatsapp': request.form.get('whatsapp', user_data['whatsapp']),
-                'curriculo': request.form.get('curriculo', user_data['curriculo']),
-                'email': request.form.get('email', user_data['email'])
+                'nome': request.form.get('nome'),
+                'profile': request.form.get('profile'),
+                'bio': request.form.get('bio'),
+                'instagram': request.form.get('instagram'),
+                'linkedin': request.form.get('linkedin'),
+                'github': request.form.get('github'),
+                'whatsapp': request.form.get('whatsapp'),
+                'curriculo': request.form.get('curriculo'),
+                'email': request.form.get('email')
             }
 
             # Processamento de arquivos (mantido igual)
@@ -278,37 +284,26 @@ def admin_panel(username):
                 foto = request.files['foto_upload']
                 if foto and arquivo_permitido(foto.filename):
                     filename = secure_filename(foto.filename)
-                    foto_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                    foto.save(foto_path)
+                    foto.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
                     update_data['foto'] = f"uploads/{filename}"
 
-            # DEBUG: Log dos dados
-            logger.info(f"Dados para atualização: {update_data}")
+            # DEBUG: Mostra dados antes do update
+            print("Dados a serem atualizados:", update_data)
 
-            # Atualização no Supabase
+            # Atualização FORÇADA com service_role
             response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
             
+            # Verificação EXPLÍCITA
             if not response.data:
-                logger.error(f"Falha na atualização: {response}")
-                flash("❌ Erro ao salvar as alterações", "error")
+                print("Erro detalhado do Supabase:", response)
+                flash("Erro ao salvar: verifique os logs", "error")
             else:
-                logger.info(f"Atualização bem-sucedida: {response.data}")
-                
-                # Atualiza session se profile mudou
-                new_profile = update_data.get('profile')
-                if new_profile and new_profile != username:
-                    session['profile'] = new_profile
-                    return redirect(url_for('admin_panel', username=new_profile))
-                
-                flash("✅ Alterações salvas com sucesso!", "success")
-                
-                # Recarrega os dados atualizados
-                res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
-                user_data = res.data[0]
+                flash("Dados atualizados com sucesso!", "success")
+                return redirect(url_for('admin_panel', username=update_data.get('profile', username)))
 
     except Exception as e:
-        logger.error(f"Erro no painel admin: {str(e)}", exc_info=True)
-        flash("⚠️ Erro interno no servidor", "error")
+        print("Erro completo:", str(e))
+        flash("Erro interno no servidor", "error")
 
     return render_template('admin.html', dados=user_data)
 
