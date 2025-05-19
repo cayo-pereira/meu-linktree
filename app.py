@@ -99,6 +99,41 @@ def generate_unique_slug(base_slug):
             return new_slug
         counter += 1
 
+#rota para apagar usuário
+@app.route('/delete_page', methods=['POST'])
+def delete_page():
+    """Rota para deletar a página do usuário"""
+    if 'user_id' not in session:
+        abort(401)  # Não autorizado
+    
+    try:
+        user_id = session['user_id']
+        
+        # Configura autenticação
+        headers = {
+            "Authorization": f"Bearer {session.get('access_token')}",
+            "apikey": SUPABASE_KEY,
+            "Content-Type": "application/json"
+        }
+        
+        # Deleta o usuário
+        api_url = f"{SUPABASE_URL}/rest/v1/usuarios?id=eq.{user_id}"
+        response = requests.delete(api_url, headers=headers)
+        
+        if response.status_code == 204:
+            # Limpa a sessão e redireciona
+            session.clear()
+            return redirect(url_for('index'))
+        else:
+            logger.error(f"Erro ao deletar usuário: {response.text}")
+            flash("❌ Erro ao apagar página", "error")
+            return redirect(url_for('admin_panel', username=session.get('profile')))
+    
+    except Exception as e:
+        logger.error(f"Erro ao deletar página: {str(e)}")
+        flash("⚠️ Erro ao apagar página", "warning")
+        return redirect(url_for('admin_panel', username=session.get('profile')))
+
 
 @app.route('/test-supabase')
 def test_supabase():
