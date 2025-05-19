@@ -62,6 +62,13 @@ def get_user_by_id(user_id):
 def create_user(user_data):
     """Cria novo usuário no Supabase"""
     try:
+        # Usa o token de autenticação do usuário
+        headers = {
+            "Authorization": f"Bearer {session.get('access_token')}",
+            "apikey": SUPABASE_KEY,
+            "Content-Type": "application/json"
+        }
+        
         res = supabase.table('usuarios').insert(user_data).execute()
         return res.data[0] if res.data else None
     except Exception as e:
@@ -162,6 +169,7 @@ def callback():
         # Obter token do request
         if request.method == 'POST':
             if not request.is_json:
+                logger.error("Request sem JSON no callback")
                 return jsonify({"error": "Content-Type must be application/json"}), 400
             access_token = request.json.get('access_token')
         else:
@@ -172,6 +180,9 @@ def callback():
             return jsonify({"error": "Token não fornecido"}), 400
         
         logger.info(f"Token recebido (início): {access_token[:15]}...")
+        
+        # Configurar autenticação temporária
+        supabase.postgrest.auth(access_token)
         
         # Obter dados do usuário
         user_resp = supabase.auth.get_user(access_token)
@@ -204,11 +215,25 @@ def callback():
                 'bio': 'Olá! Esta é minha página pessoal.'
             }
             
-            created_user = create_user(new_user)
-            if not created_user:
-                raise Exception("Falha ao criar usuário no banco de dados")
+            # Usar a API REST diretamente com o token do usuário
+            api_url = f"{SUPABASE_URL}/rest/v1/usuarios"
+            headers = {
+                "Authorization": f"Bearer {access_token}",
+                "apikey": SUPABASE_KEY,
+                "Content-Type": "application/json",
+                "Prefer": "return=representation"
+            }
+            
+            response = requests.post(api_url, json=new_user, headers=headers)
+            
+            if response.status_code not in [200, 201, 204]:
+                logger.error(f"Falha ao criar usuário: {response.text}")
+                return jsonify({
+                    "error": "Falha ao criar perfil",
+                    "details": response.text
+                }), 500
                 
-            user_data = created_user
+            user_data = response.json()[0] if response.status_code != 204 else new_user
             logger.info(f"Novo usuário criado: {user_data['profile']}")
         
         # Configurar sessão
@@ -227,7 +252,10 @@ def callback():
         
     except Exception as e:
         logger.error(f"Erro no callback: {str(e)}", exc_info=True)
-        return jsonify({"error": "Erro interno no servidor"}), 500
+        return jsonify({
+            "error": "Erro interno no servidor",
+            "details": str(e)
+        }), 500
 
 # Painel administrativo
 @app.route('/admin/<username>', methods=['GET', 'POST'])
