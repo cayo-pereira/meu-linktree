@@ -237,30 +237,26 @@ def admin_panel(username):
         return redirect(url_for('login'))
 
     try:
-        # Busca dados atuais (com service_role para contornar RLS)
+        # Configuração de autenticação forçada
         supabase.postgrest.auth(SUPABASE_KEY)
+        
+        # Busca dados atuais
         res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
-        
         if not res.data:
-            logger.error(f"Usuário não encontrado: {session['user_id']}")
             abort(404)
-            
         user_data = res.data[0]
-        
-        if user_data['profile'] != username:
-            abort(403)
 
         if request.method == 'POST':
             update_data = {
-                'nome': request.form.get('nome', user_data['nome']),
-                'profile': request.form.get('profile', user_data['profile']),
-                'bio': request.form.get('bio', user_data['bio']),
-                'instagram': request.form.get('instagram', user_data['instagram']),
-                'linkedin': request.form.get('linkedin', user_data['linkedin']),
-                'github': request.form.get('github', user_data['github']),
-                'whatsapp': request.form.get('whatsapp', user_data['whatsapp']),
-                'curriculo': request.form.get('curriculo', user_data['curriculo']),
-                'email': request.form.get('email', user_data['email'])
+                'nome': request.form.get('nome'),
+                'profile': request.form.get('profile'),
+                'bio': request.form.get('bio'),
+                'instagram': request.form.get('instagram'),
+                'linkedin': request.form.get('linkedin'),
+                'github': request.form.get('github'),
+                'whatsapp': request.form.get('whatsapp'),
+                'curriculo': request.form.get('curriculo'),
+                'email': request.form.get('email')
             }
 
             # Processamento de arquivos
@@ -268,53 +264,38 @@ def admin_panel(username):
                 file = request.files.get(f'{field}_upload')
                 if file and arquivo_permitido(file.filename):
                     filename = f"{session['user_id']}_{secure_filename(file.filename)}"
-                    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(filepath)
                     update_data[field] = f"uploads/{filename}"
 
-            # DEBUG: Mostra dados antes do update
-            logger.info(f"Update payload: {update_data}")
-
-            # Atualização com retorno explícito
-            try:
-                response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
+            # Atualização via API REST direta
+            api_url = f"{SUPABASE_URL}/rest/v1/usuarios?id=eq.{session['user_id']}"
+            headers = {
+                "apikey": SUPABASE_KEY,
+                "Authorization": f"Bearer {SUPABASE_KEY}",
+                "Content-Type": "application/json",
+                "Prefer": "return=representation"
+            }
+            
+            response = requests.patch(api_url, json=update_data, headers=headers)
+            
+            if response.status_code == 200:
+                # Força a limpeza do cache
+                cache_buster = str(uuid4())[:8]
+                user_page_url = f"{url_for('user_page', username=update_data.get('profile', username))}?v={cache_buster}"
                 
-                # Verificação EXTRA
-                if not response.data:
-                    # Tenta obter o erro completo
-                    error_details = getattr(response, 'error', None)
-                    logger.error(f"Falha no update. Detalhes: {error_details}")
-                    
-                    # Tentativa alternativa via API REST
-                    try:
-                        api_response = requests.patch(
-                            f"{SUPABASE_URL}/rest/v1/usuarios?id=eq.{session['user_id']}",
-                            json=update_data,
-                            headers={
-                                "apikey": SUPABASE_KEY,
-                                "Authorization": f"Bearer {SUPABASE_KEY}",
-                                "Content-Type": "application/json",
-                                "Prefer": "return=representation"
-                            }
-                        )
-                        logger.info(f"Resposta alternativa: {api_response.json()}")
-                        
-                        if api_response.status_code == 200:
-                            flash("✅ Dados salvos via API alternativa!", "success")
-                            return redirect(url_for('admin_panel', username=update_data.get('profile', username)))
-                    except Exception as api_error:
-                        logger.error(f"Erro na API alternativa: {str(api_error)}")
-                    
-                    flash("❌ Erro ao salvar: banco não confirmou", "error")
+                # Verificação imediata
+                res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
+                if res.data:
+                    flash("✅ Dados salvos com sucesso! Atualize a página", "success")
+                    return redirect(user_page_url)
                 else:
-                    flash("✅ Dados salvos com sucesso!", "success")
-                    return redirect(url_for('admin_panel', username=update_data.get('profile', username)))
-
-            except Exception as e:
-                logger.error(f"ERRO no update: {str(e)}", exc_info=True)
-                flash("⚠️ Falha crítica ao salvar", "error")
+                    flash("⚠️ Dados salvos, mas não foram recuperados", "warning")
+            else:
+                flash(f"❌ Erro {response.status_code} ao salvar", "error")
 
     except Exception as e:
-        logger.error(f"ERRO GERAL: {str(e)}", exc_info=True)
+        logger.error(f"ERRO: {str(e)}")
         flash("⚡ Erro inesperado", "danger")
 
     return render_template('admin.html', dados=user_data)
