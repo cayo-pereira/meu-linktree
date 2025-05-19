@@ -22,14 +22,17 @@ logger = logging.getLogger(__name__)
 # Configurações Supabase
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# Configuração otimizada do cliente Supabase
 supabase: Client = create_client(
     SUPABASE_URL,
     SUPABASE_KEY,
     options=ClientOptions(
         postgrest_client_timeout=10,
-        headers={'Prefer': 'return=representation'}
+        headers={
+            'Prefer': 'return=representation',
+            'Content-Type': 'application/json'
+        }
     )
 )
 
@@ -90,49 +93,6 @@ def generate_unique_slug(base_slug):
         counter += 1
 
 # Rotas públicas
-
-# ROTA DE TESTE
-@app.route('/test-insert', methods=['GET'])
-def test_insert():
-    try:
-        # Verifica se o usuário está autenticado
-        if 'user_id' not in session:
-            return jsonify({"error": "Não autenticado"}), 401
-
-        test_user = {
-            'id': session['user_id'],  # Usa o ID da sessão
-            'nome': 'Teste API Python',
-            'profile': 'teste-python',
-            'email': 'teste-python@api.com',
-            'active': True,
-            # ... outros campos obrigatórios
-        }
-
-        # Debug: Mostra o usuário que será inserido
-        print("Tentando inserir:", test_user)
-
-        # Faz a inserção
-        response = supabase.table('usuarios').insert(test_user).execute()
-        
-        if response.data:
-            return jsonify({
-                "status": "success",
-                "data": response.data
-            })
-        else:
-            return jsonify({
-                "status": "error",
-                "error": str(response.error),
-                "details": str(response)
-            }), 400
-
-    except Exception as e:
-        return jsonify({
-            "status": "error",
-            "error": str(e),
-            "session_user": session.get('user_id')
-        }), 500
-
 @app.route('/')
 def index():
     """Página inicial"""
@@ -150,9 +110,6 @@ def user_page(profile):
         
         user_data = res.data[0]
         logger.info(f"Dados carregados para {profile}: {user_data}")
-        
-        # Debug: Verifique os dados antes de renderizar
-        print("Dados sendo enviados para o template:", user_data)
         
         return render_template('user_page.html', dados=user_data)
     
@@ -237,7 +194,7 @@ def callback():
         # Configurar sessão
         session['user_id'] = user.id
         session['access_token'] = access_token
-        session['profile'] = user_data['profile']  # Adiciona o profile na sessão
+        session['profile'] = user_data['profile']
         session['logado'] = True
         
         logger.info(f"Sessão configurada para: {user_data['profile']}")
@@ -259,19 +216,19 @@ def admin_panel(username):
         return redirect(url_for('login'))
 
     try:
-        # 1. Busca dados atuais (com tratamento de erro reforçado)
+        # Busca dados atuais com tratamento reforçado
         res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
         if not res.data:
-            logger.error(f"Usuário não encontrado no banco: {session['user_id']}")
+            logger.error(f"Usuário não encontrado: {session['user_id']}")
             abort(404)
-        
+            
         user_data = res.data[0]
         
         if user_data['profile'] != username:
             abort(403)
 
         if request.method == 'POST':
-            # 2. Prepara dados com fallback para valores existentes
+            # Prepara dados com fallback e validação
             update_data = {
                 'nome': request.form.get('nome', user_data['nome']),
                 'profile': request.form.get('profile', user_data['profile']),
@@ -281,62 +238,47 @@ def admin_panel(username):
                 'github': request.form.get('github', user_data['github']),
                 'whatsapp': request.form.get('whatsapp', user_data['whatsapp']),
                 'curriculo': request.form.get('curriculo', user_data['curriculo']),
-                'email': request.form.get('email', user_data['email']),
+                'email': request.form.get('email', user_data['email'])
             }
 
+            # Processamento de arquivos otimizado
+            for field in ['foto', 'background']:
+                file = request.files.get(f'{field}_upload')
+                if file and arquivo_permitido(file.filename):
+                    filename = f"{session['user_id']}_{secure_filename(file.filename)}"
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+                    file.save(filepath)
+                    update_data[field] = f"uploads/{filename}"
+
+            # DEBUG: Verificação dos dados
+            logger.info(f"Dados para atualização: {update_data}")
+
+            # Atualização com tratamento completo
             try:
-                response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
-    
-                # Verificação reforçada
-                if not response.data:
-                    logger.error(f"Supabase response: {response.__dict__}")  # Mostra TUDO
-                    flash("❌ Erro no banco de dados - tente novamente", "error")
-                else:
-                    flash("✅ Dados salvos com sucesso!", "success")
-                    return redirect(url_for('admin_panel', username=update_data.get('profile', username)))
-
-            except Exception as e:
-                logger.error(f"Supabase error details: {str(e)}")
-                flash("⚠️ Problema de conexão com o banco", "warning")
-
-            # 3. Processamento de arquivos (com verificação reforçada)
-            for file_field in ['foto_upload', 'background_upload']:
-                if file_field in request.files:
-                    file = request.files[file_field]
-                    if file and arquivo_permitido(file.filename):
-                        filename = f"{session['user_id']}_{secure_filename(file.filename)}"
-                        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-                        update_data[file_field.split('_')[0]] = f"uploads/{filename}"
-
-            # 4. DEBUG Avançado (registra TUDO)
-            logger.info(f"Update payload: {update_data}")
-            print("Dados preparados para update:", update_data)
-
-            # 5. Executa o UPDATE com tratamento especial
-            try:
+                # Força autenticação com service_role temporariamente
+                supabase.postgrest.auth(SUPABASE_KEY)
+                
                 response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
                 
-                # Verificação PROFUNDA da resposta
-                if hasattr(response, 'data') and response.data:
-                    logger.info(f"Update bem-sucedido! Resposta: {response.data}")
+                if not response.data:
+                    logger.error(f"Falha na atualização. Resposta completa: {response.__dict__}")
+                    flash("❌ Erro ao salvar: banco não confirmou a atualização", "error")
+                else:
+                    logger.info(f"Atualização confirmada: {response.data}")
                     flash("✅ Dados salvos com sucesso!", "success")
                     
-                    # Atualiza cache imediatamente
-                    new_profile = update_data.get('profile')
-                    if new_profile and new_profile != username:
-                        session['profile'] = new_profile
-                        return redirect(url_for('admin_panel', username=new_profile))
+                    # Atualiza sessão se o profile mudou
+                    if 'profile' in update_data and update_data['profile'] != username:
+                        session['profile'] = update_data['profile']
+                        return redirect(url_for('admin_panel', username=update_data['profile']))
                     
                     # Recarrega dados atualizados
                     res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
                     user_data = res.data[0]
-                else:
-                    logger.error(f"Resposta inesperada: {response}")
-                    flash("⚠️ Dados foram salvos, mas não houve confirmação", "warning")
 
-            except Exception as update_error:
-                logger.error(f"ERRO no update: {str(update_error)}")
-                flash("❌ Falha crítica ao salvar - contate o suporte", "error")
+            except Exception as e:
+                logger.error(f"ERRO no Supabase: {str(e)}", exc_info=True)
+                flash("⚠️ Falha na conexão com o banco de dados", "warning")
 
     except Exception as e:
         logger.error(f"ERRO GERAL: {str(e)}", exc_info=True)
