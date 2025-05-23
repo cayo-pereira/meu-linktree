@@ -43,8 +43,8 @@
 <body {% if dados.background %}style="background-image: url('{{ url_for('static', filename=dados.background) if dados.background.startswith('uploads/') else dados.background }}'); background-size: cover; background-position: center; background-attachment: fixed;"{% endif %}>
     <div class="container">
         {% if dados.foto %}
-        <img src="{{ url_for('static', filename=dados.foto) if dados.foto.startswith('uploads/') else dados.foto }}" 
-             alt="Foto de perfil" class="profile-pic">
+        <img src="{{ dados.foto if dados.foto.startswith('http') else url_for('static', filename=dados.foto) }}" 
+            alt="Foto de perfil" class="profile-pic">
         {% endif %}
         
         <h1>{{ dados.nome if dados.nome else 'Usuário' }}</h1>

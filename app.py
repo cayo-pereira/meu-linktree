@@ -42,6 +42,31 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+def migrate_existing_images():
+    users = supabase.table('usuarios').select('*').execute().data
+    for user in users:
+        updates = {}
+        if user.get('foto') and not user['foto'].startswith('http'):
+            # Processar foto existente
+            pass
+        # Mesmo para background
+        if updates:
+            supabase.table('usuarios').update(updates).eq('id', user['id']).execute()
+
+# Configuração do Storage
+def upload_to_supabase(file, file_path):
+    try:
+        with open(file_path, 'rb') as f:
+            res = supabase.storage().from_('usuarios').upload(
+                path=f"user_uploads/{file.filename}",
+                file=f,
+                file_options={"content-type": file.content_type}
+            )
+        return f"{SUPABASE_URL}/storage/v1/object/public/usuarios/user_uploads/{file.filename}"
+    except Exception as e:
+        logger.error(f"Erro ao upload no Supabase: {str(e)}")
+        return None
+
 # Helper functions
 def arquivo_permitido(nome_arquivo):
     return '.' in nome_arquivo and nome_arquivo.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -338,10 +363,9 @@ def admin_panel(username):
         for field in ['foto', 'background']:
             file = request.files.get(f'{field}_upload')
             if file and arquivo_permitido(file.filename):
-                filename = f"{session['user_id']}_{secure_filename(file.filename)}"
-                filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-                file.save(filepath)
-                update_data[field] = f"uploads/{filename}"
+                file_url = upload_to_supabase(file, os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename)))
+                if file_url:
+                    update_data[field] = file_url
 
         # Atualização via API REST
         api_url = f"{SUPABASE_URL}/rest/v1/usuarios?id=eq.{session['user_id']}"
