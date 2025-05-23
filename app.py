@@ -54,11 +54,16 @@ def migrate_existing_images():
             supabase.table('usuarios').update(updates).eq('id', user['id']).execute()
 
 # Configuração do Storage
-def upload_to_supabase(file, user_id):
+def upload_to_supabase(file, user_id, field_type):
     try:
-        # Gera um nome único para o arquivo
-        filename = secure_filename(file.filename)
-        unique_filename = f"{user_id}_{filename}"
+        # Gera um nome único para o arquivo com base no tipo (foto/background)
+        file_ext = os.path.splitext(secure_filename(file.filename))[1]
+        unique_filename = f"{user_id}_{field_type}{file_ext}"
+        
+        # Determina o tipo MIME corretamente
+        content_type = file.content_type
+        if not content_type:
+            content_type = f"image/{file_ext[1:].lower()}" if file_ext else 'application/octet-stream'
         
         # Salva temporariamente o arquivo
         temp_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
@@ -66,11 +71,10 @@ def upload_to_supabase(file, user_id):
         
         # Faz o upload para o Supabase Storage
         with open(temp_path, 'rb') as f:
-            # Corrigindo a chamada do storage
             res = supabase.storage.from_('usuarios').upload(
                 path=f"{user_id}/{unique_filename}",
                 file=f,
-                file_options={"content-type": file.content_type}
+                file_options={"content-type": content_type}
             )
         
         # Remove o arquivo temporário
@@ -80,7 +84,7 @@ def upload_to_supabase(file, user_id):
         return f"{SUPABASE_URL}/storage/v1/object/public/usuarios/{user_id}/{unique_filename}"
     
     except Exception as e:
-        logger.error(f"Erro detalhado no upload: {str(e)}", exc_info=True)
+        logger.error(f"Erro no upload de {field_type}: {str(e)}", exc_info=True)
         return None
 
 # Helper functions
@@ -281,7 +285,7 @@ def callback():
                 'nome': user.user_metadata.get('full_name', user.email),
                 'profile': slug,
                 'email': user.email,
-                'foto': user.user_metadata.get('avatar_url', ''),
+                'foto': '',
                 'active': True,
                 'instagram': '',
                 'linkedin': '',
@@ -379,9 +383,13 @@ def admin_panel(username):
         for field in ['foto', 'background']:
             file = request.files.get(f'{field}_upload')
             if file and arquivo_permitido(file.filename):
-                file_url = upload_to_supabase(file, session['user_id'])
+                file_url = upload_to_supabase(file, session['user_id'], field)
                 if file_url:
                     update_data[field] = file_url
+                    logger.info(f"Upload de {field} bem-sucedido: {file_url}")
+                else:
+                    logger.error(f"Falha no upload de {field}")
+                    flash(f"⚠️ Falha ao enviar {field}", "warning")
 
         # Atualização via API REST
         api_url = f"{SUPABASE_URL}/rest/v1/usuarios?id=eq.{session['user_id']}"
