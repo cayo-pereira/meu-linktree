@@ -54,17 +54,33 @@ def migrate_existing_images():
             supabase.table('usuarios').update(updates).eq('id', user['id']).execute()
 
 # Configuração do Storage
-def upload_to_supabase(file, file_path):
+def upload_to_supabase(file, user_id):
     try:
-        with open(file_path, 'rb') as f:
-            res = supabase.storage().from_('usuarios').upload(
-                path=f"user_uploads/{file.filename}",
+        # Gera um nome único para o arquivo
+        filename = secure_filename(file.filename)
+        unique_filename = f"{user_id}_{filename}"
+        
+        # Salva temporariamente o arquivo
+        temp_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
+        file.save(temp_path)
+        
+        # Faz o upload para o Supabase Storage
+        with open(temp_path, 'rb') as f:
+            # Corrigindo a chamada do storage
+            res = supabase.storage.from_('usuarios').upload(
+                path=f"{user_id}/{unique_filename}",
                 file=f,
                 file_options={"content-type": file.content_type}
             )
-        return f"{SUPABASE_URL}/storage/v1/object/public/usuarios/user_uploads/{file.filename}"
+        
+        # Remove o arquivo temporário
+        os.remove(temp_path)
+        
+        # Retorna a URL pública
+        return f"{SUPABASE_URL}/storage/v1/object/public/usuarios/{user_id}/{unique_filename}"
+    
     except Exception as e:
-        logger.error(f"Erro ao upload no Supabase: {str(e)}")
+        logger.error(f"Erro detalhado no upload: {str(e)}", exc_info=True)
         return None
 
 # Helper functions
@@ -363,7 +379,7 @@ def admin_panel(username):
         for field in ['foto', 'background']:
             file = request.files.get(f'{field}_upload')
             if file and arquivo_permitido(file.filename):
-                file_url = upload_to_supabase(file, os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename)))
+                file_url = upload_to_supabase(file, session['user_id'])
                 if file_url:
                     update_data[field] = file_url
 
