@@ -47,56 +47,59 @@ def migrate_existing_images():
     for user in users:
         updates = {}
         if user.get('foto') and not user['foto'].startswith('http'):
-            # Processar foto existente
             pass
-        # Mesmo para background
         if updates:
             supabase.table('usuarios').update(updates).eq('id', user['id']).execute()
 
-# Configuração do Storage
 def upload_to_supabase(file, user_id, field_type):
     try:
-        # Gera um nome único para o arquivo com base no tipo (foto/background)
-        file_ext = os.path.splitext(secure_filename(file.filename))[1]
+        # Configura autenticação
+        headers = {
+            "Authorization": f"Bearer {session.get('access_token')}",
+            "apikey": SUPABASE_KEY,
+            "Content-Type": "application/json"
+        }
+        
+        # Gera nome único para o arquivo
+        file_ext = os.path.splitext(secure_filename(file.filename))[1].lower()
         unique_filename = f"{user_id}_{field_type}{file_ext}"
         
-        # Determina o tipo MIME corretamente
-        content_type = file.content_type
-        if not content_type:
-            content_type = f"image/{file_ext[1:].lower()}" if file_ext else 'application/octet-stream'
-        
-        # Salva temporariamente o arquivo
+        # Salva temporariamente
         temp_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         file.save(temp_path)
         
-        # Faz o upload para o Supabase Storage
+        # Faz upload via API REST diretamente
+        upload_url = f"{SUPABASE_URL}/storage/v1/object/usuarios/{unique_filename}"
         with open(temp_path, 'rb') as f:
-            res = supabase.storage.from_('usuarios').upload(
-                path=f"{user_id}/{unique_filename}",
-                file=f,
-                file_options={"content-type": content_type}
+            response = requests.put(
+                upload_url,
+                headers=headers,
+                data=f,
+                params={
+                    "content-type": file.content_type,
+                    "x-upsert": "true"
+                }
             )
         
-        # Remove o arquivo temporário
         os.remove(temp_path)
         
-        # Retorna a URL pública
-        return f"{SUPABASE_URL}/storage/v1/object/public/usuarios/{user_id}/{unique_filename}"
-    
+        if response.status_code in [200, 201]:
+            return f"{SUPABASE_URL}/storage/v1/object/public/usuarios/{unique_filename}"
+        else:
+            logger.error(f"Erro no upload: {response.status_code} - {response.text}")
+            return None
+            
     except Exception as e:
-        logger.error(f"Erro no upload de {field_type}: {str(e)}", exc_info=True)
+        logger.error(f"ERRO NO UPLOAD ({field_type}): {str(e)}", exc_info=True)
         return None
 
-# Helper functions
 def arquivo_permitido(nome_arquivo):
     return '.' in nome_arquivo and nome_arquivo.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def is_valid_slug(slug):
-    """Verifica se o slug é válido (apenas letras, números e hífens)"""
     return bool(re.match(r'^[a-z0-9-]+$', slug))
 
 def get_user_by_id(user_id):
-    """Busca usuário no Supabase pelo ID"""
     try:
         res = supabase.table('usuarios').select('*').eq('id', user_id).execute()
         return res.data[0] if res.data else None
@@ -105,9 +108,7 @@ def get_user_by_id(user_id):
         return None
 
 def create_user(user_data):
-    """Cria novo usuário no Supabase"""
     try:
-        # Usa o token de autenticação do usuário
         headers = {
             "Authorization": f"Bearer {session.get('access_token')}",
             "apikey": SUPABASE_KEY,
@@ -121,7 +122,6 @@ def create_user(user_data):
         return None
 
 def slug_exists(slug):
-    """Verifica se um slug já está em uso"""
     try:
         res = supabase.table('usuarios').select('profile').eq('profile', slug).execute()
         return len(res.data) > 0
@@ -130,7 +130,6 @@ def slug_exists(slug):
         return True
 
 def generate_unique_slug(base_slug):
-    """Gera um slug único baseado no nome"""
     slug = base_slug.lower().replace(' ', '-')
     slug = re.sub(r'[^a-z0-9-]', '', slug)
     
@@ -144,29 +143,23 @@ def generate_unique_slug(base_slug):
             return new_slug
         counter += 1
 
-#rota para apagar usuário
 @app.route('/delete_page', methods=['POST'])
 def delete_page():
-    """Rota para deletar a página do usuário"""
     if 'user_id' not in session:
-        abort(401)  # Não autorizado
+        abort(401)
     
     try:
         user_id = session['user_id']
-        
-        # Configura autenticação
         headers = {
             "Authorization": f"Bearer {session.get('access_token')}",
             "apikey": SUPABASE_KEY,
             "Content-Type": "application/json"
         }
         
-        # Deleta o usuário
         api_url = f"{SUPABASE_URL}/rest/v1/usuarios?id=eq.{user_id}"
         response = requests.delete(api_url, headers=headers)
         
         if response.status_code == 204:
-            # Limpa a sessão e redireciona
             session.clear()
             return redirect(url_for('index'))
         else:
@@ -179,36 +172,13 @@ def delete_page():
         flash("⚠️ Erro ao apagar página", "warning")
         return redirect(url_for('admin_panel', username=session.get('profile')))
 
-
-@app.route('/test-supabase')
-def test_supabase():
-    try:
-        # Teste de leitura
-        read = supabase.table('usuarios').select('*').eq('id', session.get('user_id')).execute()
-        print("Teste de leitura:", read.data)
-        
-        # Teste de escrita
-        test_data = {'bio': 'Teste ' + str(uuid4())[:8]}
-        write = supabase.table('usuarios').update(test_data).eq('id', session.get('user_id')).execute()
-        print("Teste de escrita:", write.data)
-        
-        return jsonify({
-            "read": read.data,
-            "write": write.data
-        })
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-# Rotas públicas
 @app.route('/')
 def index():
-    """Página inicial"""
     return render_template('index.html')
 
 @app.route('/<profile>')
 def user_page(profile):
     try:
-        # Busca os dados do usuário pelo profile (slug)
         res = supabase.table('usuarios').select('*').eq('profile', profile).eq('active', True).execute()
         
         if not res.data:
@@ -216,22 +186,17 @@ def user_page(profile):
             abort(404)
         
         user_data = res.data[0]
-        logger.info(f"Dados carregados para {profile}: {user_data}")
-        
         return render_template('user_page.html', dados=user_data)
     
     except Exception as e:
         logger.error(f"Erro ao carregar perfil {profile}: {str(e)}")
         abort(500)
 
-# Autenticação
 @app.route('/login/google')
 def login_google():
-    """Inicia o fluxo de login com Google"""
     try:
         redirect_url = url_for('callback_handler', _external=True)
         auth_url = f"{SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to={redirect_url}"
-        logger.info(f"Redirecionando para: {auth_url}")
         return redirect(auth_url)
     except Exception as e:
         logger.error(f"Erro no login Google: {str(e)}")
@@ -239,47 +204,31 @@ def login_google():
 
 @app.route('/callback_handler')
 def callback_handler():
-    """Rota que renderiza a página de processamento do token"""
     return render_template('callback.html')
 
 @app.route('/callback', methods=['GET', 'POST'])
 def callback():
-    """Rota de callback para processar o token de autenticação"""
     try:
-        # Obter token do request
         if request.method == 'POST':
             if not request.is_json:
-                logger.error("Request sem JSON no callback")
                 return jsonify({"error": "Content-Type must be application/json"}), 400
             access_token = request.json.get('access_token')
         else:
             access_token = request.args.get('access_token')
         
         if not access_token:
-            logger.error("Token não encontrado na requisição")
             return jsonify({"error": "Token não fornecido"}), 400
         
-        logger.info(f"Token recebido (início): {access_token[:15]}...")
-        
-        # Configurar autenticação temporária
         supabase.postgrest.auth(access_token)
-        
-        # Obter dados do usuário
         user_resp = supabase.auth.get_user(access_token)
         if not user_resp.user:
-            logger.error("Falha ao obter usuário do token")
             return jsonify({"error": "Autenticação falhou"}), 401
             
         user = user_resp.user
-        logger.info(f"Usuário autenticado: {user.email} (ID: {user.id})")
-        
-        # Verificar/Criar usuário no banco de dados
         user_data = get_user_by_id(user.id)
         
         if not user_data:
-            logger.info("Criando novo usuário...")
             slug = generate_unique_slug(user.user_metadata.get('full_name', user.email.split('@')[0]))
-            
             new_user = {
                 'id': user.id,
                 'nome': user.user_metadata.get('full_name', user.email),
@@ -295,7 +244,6 @@ def callback():
                 'bio': 'Olá! Esta é minha página pessoal.'
             }
             
-            # Usar a API REST diretamente com o token do usuário
             api_url = f"{SUPABASE_URL}/rest/v1/usuarios"
             headers = {
                 "Authorization": f"Bearer {access_token}",
@@ -307,24 +255,15 @@ def callback():
             response = requests.post(api_url, json=new_user, headers=headers)
             
             if response.status_code not in [200, 201, 204]:
-                logger.error(f"Falha ao criar usuário: {response.text}")
-                return jsonify({
-                    "error": "Falha ao criar perfil",
-                    "details": response.text
-                }), 500
+                return jsonify({"error": "Falha ao criar perfil"}), 500
                 
             user_data = response.json()[0] if response.status_code != 204 else new_user
-            logger.info(f"Novo usuário criado: {user_data['profile']}")
         
-        # Configurar sessão
         session['user_id'] = user.id
         session['access_token'] = access_token
         session['profile'] = user_data['profile']
         session['logado'] = True
         
-        logger.info(f"Sessão configurada para: {user_data['profile']}")
-        
-        # Retornar URL para redirecionamento
         return jsonify({
             "redirect": url_for('admin_panel', username=user_data['profile']),
             "profile": user_data['profile']
@@ -332,41 +271,29 @@ def callback():
         
     except Exception as e:
         logger.error(f"Erro no callback: {str(e)}", exc_info=True)
-        return jsonify({
-            "error": "Erro interno no servidor",
-            "details": str(e)
-        }), 500
+        return jsonify({"error": "Erro interno no servidor"}), 500
 
-# Painel administrativo
 @app.route('/admin/<username>', methods=['GET', 'POST'])
 def admin_panel(username):
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
     try:
-        # Configura autenticação
-        supabase.postgrest.auth(SUPABASE_KEY)
-        
-        # Busca dados atuais
+        supabase.postgrest.auth(session['access_token'])
         res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
         
         if not res.data:
-            logger.error(f"Usuário não encontrado: {session['user_id']}")
             abort(404)
             
         user_data = res.data[0]
         current_profile = user_data.get('profile')
         
-        # Redireciona automaticamente se a URL não corresponder ao perfil atual
         if current_profile != username:
-            logger.info(f"Redirecionando de {username} para {current_profile}")
             return redirect(url_for('admin_panel', username=current_profile))
 
-        # Se for GET, apenas mostra a página
         if request.method == 'GET':
             return render_template('admin.html', dados=user_data)
             
-        # Processamento do POST (alterações)
         update_data = {
             'nome': request.form.get('nome', user_data['nome']),
             'profile': request.form.get('profile', current_profile),
@@ -379,23 +306,19 @@ def admin_panel(username):
             'email': request.form.get('email', user_data['email'])
         }
 
-        # Processamento de arquivos
         for field in ['foto', 'background']:
             file = request.files.get(f'{field}_upload')
             if file and arquivo_permitido(file.filename):
                 file_url = upload_to_supabase(file, session['user_id'], field)
                 if file_url:
                     update_data[field] = file_url
-                    logger.info(f"Upload de {field} bem-sucedido: {file_url}")
                 else:
-                    logger.error(f"Falha no upload de {field}")
                     flash(f"⚠️ Falha ao enviar {field}", "warning")
 
-        # Atualização via API REST
         api_url = f"{SUPABASE_URL}/rest/v1/usuarios?id=eq.{session['user_id']}"
         headers = {
+            "Authorization": f"Bearer {session.get('access_token')}",
             "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
             "Content-Type": "application/json",
             "Prefer": "return=representation"
         }
@@ -403,11 +326,8 @@ def admin_panel(username):
         response = requests.patch(api_url, json=update_data, headers=headers)
         
         if response.status_code == 200:
-            # Atualiza o profile na sessão se foi alterado
             if 'profile' in update_data and update_data['profile'] != current_profile:
                 session['profile'] = update_data['profile']
-            
-            # Redireciona para a página pública com cache buster
             return redirect(f"/{update_data['profile']}?v={uuid4().hex[:8]}")
         else:
             flash("❌ Erro ao salvar dados", "error")
@@ -415,24 +335,15 @@ def admin_panel(username):
     except Exception as e:
         logger.error(f"ERRO: {str(e)}", exc_info=True)
         flash("⚠️ Erro durante o processamento", "warning")
-        # Em caso de erro, recarrega os dados atuais
         res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
         user_data = res.data[0] if res.data else None
 
     return render_template('admin.html', dados=user_data)
 
-# Logout
 @app.route('/logout')
 def logout():
-    """Encerra a sessão do usuário"""
     session.clear()
     return redirect(url_for('index'))
-
-# Rota de debug
-@app.route('/debug/session')
-def debug_session():
-    """Rota para debug da sessão (remover em produção)"""
-    return jsonify(dict(session))
 
 if __name__ == '__main__':
     app.run(debug=True)
