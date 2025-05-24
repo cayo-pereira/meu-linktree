@@ -9,36 +9,6 @@
     <title>{{ dados.nome if dados.nome else 'Perfil' }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        .social-icons a {
-            margin: 0 10px;
-            transition: transform 0.3s;
-        }
-        .social-icons a:hover {
-            transform: scale(1.2);
-        }
-        .profile-pic {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #fff;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .link-button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-        .link-button:hover {
-            background-color: #45a049;
-        }
-    </style>
 </head>
 <body {% if dados.background %}style="background-image: url('{{ url_for('static', filename=dados.background) if dados.background.startswith('uploads/') else dados.background }}'); background-size: cover; background-position: center; background-attachment: fixed;"{% endif %}>
     <div class="container">
@@ -91,7 +61,7 @@
         </a>
         {% endif %}
 
-        <footer style="margin-top: 30px;">
+        <footer>
             <p>Desenvolvido por CPages ✨</p>
         </footer>
     </div>
@@ -101,7 +71,6 @@
         document.body.style.opacity = 0;
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
-                document.body.style.transition = 'opacity 0.5s';
                 document.body.style.opacity = 1;
             }, 100);
         });
