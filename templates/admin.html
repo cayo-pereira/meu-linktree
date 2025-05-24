@@ -7,28 +7,52 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-</head>
-<body>
-
-  <div class="flash-messages">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-</div>
-
-  <form method="POST" action="{{ url_for('delete_page') }}" onsubmit="return confirm('Tem certeza que deseja APAGAR SUA PÁGINA permanentemente? Esta ação não pode ser desfeita!')" style="position: absolute; top: 20px; left: 20px;">
-    <button type="submit" class="btn-delete">
-        <i class="fas fa-trash"></i> Apagar Página
-    </button>
-  </form>
-
   <style>
+    /* Estilos para o preview de imagem */
+    .image-preview-container {
+        margin-top: 15px;
+        display: none;
+    }
+
+    .image-preview {
+        width: 100%;
+        max-height: 200px;
+        object-fit: contain;
+        border-radius: var(--border-radius);
+        border: 1px dashed var(--primary-color);
+        padding: 5px;
+        background-color: rgba(67, 97, 238, 0.05);
+        margin-top: 10px;
+    }
+
+    .preview-active {
+        display: block;
+    }
+
+    .file-upload-wrapper {
+        position: relative;
+        margin-bottom: 15px;
+    }
+
+    .file-info {
+        display: none;
+        padding: 8px;
+        background-color: #f0f0f0;
+        border-radius: var(--border-radius);
+        margin-top: 5px;
+        font-size: 0.9rem;
+        color: #555;
+    }
+
+    .has-file .file-info {
+        display: block;
+    }
+
+    .has-file .file-label {
+        background-color: var(--success-color);
+        color: white;
+    }
+
     .btn-delete {
         background-color: #f44336;
         color: white;
@@ -47,18 +71,39 @@
         background-color: #d32f2f;
         transform: translateY(-2px);
     }
-  </style>
-  
-  <style>
-    .btn-delete {
-      background: #ff4444;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
+
+    .profile-url {
+      display: flex;
+      align-items: center;
+    }
+    .url-prefix {
+      padding: 8px;
+      background: #f0f0f0;
+      border: 1px solid #ddd;
+      border-right: none;
+      border-radius: 4px 0 0 4px;
     }
   </style>
+</head>
+<body>
+
+  <div class="flash-messages">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+  </div>
+
+  <form method="POST" action="{{ url_for('delete_page') }}" onsubmit="return confirm('Tem certeza que deseja APAGAR SUA PÁGINA permanentemente? Esta ação não pode ser desfeita!')" style="position: absolute; top: 20px; left: 20px;">
+    <button type="submit" class="btn-delete">
+        <i class="fas fa-trash"></i> Apagar Página
+    </button>
+  </form>
   
   <div class="admin-container">
     <div class="admin-header">
@@ -83,7 +128,6 @@
           </div>
         </div>
 
-          <!-- Adicione isso na seção de informações pessoais -->
         <div class="form-group">
           <label for="profile">URL da sua página</label>
           <div class="profile-url">
@@ -91,20 +135,6 @@
               <input type="text" id="profile" name="profile" value="{{ dados.profile }}" class="form-input" pattern="[a-z0-9-]+" title="Apenas letras minúsculas, números e hífens">
           </div>
         </div>
-
-        <style>
-        .profile-url {
-          display: flex;
-          align-items: center;
-        }
-        .url-prefix {
-          padding: 8px;
-          background: #f0f0f0;
-          border: 1px solid #ddd;
-          border-right: none;
-          border-radius: 4px 0 0 4px;
-        }
-        </style>
         
         <!-- Seção de Imagens -->
         <div class="form-section">
@@ -112,21 +142,33 @@
           
           <div class="form-group">
             <label for="foto_upload">Foto de Perfil</label>
-            <div class="file-upload">
-              <input type="file" id="foto_upload" name="foto_upload" accept="image/*" class="file-input">
-              <label for="foto_upload" class="file-label">
-                <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
-              </label>
+            <div class="file-upload-wrapper">
+              <div class="file-upload">
+                <input type="file" id="foto_upload" name="foto_upload" accept="image/*" class="file-input" onchange="previewImage(this, 'foto_preview')">
+                <label for="foto_upload" class="file-label">
+                  <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
+                </label>
+              </div>
+              <div class="file-info" id="foto_info">Nenhum arquivo selecionado</div>
+              <div class="image-preview-container" id="foto_preview_container">
+                <img src="{{ dados.foto if dados.foto else '' }}" class="image-preview" id="foto_preview" onerror="this.style.display='none'">
+              </div>
             </div>
           </div>
           
           <div class="form-group">
             <label for="background_upload">Imagem de Fundo</label>
-            <div class="file-upload">
-              <input type="file" id="background_upload" name="background_upload" accept="image/*" class="file-input">
-              <label for="background_upload" class="file-label">
-                <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
-              </label>
+            <div class="file-upload-wrapper">
+              <div class="file-upload">
+                <input type="file" id="background_upload" name="background_upload" accept="image/*" class="file-input" onchange="previewImage(this, 'background_preview')">
+                <label for="background_upload" class="file-label">
+                  <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
+                </label>
+              </div>
+              <div class="file-info" id="background_info">Nenhum arquivo selecionado</div>
+              <div class="image-preview-container" id="background_preview_container">
+                <img src="{{ dados.background if dados.background else '' }}" class="image-preview" id="background_preview" onerror="this.style.display='none'">
+              </div>
             </div>
           </div>
         </div>
@@ -177,5 +219,61 @@
       </div>
     </form>
   </div>
+
+  <script>
+    // Mostra o preview das imagens existentes ao carregar a página
+    document.addEventListener('DOMContentLoaded', function() {
+        const fotoPreview = document.getElementById('foto_preview');
+        const backgroundPreview = document.getElementById('background_preview');
+        
+        if (fotoPreview.src && fotoPreview.src !== window.location.href) {
+            document.getElementById('foto_preview_container').classList.add('preview-active');
+            document.getElementById('foto_info').textContent = 'Imagem atual';
+            document.querySelector('#foto_upload').closest('.file-upload-wrapper').classList.add('has-file');
+        }
+        
+        if (backgroundPreview.src && backgroundPreview.src !== window.location.href) {
+            document.getElementById('background_preview_container').classList.add('preview-active');
+            document.getElementById('background_info').textContent = 'Imagem atual';
+            document.querySelector('#background_upload').closest('.file-upload-wrapper').classList.add('has-file');
+        }
+    });
+
+    // Função para mostrar o preview da imagem selecionada
+    function previewImage(input, previewId) {
+        const previewContainer = document.getElementById(previewId + '_container');
+        const preview = document.getElementById(previewId);
+        const fileInfo = document.getElementById(previewId.replace('_preview', '_info'));
+        const wrapper = input.closest('.file-upload-wrapper');
+        
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+                previewContainer.classList.add('preview-active');
+                fileInfo.textContent = input.files[0].name + ' (' + formatFileSize(input.files[0].size) + ')';
+                wrapper.classList.add('has-file');
+            }
+            
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            preview.src = "";
+            previewContainer.classList.remove('preview-active');
+            fileInfo.textContent = 'Nenhum arquivo selecionado';
+            wrapper.classList.remove('has-file');
+        }
+    }
+
+    // Função para formatar o tamanho do arquivo
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i])
+    }
+  </script>
 </body>
 </html>
