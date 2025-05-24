@@ -126,13 +126,14 @@
             <label for="bio">Biografia</label>
             <textarea id="bio" name="bio" class="form-textarea">{{ dados.bio }}</textarea>
           </div>
-        </div>
+        
 
-        <div class="form-group">
-          <label for="profile">URL da sua página</label>
-          <div class="profile-url">
-            <span class="url-prefix">cpages.onrender.com/</span>
-              <input type="text" id="profile" name="profile" value="{{ dados.profile }}" class="form-input" pattern="[a-z0-9-]+" title="Apenas letras minúsculas, números e hífens">
+          <div class="form-group">
+            <label for="profile">URL da sua página</label>
+            <div class="profile-url">
+              <span class="url-prefix">cpages.onrender.com/</span>
+                <input type="text" id="profile" name="profile" value="{{ dados.profile }}" class="form-input" pattern="[a-z0-9-]+" title="Apenas letras minúsculas, números e hífens">
+            </div>
           </div>
         </div>
         
