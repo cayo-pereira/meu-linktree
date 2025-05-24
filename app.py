@@ -179,7 +179,7 @@ def index():
 @app.route('/<profile>')
 def user_page(profile):
     try:
-        res = supabase.table('usuarios').select('*').eq('profile', profile).eq('active', True).execute()
+        res = supabase.table('usuarios').select('*').eq('profile', profile).execute()
         
         if not res.data:
             logger.warning(f"Perfil não encontrado: {profile}")
