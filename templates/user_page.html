@@ -24,36 +24,40 @@
         {% endif %}
 
         <div class="social-icons">
-            {% if dados.instagram %}
-            <a href="{{ dados.instagram }}" target="_blank" title="Instagram">
-                <i class="fab fa-instagram fa-2x"></i>
+            {% for link in dados.social_links %}
+            <a href="{{ link.url }}" target="_blank" title="{{ link.icon }}">
+                <img src="/static/icons/{{ link.icon }}.png" class="icon">
             </a>
-            {% endif %}
-            
-            {% if dados.linkedin %}
-            <a href="{{ dados.linkedin }}" target="_blank" title="LinkedIn">
-                <i class="fab fa-linkedin fa-2x"></i>
-            </a>
-            {% endif %}
-            
-            {% if dados.github %}
-            <a href="{{ dados.github }}" target="_blank" title="GitHub">
-                <i class="fab fa-github fa-2x"></i>
-            </a>
-            {% endif %}
-            
-            {% if dados.email %}
-            <a href="mailto:{{ dados.email }}" title="E-mail">
-                <i class="fas fa-envelope fa-2x"></i>
-            </a>
-            {% endif %}
-            
-            {% if dados.whatsapp %}
-            <a href="https://wa.me/{{ dados.whatsapp }}" target="_blank" title="WhatsApp">
-                <i class="fab fa-whatsapp fa-2x"></i>
-            </a>
-            {% endif %}
+            {% endfor %}
         </div>
+
+        {% if dados.custom_buttons %}
+            {% for button in dados.custom_buttons %}
+                <a href="{{ button.link }}" 
+                    class="link-button-custom"
+                    data-color="{{ button.color }}"
+                    data-radius="{{ button.radius }}"
+                    target="_blank">
+                    {{ button.text }}
+                </a>
+            {% endfor %}
+        {% endif %}
+
+        <style>
+            .link-button-custom {
+                display: block;
+                width: 100%;
+                max-width: 350px;
+                padding: 14px;
+                margin: 10px auto;
+                color: white;
+                text-align: center;
+                text-decoration: none;
+                font-size: 16px;
+                font-weight: 500;
+                transition: all 0.3s ease;
+            }
+        </style>
 
         {% if dados.curriculo %}
         <a href="{{ dados.curriculo }}" class="link-button" target="_blank">
@@ -74,6 +78,24 @@
                 document.body.style.opacity = 1;
             }, 100);
         });
+    </script>
+    <script>
+    document.querySelectorAll('.link-button-custom').forEach(button => {
+        const color = button.dataset.color;
+        const radius = button.dataset.radius;
+        button.style.cssText = `background: ${color}; border-radius: ${radius}px`;
+    });
+    </script>
+    <script>
+    // Aplicar estilos via JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.link-button-custom').forEach(button => {
+            const color = button.dataset.color;
+            const radius = button.dataset.radius;
+            button.style.backgroundColor = color;
+            button.style.borderRadius = `${radius}px`;
+        });
+    });
     </script>
 </body>
 </html>

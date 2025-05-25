@@ -177,35 +177,65 @@
         <!-- Seção de Links -->
         <div class="form-section">
           <h2><i class="fas fa-link"></i> Links Sociais</h2>
-          
-          <div class="form-group">
-            <label for="instagram"><i class="fab fa-instagram"></i> Instagram</label>
-            <input type="text" id="instagram" name="instagram" value="{{ dados.instagram }}" class="form-input">
+  
+          <div class="buttons-container">
+            <button type="button" class="btn btn-add" id="add-icon-btn">
+              <i class="fas fa-plus"></i> Adicionar Ícone
+            </button>
+            <button type="button" class="btn btn-add" id="add-button-btn">
+              <i class="fas fa-plus"></i> Adicionar Botão
+            </button>
           </div>
-          
-          <div class="form-group">
-            <label for="linkedin"><i class="fab fa-linkedin"></i> LinkedIn</label>
-            <input type="text" id="linkedin" name="linkedin" value="{{ dados.linkedin }}" class="form-input">
+
+          <div id="social-icons-container">
+            <!-- Ícones existentes serão renderizados aqui -->
           </div>
-          
-          <div class="form-group">
-            <label for="github"><i class="fab fa-github"></i> GitHub</label>
-            <input type="text" id="github" name="github" value="{{ dados.github }}" class="form-input">
+
+          <div id="custom-buttons-container">
+            <!-- Botões personalizados serão renderizados aqui -->
           </div>
-          
-          <div class="form-group">
-            <label for="email"><i class="fas fa-envelope"></i> E-mail</label>
-            <input type="text" id="email" name="email" value="{{ dados.email }}" class="form-input">
+
+          <!-- Modal para seleção de ícone -->
+          <div id="icon-modal" class="modal">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <h3>Selecione um ícone</h3>
+              <div class="icons-grid">
+                <!-- Ícones serão inseridos aqui via JavaScript -->
+              </div>
+              <button id="save-icon" class="btn-save">Salvar Ícone</button>
+            </div>
           </div>
-          
-          <div class="form-group">
-            <label for="whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</label>
-            <input type="text" id="whatsapp" name="whatsapp" value="{{ dados.whatsapp }}" class="form-input">
-          </div>
-          
-          <div class="form-group">
-            <label for="curriculo"><i class="fas fa-file-alt"></i> Currículo</label>
-            <input type="text" id="curriculo" name="curriculo" value="{{ dados.curriculo }}" class="form-input">
+
+          <!-- Modal para criação de botão -->
+          <div id="button-modal" class="modal">
+            <div class="modal-content">
+              <span class="close">&times;</span>
+              <h3>Criar Novo Botão</h3>
+      
+              <div class="form-group">
+                <label for="button-text">Texto do Botão</label>
+                <input type="text" id="button-text" class="form-input" placeholder="Ex: Currículo">
+              </div>
+      
+              <div class="form-group">
+                <label for="button-link">Link</label>
+                <input type="text" id="button-link" class="form-input" placeholder="https://">
+              </div>
+      
+              <div class="form-group">
+                <label for="button-color">Cor do Botão</label>
+                <input type="color" id="button-color" value="#4CAF50">
+              </div>
+      
+              <div class="form-group">
+                <label for="button-radius">Arredondamento (px)</label>
+                <input type="range" id="button-radius" min="0" max="20" value="10">
+                <span id="radius-value">10px</span>
+              </div>
+      
+              <button id="save-button" class="btn-save">Salvar Botão</button>
+            </div>
           </div>
         </div>
       </div>
@@ -220,7 +250,6 @@
       </div>
     </form>
   </div>
-
   <script>
     // Mostra o preview das imagens existentes ao carregar a página
     document.addEventListener('DOMContentLoaded', function() {
@@ -276,5 +305,214 @@
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i])
     }
   </script>
+  <script>
+    // Modal de ícones
+    const iconModal = document.getElementById('icon-modal');
+    const buttonModal = document.getElementById('button-modal');
+    const addIconBtn = document.getElementById('add-icon-btn');
+    const addButtonBtn = document.getElementById('add-button-btn');
+    const closeButtons = document.querySelectorAll('.close');
+    
+    // Lista de ícones (substitua pelos caminhos dos seus ícones)
+    const socialIcons = [
+      { name: 'instagram', path: '/static/icons/instagram.png' },
+      { name: 'linkedin', path: '/static/icons/linkedin.png' },
+      { name: 'github', path: '/static/icons/github.png' },
+      { name: 'email', path: '/static/icons/email.png' },
+      { name: 'whatsapp', path: '/static/icons/whatsapp.png' },
+      { name: 'twitter', path: '/static/icons/twitter.png' },
+      { name: 'facebook', path: '/static/icons/facebook.png' },
+      { name: 'youtube', path: '/static/icons/youtube.png' }
+    ];
+    
+    // Função para renderizar ícones existentes
+    function renderExistingSocialIcons(socialLinks) {
+        const container = document.getElementById('social-icons-container');
+        container.innerHTML = '';
+        
+        socialLinks.forEach(link => {
+            const iconName = link.icon;
+            const iconPath = `/static/icons/${iconName}.png`;
+            
+            const iconField = document.createElement('div');
+            iconField.className = 'social-item';
+            iconField.innerHTML = `
+                <img src="${iconPath}" alt="${iconName}" width="24">
+                <input type="text" name="social_icon_${iconName}" 
+                       placeholder="Link para ${iconName}" 
+                       class="form-input" value="${link.url}">
+                <span class="remove-item"><i class="fas fa-times"></i></span>
+            `;
+            
+            container.appendChild(iconField);
+            
+            // Adicionar evento de remoção
+            iconField.querySelector('.remove-item').addEventListener('click', function() {
+                this.closest('.social-item').remove();
+            });
+        });
+    }
+    
+    // Abrir modais
+    addIconBtn.addEventListener('click', () => {
+        // Preencher grid de ícones
+        const iconsGrid = document.querySelector('.icons-grid');
+        iconsGrid.innerHTML = '';
+        
+        socialIcons.forEach(icon => {
+            const iconElement = document.createElement('div');
+            iconElement.className = 'icon-option';
+            iconElement.innerHTML = `
+                <img src="${icon.path}" alt="${icon.name}">
+                <p>${icon.name}</p>
+            `;
+            iconElement.addEventListener('click', function() {
+                document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+            iconsGrid.appendChild(iconElement);
+        });
+        
+        iconModal.style.display = 'block';
+    });
+    
+    addButtonBtn.addEventListener('click', () => {
+        buttonModal.style.display = 'block';
+    });
+    
+    // Fechar modais
+    closeButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            this.closest('.modal').style.display = 'none';
+        });
+    });
+    
+    // Atualizar valor do range
+    document.getElementById('button-radius').addEventListener('input', function() {
+        document.getElementById('radius-value').textContent = `${this.value}px`;
+    });
+    
+    // Salvar ícone selecionado
+    document.getElementById('save-icon').addEventListener('click', function() {
+      const selectedIcon = document.querySelector('.icon-option.selected');
+      if (selectedIcon) {
+        const iconName = selectedIcon.querySelector('p').textContent.toLowerCase();
+        const iconPath = `/static/icons/${iconName}.png`;
+        
+        // Verificar se o ícone já foi adicionado
+        if (document.querySelector(`input[name="social_icon_${iconName}"]`)) {
+            alert('Este ícone já foi adicionado!');
+            return;
+        }
+        
+        // Adicionar novo campo para o ícone
+        const newIconField = document.createElement('div');
+        newIconField.className = 'social-item';
+        newIconField.innerHTML = `
+            <img src="${iconPath}" alt="${iconName}" width="24">
+            <input type="text" name="social_icon_${iconName}" 
+                   placeholder="Insira o link para ${iconName}" 
+                   class="form-input" required>
+            <span class="remove-item"><i class="fas fa-times"></i></span>
+        `;
+        
+        document.getElementById('social-icons-container').appendChild(newIconField);
+        iconModal.style.display = 'none';
+        
+        // Adicionar evento de remoção
+        newIconField.querySelector('.remove-item').addEventListener('click', function() {
+            this.closest('.social-item').remove();
+        });
+        
+        // Focar no campo de input recém-criado
+        newIconField.querySelector('input').focus();
+      } else {
+        alert('Por favor, selecione um ícone primeiro!');
+      }
+    });
+    
+    // Salvar botão personalizado
+    document.getElementById('save-button').addEventListener('click', function() {
+        const buttonText = document.getElementById('button-text').value;
+        const buttonLink = document.getElementById('button-link').value;
+        const buttonColor = document.getElementById('button-color').value;
+        const buttonRadius = document.getElementById('button-radius').value;
+        
+        if (buttonText && buttonLink) {
+            const newButtonField = document.createElement('div');
+            newButtonField.className = 'custom-button-item';
+            newButtonField.innerHTML = `
+                <div style="flex-grow: 1;">
+                    <div class="button-preview" style="background: ${buttonColor}; border-radius: ${buttonRadius}px; padding: 8px; margin-bottom: 8px;">
+                        ${buttonText}
+                    </div>
+                    <input type="hidden" name="custom_button_text[]" value="${buttonText}">
+                    <input type="hidden" name="custom_button_link[]" value="${buttonLink}">
+                    <input type="hidden" name="custom_button_color[]" value="${buttonColor}">
+                    <input type="hidden" name="custom_button_radius[]" value="${buttonRadius}">
+                </div>
+                <span class="remove-item"><i class="fas fa-times"></i></span>
+            `;
+            
+            document.getElementById('custom-buttons-container').appendChild(newButtonField);
+            buttonModal.style.display = 'none';
+            
+            // Resetar formulário
+            document.getElementById('button-text').value = '';
+            document.getElementById('button-link').value = '';
+            
+            // Adicionar evento de remoção
+            newButtonField.querySelector('.remove-item').addEventListener('click', function() {
+                this.closest('.custom-button-item').remove();
+            });
+        }
+    });
+    
+    // Fechar modal ao clicar fora
+    window.addEventListener('click', function(event) {
+        if (event.target === iconModal) {
+            iconModal.style.display = 'none';
+        }
+        if (event.target === buttonModal) {
+            buttonModal.style.display = 'none';
+        }
+    });
+    
+    // Ao carregar a página, renderizar ícones existentes
+    document.addEventListener('DOMContentLoaded', function() {
+        try {
+            const socialLinks = JSON.parse('{{ dados.social_links | tojson | safe }}');
+            renderExistingSocialIcons(socialLinks);
+            
+            // Renderizar botões existentes (se necessário)
+            const customButtons = JSON.parse('{{ dados.custom_buttons | tojson | safe }}');
+            customButtons.forEach(button => {
+                const buttonField = document.createElement('div');
+                buttonField.className = 'custom-button-item';
+                buttonField.innerHTML = `
+                    <div style="flex-grow: 1;">
+                        <div class="button-preview" style="background: ${button.color}; border-radius: ${button.radius}px; padding: 8px; margin-bottom: 8px;">
+                            ${button.text}
+                        </div>
+                        <input type="hidden" name="custom_button_text[]" value="${button.text}">
+                        <input type="hidden" name="custom_button_link[]" value="${button.link}">
+                        <input type="hidden" name="custom_button_color[]" value="${button.color}">
+                        <input type="hidden" name="custom_button_radius[]" value="${button.radius}">
+                    </div>
+                    <span class="remove-item"><i class="fas fa-times"></i></span>
+                `;
+                
+                document.getElementById('custom-buttons-container').appendChild(buttonField);
+                
+                // Adicionar evento de remoção
+                buttonField.querySelector('.remove-item').addEventListener('click', function() {
+                    this.closest('.custom-button-item').remove();
+                });
+            });
+        } catch (e) {
+            console.error('Erro ao carregar dados existentes:', e);
+        }
+    });
+</script>
 </body>
 </html>

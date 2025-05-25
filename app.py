@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, url_for, abort, jsonify, flash
+from flask import Flask, render_template, request, redirect, session, url_for, abort, jsonify, flash, make_response
 from werkzeug.utils import secure_filename
 from dotenv import load_dotenv
 from supabase import create_client, Client
@@ -143,6 +143,10 @@ def generate_unique_slug(base_slug):
             return new_slug
         counter += 1
 
+@app.template_filter('style_safe')
+def style_safe(color, radius):
+    return f"background: {color}; border-radius: {radius}px"
+
 @app.route('/delete_page', methods=['POST'])
 def delete_page():
     if 'user_id' not in session:
@@ -178,6 +182,8 @@ def index():
 
 @app.route('/<profile>')
 def user_page(profile):
+    if profile == 'favicon.ico':
+        return abort(404)
     try:
         res = supabase.table('usuarios').select('*').eq('profile', profile).execute()
         
@@ -186,7 +192,20 @@ def user_page(profile):
             abort(404)
         
         user_data = res.data[0]
-        return render_template('user_page.html', dados=user_data)
+        # Converter custom_buttons de JSON string para lista/dict
+        if 'custom_buttons' in user_data and user_data['custom_buttons']:
+            try:
+                user_data['custom_buttons'] = json.loads(user_data['custom_buttons'])
+            except:
+                user_data['custom_buttons'] = []
+        else:
+            user_data['custom_buttons'] = []
+        
+        response = make_response(render_template('user_page.html', dados=user_data))
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
     
     except Exception as e:
         logger.error(f"Erro ao carregar perfil {profile}: {str(e)}")
@@ -241,7 +260,8 @@ def callback():
                 'github': '',
                 'whatsapp': '',
                 'curriculo': '',
-                'bio': 'Olá! Esta é minha página pessoal.'
+                'bio': 'Olá! Esta é minha página pessoal.',
+                'custom_buttons': '[]'  # Inicializa como array JSON vazio
             }
             
             api_url = f"{SUPABASE_URL}/rest/v1/usuarios"
@@ -277,7 +297,7 @@ def callback():
 def admin_panel(username):
     if 'user_id' not in session:
         return redirect(url_for('login'))
-
+    
     try:
         supabase.postgrest.auth(session['access_token'])
         res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
@@ -286,59 +306,102 @@ def admin_panel(username):
             abort(404)
             
         user_data = res.data[0]
-        current_profile = user_data.get('profile')
         
-        if current_profile != username:
-            return redirect(url_for('admin_panel', username=current_profile))
+        # Corrigir a conversão do social_links
+        if isinstance(user_data.get('social_links'), str):
+            user_data['social_links'] = json.loads(user_data.get('social_links', '[]'))
+        elif not isinstance(user_data.get('social_links'), list):
+            user_data['social_links'] = []
+        
+        # Corrigir a conversão do custom_buttons
+        if isinstance(user_data.get('custom_buttons'), str):
+            user_data['custom_buttons'] = json.loads(user_data.get('custom_buttons', '[]'))
+        elif not isinstance(user_data.get('custom_buttons'), list):
+            user_data['custom_buttons'] = []
+        
+        if request.method == 'POST':
+            update_data = {
+                'nome': request.form.get('nome'),
+                'bio': request.form.get('bio'),
+                'profile': request.form.get('profile')
+            }
 
-        if request.method == 'GET':
-            return render_template('admin.html', dados=user_data)
+            # Processar ícones sociais dinâmicos
+            social_links = []
+            for key, value in request.form.items():
+                if key.startswith('social_icon_'):
+                    icon_name = key.replace('social_icon_', '')
+                    if value and value.startswith(('http://', 'https://')):
+                        social_links.append({
+                            'icon': icon_name,
+                            'url': value
+                        })
+                    elif value:
+                        flash(f"⚠️ O link para {icon_name} deve começar com http:// ou https://", "warning")
+
+            if len(social_links) > 10:  # Limite máximo de ícones
+                flash("⚠️ Você pode adicionar no máximo 10 ícones", "warning")
+                social_links = social_links[:10]
+
+            update_data['social_links'] = social_links
+
+            # Processar botões personalizados
+            custom_buttons = []
+            button_texts = request.form.getlist('custom_button_text[]')
+            button_links = request.form.getlist('custom_button_link[]')
+            button_colors = request.form.getlist('custom_button_color[]')
+            button_radii = request.form.getlist('custom_button_radius[]')
             
-        update_data = {
-            'nome': request.form.get('nome', user_data['nome']),
-            'profile': request.form.get('profile', current_profile),
-            'bio': request.form.get('bio', user_data['bio']),
-            'instagram': request.form.get('instagram', user_data['instagram']),
-            'linkedin': request.form.get('linkedin', user_data['linkedin']),
-            'github': request.form.get('github', user_data['github']),
-            'whatsapp': request.form.get('whatsapp', user_data['whatsapp']),
-            'curriculo': request.form.get('curriculo', user_data['curriculo']),
-            'email': request.form.get('email', user_data['email'])
-        }
+            for i in range(len(button_texts)):
+                if button_texts[i]:
+                    custom_buttons.append({
+                        'text': button_texts[i],
+                        'link': button_links[i],
+                        'color': button_colors[i],
+                        'radius': button_radii[i]
+                    })
+            
+            update_data['custom_buttons'] = custom_buttons  # Já é uma lista, não precisa json.dumps
 
-        for field in ['foto', 'background']:
-            file = request.files.get(f'{field}_upload')
-            if file and arquivo_permitido(file.filename):
-                file_url = upload_to_supabase(file, session['user_id'], field)
-                if file_url:
-                    update_data[field] = file_url
+            # Processar uploads (mantenha a lógica existente)
+            for field in ['foto', 'background']:
+                file = request.files.get(f'{field}_upload')
+                if file and arquivo_permitido(file.filename):
+                    file_url = upload_to_supabase(file, session['user_id'], field)
+                    if file_url:
+                        update_data[field] = file_url
+
+            # Atualizar no Supabase
+            response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
+            
+            try:
+                if response.data:  # Verifica se a resposta contém dados
+                    if 'profile' in update_data and update_data['profile'] != username:
+                        session['profile'] = update_data['profile']
+                        return redirect(url_for('admin_panel', username=update_data['profile']))
+                    flash("✅ Alterações salvas com sucesso!", "success")
                 else:
-                    flash(f"⚠️ Falha ao enviar {field}", "warning")
+                    flash("❌ Nenhum dado foi retornado ao salvar", "error")
+            except Exception as update_error:
+                logger.error(f"Erro ao atualizar dados: {str(update_error)}")
+                flash("❌ Erro ao salvar dados no banco de dados", "error")
 
-        api_url = f"{SUPABASE_URL}/rest/v1/usuarios?id=eq.{session['user_id']}"
-        headers = {
-            "Authorization": f"Bearer {session.get('access_token')}",
-            "apikey": SUPABASE_KEY,
-            "Content-Type": "application/json",
-            "Prefer": "return=representation"
-        }
-        
-        response = requests.patch(api_url, json=update_data, headers=headers)
-        
-        if response.status_code == 200:
-            if 'profile' in update_data and update_data['profile'] != current_profile:
-                session['profile'] = update_data['profile']
-            return redirect(f"/{update_data['profile']}?v={uuid4().hex[:8]}")
-        else:
-            flash("❌ Erro ao salvar dados", "error")
+        return render_template('admin.html', dados=user_data)
 
     except Exception as e:
         logger.error(f"ERRO: {str(e)}", exc_info=True)
         flash("⚠️ Erro durante o processamento", "warning")
-        res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
-        user_data = res.data[0] if res.data else None
+        return render_template('admin.html', dados=user_data)
 
-    return render_template('admin.html', dados=user_data)
+    except Exception as e:
+        logger.error(f"ERRO: {str(e)}", exc_info=True)
+        flash("⚠️ Erro durante o processamento", "warning")
+        return render_template('admin.html', dados=user_data)
+
+    except Exception as e:
+        logger.error(f"ERRO: {str(e)}", exc_info=True)
+        flash("⚠️ Erro durante o processamento", "warning")
+        return render_template('admin.html', dados=user_data)
 
 @app.route('/logout')
 def logout():
