@@ -413,6 +413,53 @@ body {
   box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
 }
 
+/* Botão flutuante de visualização */
+.preview-float-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: var(--primary-color);
+    color: white;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    z-index: 100;
+    transition: all 0.3s ease;
+    text-decoration: none;
+}
+
+.preview-float-btn:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.preview-float-btn i {
+    font-size: 1.5rem;
+}
+
+.preview-float-tooltip {
+    position: absolute;
+    right: 70px;
+    white-space: nowrap;
+    background: var(--dark-color);
+    color: white;
+    padding: 6px 12px;
+    border-radius: var(--border-radius);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.preview-float-btn:hover .preview-float-tooltip {
+    opacity: 1;
+}
+
 /* Responsividade */
 @media (max-width: 480px) {
   .login-card {

@@ -339,7 +339,7 @@ def admin_panel(username):
                     elif value:
                         flash(f"⚠️ O link para {icon_name} deve começar com http:// ou https://", "warning")
 
-            if len(social_links) > 10:  # Limite máximo de ícones
+            if len(social_links) > 10:
                 flash("⚠️ Você pode adicionar no máximo 10 ícones", "warning")
                 social_links = social_links[:10]
 
@@ -361,9 +361,9 @@ def admin_panel(username):
                         'radius': button_radii[i]
                     })
             
-            update_data['custom_buttons'] = custom_buttons  # Já é uma lista, não precisa json.dumps
+            update_data['custom_buttons'] = custom_buttons
 
-            # Processar uploads (mantenha a lógica existente)
+            # Processar uploads
             for field in ['foto', 'background']:
                 file = request.files.get(f'{field}_upload')
                 if file and arquivo_permitido(file.filename):
@@ -375,27 +375,20 @@ def admin_panel(username):
             response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
             
             try:
-                if response.data:  # Verifica se a resposta contém dados
+                if response.data:
+                    # Atualiza o profile na sessão se foi alterado
                     if 'profile' in update_data and update_data['profile'] != username:
                         session['profile'] = update_data['profile']
-                        return redirect(url_for('admin_panel', username=update_data['profile']))
-                    flash("✅ Alterações salvas com sucesso!", "success")
+                    
+                    # Redireciona para a página do usuário com cache busting
+                    profile = update_data.get('profile', username)
+                    return redirect(f"{url_for('user_page', profile=profile)}?v={uuid4().hex[:8]}")
                 else:
                     flash("❌ Nenhum dado foi retornado ao salvar", "error")
             except Exception as update_error:
-                logger.error(f"Erro ao atualizar dados: {str(update_error)}")
+                logger.error(f"Erro ao atualizar dados: {str(update_error)}", exc_info=True)
                 flash("❌ Erro ao salvar dados no banco de dados", "error")
 
-        return render_template('admin.html', dados=user_data)
-
-    except Exception as e:
-        logger.error(f"ERRO: {str(e)}", exc_info=True)
-        flash("⚠️ Erro durante o processamento", "warning")
-        return render_template('admin.html', dados=user_data)
-
-    except Exception as e:
-        logger.error(f"ERRO: {str(e)}", exc_info=True)
-        flash("⚠️ Erro durante o processamento", "warning")
         return render_template('admin.html', dados=user_data)
 
     except Exception as e:

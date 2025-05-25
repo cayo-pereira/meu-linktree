@@ -10,6 +10,14 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
+{% if session.logado and session.profile == dados.profile %}
+<div style="position: fixed; bottom: 20px; right: 20px;">
+    <a href="{{ url_for('admin_panel', username=dados.profile) }}" 
+       style="background: #4361ee; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none;">
+       <i class="fas fa-edit"></i> Editar Página
+    </a>
+</div>
+{% endif %}
 <body {% if dados.background %}style="background-image: url('{{ url_for('static', filename=dados.background) if dados.background.startswith('uploads/') else dados.background }}'); background-size: cover; background-position: center; background-attachment: fixed;"{% endif %}>
     <div class="container">
         {% if dados.foto %}
