@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,72 +11,73 @@
   <style>
     /* Estilos para o preview de imagem */
     .image-preview-container {
-        margin-top: 15px;
-        display: none;
+      margin-top: 15px;
+      display: none;
     }
 
     .image-preview {
-        width: 100%;
-        max-height: 200px;
-        object-fit: contain;
-        border-radius: var(--border-radius);
-        border: 1px dashed var(--primary-color);
-        padding: 5px;
-        background-color: rgba(67, 97, 238, 0.05);
-        margin-top: 10px;
+      width: 100%;
+      max-height: 200px;
+      object-fit: contain;
+      border-radius: var(--border-radius);
+      border: 1px dashed var(--primary-color);
+      padding: 5px;
+      background-color: rgba(67, 97, 238, 0.05);
+      margin-top: 10px;
     }
 
     .preview-active {
-        display: block;
+      display: block;
     }
 
     .file-upload-wrapper {
-        position: relative;
-        margin-bottom: 15px;
+      position: relative;
+      margin-bottom: 15px;
     }
 
     .file-info {
-        display: none;
-        padding: 8px;
-        background-color: #f0f0f0;
-        border-radius: var(--border-radius);
-        margin-top: 5px;
-        font-size: 0.9rem;
-        color: #555;
+      display: none;
+      padding: 8px;
+      background-color: #f0f0f0;
+      border-radius: var(--border-radius);
+      margin-top: 5px;
+      font-size: 0.9rem;
+      color: #555;
     }
 
     .has-file .file-info {
-        display: block;
+      display: block;
     }
 
     .has-file .file-label {
-        background-color: var(--success-color);
-        color: white;
+      background-color: var(--success-color);
+      color: white;
     }
 
     .btn-delete {
-        background-color: #f44336;
-        color: white;
-        border: none;
-        padding: 10px 15px;
-        border-radius: var(--border-radius);
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: var(--transition);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: var(--border-radius);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
-    
+
     .btn-delete:hover {
-        background-color: #d32f2f;
-        transform: translateY(-2px);
+      background-color: #d32f2f;
+      transform: translateY(-2px);
     }
 
     .profile-url {
       display: flex;
       align-items: center;
     }
+
     .url-prefix {
       padding: 8px;
       background: #f0f0f0;
@@ -85,99 +87,108 @@
     }
   </style>
 </head>
+
 <body>
 
   <div class="flash-messages">
     {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-                <div class="alert alert-{{ category }}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endif %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">
+      {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
     {% endwith %}
   </div>
 
-  <form method="POST" action="{{ url_for('delete_page') }}" onsubmit="return confirm('Tem certeza que deseja APAGAR SUA PÁGINA permanentemente? Esta ação não pode ser desfeita!')" style="position: absolute; top: 20px; left: 20px;">
+  <form method="POST" action="{{ url_for('delete_page') }}"
+    onsubmit="return confirm('Tem certeza que deseja APAGAR SUA PÁGINA permanentemente? Esta ação não pode ser desfeita!')"
+    style="position: absolute; top: 20px; left: 20px;">
     <button type="submit" class="btn-delete">
-        <i class="fas fa-trash"></i> Apagar Página
+      <i class="fas fa-trash"></i> Apagar Página
     </button>
   </form>
-  
+
   <div class="admin-container">
     <div class="admin-header">
       <h1><i class="fas fa-cog"></i> Painel Administrativo</h1>
       <p>Edite suas informações pessoais</p>
     </div>
-    
-    <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_panel', username=dados.profile) }}" class="admin-form">
+
+    <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_panel', username=dados.profile) }}"
+      class="admin-form">
       <div class="form-grid">
         <!-- Seção de Informações Básicas -->
         <div class="form-section">
           <h2><i class="fas fa-user"></i> Informações Pessoais</h2>
-          
+
           <div class="form-group">
             <label for="nome">Nome Completo</label>
             <input type="text" id="nome" name="nome" value="{{ dados.nome }}" class="form-input">
           </div>
-          
+
           <div class="form-group">
             <label for="bio">Biografia</label>
             <textarea id="bio" name="bio" class="form-textarea">{{ dados.bio }}</textarea>
           </div>
-        
+
 
           <div class="form-group">
             <label for="profile">URL da sua página</label>
             <div class="profile-url">
               <span class="url-prefix">cpages.onrender.com/</span>
-                <input type="text" id="profile" name="profile" value="{{ dados.profile }}" class="form-input" pattern="[a-z0-9-]+" title="Apenas letras minúsculas, números e hífens">
+              <input type="text" id="profile" name="profile" value="{{ dados.profile }}" class="form-input"
+                pattern="[a-z0-9-]+" title="Apenas letras minúsculas, números e hífens">
             </div>
           </div>
         </div>
-        
+
         <!-- Seção de Imagens -->
         <div class="form-section">
           <h2><i class="fas fa-images"></i> Imagens</h2>
-          
+
           <div class="form-group">
             <label for="foto_upload">Foto de Perfil</label>
             <div class="file-upload-wrapper">
               <div class="file-upload">
-                <input type="file" id="foto_upload" name="foto_upload" accept="image/*" class="file-input" onchange="previewImage(this, 'foto_preview')">
+                <input type="file" id="foto_upload" name="foto_upload" accept="image/*" class="file-input"
+                  onchange="previewImage(this, 'foto_preview')">
                 <label for="foto_upload" class="file-label">
                   <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
                 </label>
               </div>
               <div class="file-info" id="foto_info">Nenhum arquivo selecionado</div>
               <div class="image-preview-container" id="foto_preview_container">
-                <img src="{{ dados.foto if dados.foto else '' }}" class="image-preview" id="foto_preview" onerror="this.style.display='none'">
+                <img src="{{ dados.foto if dados.foto else '' }}" class="image-preview" id="foto_preview"
+                  onerror="this.style.display='none'">
               </div>
             </div>
           </div>
-          
+
           <div class="form-group">
             <label for="background_upload">Imagem de Fundo</label>
             <div class="file-upload-wrapper">
               <div class="file-upload">
-                <input type="file" id="background_upload" name="background_upload" accept="image/*" class="file-input" onchange="previewImage(this, 'background_preview')">
+                <input type="file" id="background_upload" name="background_upload" accept="image/*" class="file-input"
+                  onchange="previewImage(this, 'background_preview')">
                 <label for="background_upload" class="file-label">
                   <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
                 </label>
               </div>
               <div class="file-info" id="background_info">Nenhum arquivo selecionado</div>
               <div class="image-preview-container" id="background_preview_container">
-                <img src="{{ dados.background if dados.background else '' }}" class="image-preview" id="background_preview" onerror="this.style.display='none'">
+                <img src="{{ dados.background if dados.background else '' }}" class="image-preview"
+                  id="background_preview" onerror="this.style.display='none'">
               </div>
             </div>
           </div>
         </div>
-        
+
         <!-- Seção de Links -->
         <div class="form-section">
           <h2><i class="fas fa-link"></i> Links Sociais</h2>
-  
+
           <div class="buttons-container">
             <button type="button" class="btn btn-add" id="add-icon-btn">
               <i class="fas fa-plus"></i> Adicionar Ícone
@@ -212,34 +223,34 @@
             <div class="modal-content">
               <span class="close">&times;</span>
               <h3>Criar Novo Botão</h3>
-      
+
               <div class="form-group">
                 <label for="button-text">Texto do Botão</label>
                 <input type="text" id="button-text" class="form-input" placeholder="Ex: Currículo">
               </div>
-      
+
               <div class="form-group">
                 <label for="button-link">Link</label>
                 <input type="text" id="button-link" class="form-input" placeholder="https://">
               </div>
-      
+
               <div class="form-group">
                 <label for="button-color">Cor do Botão</label>
                 <input type="color" id="button-color" value="#4CAF50">
               </div>
-      
+
               <div class="form-group">
                 <label for="button-radius">Arredondamento (px)</label>
                 <input type="range" id="button-radius" min="0" max="20" value="10">
                 <span id="radius-value">10px</span>
               </div>
-      
+
               <button id="save-button" class="btn-save">Salvar Botão</button>
             </div>
           </div>
         </div>
       </div>
-      
+
       <div class="form-actions">
         <button type="submit" class="btn-save">
           <i class="fas fa-save"></i> Salvar Alterações
@@ -252,59 +263,93 @@
   </div>
   <script>
     // Mostra o preview das imagens existentes ao carregar a página
-    document.addEventListener('DOMContentLoaded', function() {
-        const fotoPreview = document.getElementById('foto_preview');
-        const backgroundPreview = document.getElementById('background_preview');
-        
-        if (fotoPreview.src && fotoPreview.src !== window.location.href) {
-            document.getElementById('foto_preview_container').classList.add('preview-active');
-            document.getElementById('foto_info').textContent = 'Imagem atual';
-            document.querySelector('#foto_upload').closest('.file-upload-wrapper').classList.add('has-file');
-        }
-        
-        if (backgroundPreview.src && backgroundPreview.src !== window.location.href) {
-            document.getElementById('background_preview_container').classList.add('preview-active');
-            document.getElementById('background_info').textContent = 'Imagem atual';
-            document.querySelector('#background_upload').closest('.file-upload-wrapper').classList.add('has-file');
-        }
+    document.addEventListener('DOMContentLoaded', function () {
+      const fotoPreview = document.getElementById('foto_preview');
+      const backgroundPreview = document.getElementById('background_preview');
+
+      if (fotoPreview.src && fotoPreview.src !== window.location.href) {
+        document.getElementById('foto_preview_container').classList.add('preview-active');
+        document.getElementById('foto_info').textContent = 'Imagem atual';
+        document.querySelector('#foto_upload').closest('.file-upload-wrapper').classList.add('has-file');
+      }
+
+      if (backgroundPreview.src && backgroundPreview.src !== window.location.href) {
+        document.getElementById('background_preview_container').classList.add('preview-active');
+        document.getElementById('background_info').textContent = 'Imagem atual';
+        document.querySelector('#background_upload').closest('.file-upload-wrapper').classList.add('has-file');
+      }
+
+      // Ao carregar a página, renderizar ícones e botões existentes
+      try {
+        const socialLinks = JSON.parse('{{ dados.social_links | tojson | safe }}');
+        renderExistingSocialIcons(socialLinks);
+
+        const customButtons = JSON.parse('{{ dados.custom_buttons | tojson | safe }}');
+        customButtons.forEach(button => {
+          const buttonField = document.createElement('div');
+          buttonField.className = 'custom-button-item';
+          buttonField.innerHTML = `
+                    <div style="flex-grow: 1;">
+                        <div class="button-preview" style="background: ${button.color}; border-radius: ${button.radius}px; padding: 8px; margin-bottom: 8px; color: white;">
+                            ${button.text}
+                        </div>
+                        <input type="hidden" name="custom_button_text[]" value="${button.text}">
+                        <input type="hidden" name="custom_button_link[]" value="${button.link}">
+                        <input type="hidden" name="custom_button_color[]" value="${button.color}">
+                        <input type="hidden" name="custom_button_radius[]" value="${button.radius}">
+                    </div>
+                    <span class="remove-item"><i class="fas fa-times"></i></span>
+                `;
+
+          document.getElementById('custom-buttons-container').appendChild(buttonField);
+
+          // Adicionar evento de remoção
+          buttonField.querySelector('.remove-item').addEventListener('click', function () {
+            this.closest('.custom-button-item').remove();
+          });
+        });
+      } catch (e) {
+        console.error('Erro ao carregar dados existentes:', e);
+      }
     });
 
     // Função para mostrar o preview da imagem selecionada
     function previewImage(input, previewId) {
-        const previewContainer = document.getElementById(previewId + '_container');
-        const preview = document.getElementById(previewId);
-        const fileInfo = document.getElementById(previewId.replace('_preview', '_info'));
-        const wrapper = input.closest('.file-upload-wrapper');
-        
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            
-            reader.onload = function(e) {
-                preview.src = e.target.result;
-                preview.style.display = 'block';
-                previewContainer.classList.add('preview-active');
-                fileInfo.textContent = input.files[0].name + ' (' + formatFileSize(input.files[0].size) + ')';
-                wrapper.classList.add('has-file');
-            }
-            
-            reader.readAsDataURL(input.files[0]);
-        } else {
-            preview.src = "";
-            previewContainer.classList.remove('preview-active');
-            fileInfo.textContent = 'Nenhum arquivo selecionado';
-            wrapper.classList.remove('has-file');
+      const previewContainer = document.getElementById(previewId + '_container');
+      const preview = document.getElementById(previewId);
+      const fileInfo = document.getElementById(previewId.replace('_preview', '_info'));
+      const wrapper = input.closest('.file-upload-wrapper');
+
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+          previewContainer.classList.add('preview-active');
+          fileInfo.textContent = input.files[0].name + ' (' + formatFileSize(input.files[0].size) + ')';
+          wrapper.classList.add('has-file');
         }
+
+        reader.readAsDataURL(input.files[0]);
+      } else {
+        preview.src = "";
+        previewContainer.classList.remove('preview-active');
+        fileInfo.textContent = 'Nenhum arquivo selecionado';
+        wrapper.classList.remove('has-file');
+      }
     }
 
     // Função para formatar o tamanho do arquivo
     function formatFileSize(bytes) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i])
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i])
     }
   </script>
+
   <script>
     // Modal de ícones
     const iconModal = document.getElementById('icon-modal');
@@ -312,8 +357,8 @@
     const addIconBtn = document.getElementById('add-icon-btn');
     const addButtonBtn = document.getElementById('add-button-btn');
     const closeButtons = document.querySelectorAll('.close');
-    
-    // Lista de ícones (substitua pelos caminhos dos seus ícones)
+
+    // Lista de ícones
     const socialIcons = [
       { name: 'instagram', path: '/static/icons/instagram.png' },
       { name: 'linkedin', path: '/static/icons/linkedin.png' },
@@ -324,200 +369,204 @@
       { name: 'facebook', path: '/static/icons/facebook.png' },
       { name: 'youtube', path: '/static/icons/youtube.png' }
     ];
-    
+
     // Função para renderizar ícones existentes
     function renderExistingSocialIcons(socialLinks) {
-        const container = document.getElementById('social-icons-container');
-        container.innerHTML = '';
-        
-        socialLinks.forEach(link => {
-            const iconName = link.icon;
-            const iconPath = `/static/icons/${iconName}.png`;
-            
-            const iconField = document.createElement('div');
-            iconField.className = 'social-item';
-            iconField.innerHTML = `
+      const container = document.getElementById('social-icons-container');
+      container.innerHTML = '';
+
+      socialLinks.forEach(link => {
+        const iconName = link.icon;
+        const iconPath = `/static/icons/${iconName}.png`;
+
+        const iconField = document.createElement('div');
+        iconField.className = 'social-item';
+        iconField.innerHTML = `
                 <img src="${iconPath}" alt="${iconName}" width="24">
-                <input type="text" name="social_icon_${iconName}" 
-                       placeholder="Link para ${iconName}" 
-                       class="form-input" value="${link.url}">
+                <input type="text" name="social_icon_${iconName}"
+                        placeholder="Link para ${iconName}"
+                        class="form-input" value="${link.url}">
                 <span class="remove-item"><i class="fas fa-times"></i></span>
             `;
-            
-            container.appendChild(iconField);
-            
-            // Adicionar evento de remoção
-            iconField.querySelector('.remove-item').addEventListener('click', function() {
-                this.closest('.social-item').remove();
-            });
+
+        container.appendChild(iconField);
+
+        // Adicionar evento de remoção
+        iconField.querySelector('.remove-item').addEventListener('click', function () {
+          this.closest('.social-item').remove();
         });
+      });
     }
-    
+
+
     // Abrir modais
     addIconBtn.addEventListener('click', () => {
-        // Preencher grid de ícones
-        const iconsGrid = document.querySelector('.icons-grid');
-        iconsGrid.innerHTML = '';
-        
-        socialIcons.forEach(icon => {
-            const iconElement = document.createElement('div');
-            iconElement.className = 'icon-option';
-            iconElement.innerHTML = `
+      const iconsGrid = document.querySelector('.icons-grid');
+      iconsGrid.innerHTML = '';
+
+      socialIcons.forEach(icon => {
+        const iconElement = document.createElement('div');
+        iconElement.className = 'icon-option';
+        iconElement.innerHTML = `
                 <img src="${icon.path}" alt="${icon.name}">
                 <p>${icon.name}</p>
             `;
-            iconElement.addEventListener('click', function() {
-                document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
-                this.classList.add('selected');
-            });
-            iconsGrid.appendChild(iconElement);
+        iconElement.addEventListener('click', function () {
+          document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
+          this.classList.add('selected');
         });
-        
-        iconModal.style.display = 'block';
+        iconsGrid.appendChild(iconElement);
+      });
+
+      iconModal.classList.add('show');
+      document.body.classList.add('modal-open'); // Adiciona a classe ao body
+      setTimeout(() => iconModal.classList.add('active'), 50); // Aumenta o delay para 50ms
     });
-    
+
     addButtonBtn.addEventListener('click', () => {
-        buttonModal.style.display = 'block';
+      buttonModal.classList.add('show');
+      document.body.classList.add('modal-open'); // Adiciona a classe ao body
+      setTimeout(() => buttonModal.classList.add('active'), 50); // Aumenta o delay para 50ms
     });
-    
-    // Fechar modais
+
+    // Fechar modais (botões de fechar dentro dos modais)
     closeButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            this.closest('.modal').style.display = 'none';
-        });
+      btn.addEventListener('click', function () {
+        const modalToClose = this.closest('.modal');
+        modalToClose.classList.remove('active');
+        modalToClose.addEventListener('transitionend', function handler() {
+          modalToClose.classList.remove('show');
+          document.body.classList.remove('modal-open'); // Remove a classe do body
+          modalToClose.removeEventListener('transitionend', handler);
+        }, { once: true }); // Adiciona { once: true }
+      });
     });
-    
+
     // Atualizar valor do range
-    document.getElementById('button-radius').addEventListener('input', function() {
-        document.getElementById('radius-value').textContent = `${this.value}px`;
+    document.getElementById('button-radius').addEventListener('input', function () {
+      document.getElementById('radius-value').textContent = `${this.value}px`;
     });
-    
+
     // Salvar ícone selecionado
-    document.getElementById('save-icon').addEventListener('click', function() {
+    document.getElementById('save-icon').addEventListener('click', function () {
       const selectedIcon = document.querySelector('.icon-option.selected');
       if (selectedIcon) {
-        const iconName = selectedIcon.querySelector('p').textContent.toLowerCase();
-        const iconPath = `/static/icons/${iconName}.png`;
-        
-        // Verificar se o ícone já foi adicionado
-        if (document.querySelector(`input[name="social_icon_${iconName}"]`)) {
+        // Remove a classe 'active' para iniciar a animação de saída
+        iconModal.classList.remove('active');
+        iconModal.addEventListener('transitionend', function handler() {
+          // Remove a classe 'show' após a transição, para ocultar completamente
+          iconModal.classList.remove('show');
+          document.body.classList.remove('modal-open'); // Remove a classe do body
+          iconModal.removeEventListener('transitionend', handler);
+
+          const iconName = selectedIcon.querySelector('p').textContent.toLowerCase();
+          const iconPath = `/static/icons/${iconName}.png`;
+
+          // Verificar se o ícone já foi adicionado
+          if (document.querySelector(`input[name="social_icon_${iconName}"]`)) {
             alert('Este ícone já foi adicionado!');
             return;
-        }
-        
-        // Adicionar novo campo para o ícone
-        const newIconField = document.createElement('div');
-        newIconField.className = 'social-item';
-        newIconField.innerHTML = `
-            <img src="${iconPath}" alt="${iconName}" width="24">
-            <input type="text" name="social_icon_${iconName}" 
-                   placeholder="Insira o link para ${iconName}" 
-                   class="form-input" required>
-            <span class="remove-item"><i class="fas fa-times"></i></span>
-        `;
-        
-        document.getElementById('social-icons-container').appendChild(newIconField);
-        iconModal.style.display = 'none';
-        
-        // Adicionar evento de remoção
-        newIconField.querySelector('.remove-item').addEventListener('click', function() {
+          }
+
+          // Adicionar novo campo para o ícone
+          const newIconField = document.createElement('div');
+          newIconField.className = 'social-item';
+          newIconField.innerHTML = `
+                    <img src="${iconPath}" alt="${iconName}" width="24">
+                    <input type="text" name="social_icon_${iconName}"
+                            placeholder="Insira o link para ${iconName}"
+                            class="form-input" required>
+                    <span class="remove-item"><i class="fas fa-times"></i></span>
+                `;
+
+          document.getElementById('social-icons-container').appendChild(newIconField);
+
+          // Adicionar evento de remoção
+          newIconField.querySelector('.remove-item').addEventListener('click', function () {
             this.closest('.social-item').remove();
-        });
-        
-        // Focar no campo de input recém-criado
-        newIconField.querySelector('input').focus();
+          });
+
+          // Focar no campo de input recém-criado
+          newIconField.querySelector('input').focus();
+        }, { once: true }); // Adiciona { once: true }
       } else {
         alert('Por favor, selecione um ícone primeiro!');
       }
     });
-    
+
     // Salvar botão personalizado
-    document.getElementById('save-button').addEventListener('click', function() {
-        const buttonText = document.getElementById('button-text').value;
-        const buttonLink = document.getElementById('button-link').value;
-        const buttonColor = document.getElementById('button-color').value;
-        const buttonRadius = document.getElementById('button-radius').value;
-        
+    document.getElementById('save-button').addEventListener('click', function () {
+      const buttonText = document.getElementById('button-text').value;
+      const buttonLink = document.getElementById('button-link').value;
+      const buttonColor = document.getElementById('button-color').value;
+      const buttonRadius = document.getElementById('button-radius').value;
+
+      // Remove a classe 'active' para iniciar a animação de saída
+      buttonModal.classList.remove('active');
+      buttonModal.addEventListener('transitionend', function handler() {
+        // Remove a classe 'show' após a transição, para ocultar completamente
+        buttonModal.classList.remove('show');
+        document.body.classList.remove('modal-open'); // Remove a classe do body
+        buttonModal.removeEventListener('transitionend', handler);
+
         if (buttonText && buttonLink) {
-            const newButtonField = document.createElement('div');
-            newButtonField.className = 'custom-button-item';
-            newButtonField.innerHTML = `
-                <div style="flex-grow: 1;">
-                    <div class="button-preview" style="background: ${buttonColor}; border-radius: ${buttonRadius}px; padding: 8px; margin-bottom: 8px;">
-                        ${buttonText}
-                    </div>
-                    <input type="hidden" name="custom_button_text[]" value="${buttonText}">
-                    <input type="hidden" name="custom_button_link[]" value="${buttonLink}">
-                    <input type="hidden" name="custom_button_color[]" value="${buttonColor}">
-                    <input type="hidden" name="custom_button_radius[]" value="${buttonRadius}">
-                </div>
-                <span class="remove-item"><i class="fas fa-times"></i></span>
-            `;
-            
-            document.getElementById('custom-buttons-container').appendChild(newButtonField);
-            buttonModal.style.display = 'none';
-            
-            // Resetar formulário
-            document.getElementById('button-text').value = '';
-            document.getElementById('button-link').value = '';
-            
-            // Adicionar evento de remoção
-            newButtonField.querySelector('.remove-item').addEventListener('click', function() {
-                this.closest('.custom-button-item').remove();
-            });
-        }
-    });
-    
-    // Fechar modal ao clicar fora
-    window.addEventListener('click', function(event) {
-        if (event.target === iconModal) {
-            iconModal.style.display = 'none';
-        }
-        if (event.target === buttonModal) {
-            buttonModal.style.display = 'none';
-        }
-    });
-    
-    // Ao carregar a página, renderizar ícones existentes
-    document.addEventListener('DOMContentLoaded', function() {
-        try {
-            const socialLinks = JSON.parse('{{ dados.social_links | tojson | safe }}');
-            renderExistingSocialIcons(socialLinks);
-            
-            // Renderizar botões existentes (se necessário)
-            const customButtons = JSON.parse('{{ dados.custom_buttons | tojson | safe }}');
-            customButtons.forEach(button => {
-                const buttonField = document.createElement('div');
-                buttonField.className = 'custom-button-item';
-                buttonField.innerHTML = `
+          const newButtonField = document.createElement('div');
+          newButtonField.className = 'custom-button-item';
+          newButtonField.innerHTML = `
                     <div style="flex-grow: 1;">
-                        <div class="button-preview" style="background: ${button.color}; border-radius: ${button.radius}px; padding: 8px; margin-bottom: 8px;">
-                            ${button.text}
+                        <div class="button-preview" style="background: ${buttonColor}; border-radius: ${buttonRadius}px; padding: 8px; margin-bottom: 8px; color: white;">
+                            ${buttonText}
                         </div>
-                        <input type="hidden" name="custom_button_text[]" value="${button.text}">
-                        <input type="hidden" name="custom_button_link[]" value="${button.link}">
-                        <input type="hidden" name="custom_button_color[]" value="${button.color}">
-                        <input type="hidden" name="custom_button_radius[]" value="${button.radius}">
+                        <input type="hidden" name="custom_button_text[]" value="${buttonText}">
+                        <input type="hidden" name="custom_button_link[]" value="${buttonLink}">
+                        <input type="hidden" name="custom_button_color[]" value="${buttonColor}">
+                        <input type="hidden" name="custom_button_radius[]" value="${buttonRadius}">
                     </div>
                     <span class="remove-item"><i class="fas fa-times"></i></span>
                 `;
-                
-                document.getElementById('custom-buttons-container').appendChild(buttonField);
-                
-                // Adicionar evento de remoção
-                buttonField.querySelector('.remove-item').addEventListener('click', function() {
-                    this.closest('.custom-button-item').remove();
-                });
-            });
-        } catch (e) {
-            console.error('Erro ao carregar dados existentes:', e);
+
+          document.getElementById('custom-buttons-container').appendChild(newButtonField);
+
+          // Resetar formulário
+          document.getElementById('button-text').value = '';
+          document.getElementById('button-link').value = '';
+          document.getElementById('button-color').value = '#4CAF50'; // Resetar para cor padrão
+          document.getElementById('button-radius').value = '10'; // Resetar para radius padrão
+          document.getElementById('radius-value').textContent = '10px';
+
+          // Adicionar evento de remoção
+          newButtonField.querySelector('.remove-item').addEventListener('click', function () {
+            this.closest('.custom-button-item').remove();
+          });
         }
+      }, { once: true }); // Adiciona { once: true }
     });
-</script>
-<!-- Botão flutuante para visualizar a página -->
-<a href="/{{ dados.profile }}" target="_blank" class="preview-float-btn">
+
+    // Fechar modal ao clicar fora da área do conteúdo do modal
+    window.addEventListener('click', function (event) {
+      if (event.target === iconModal) {
+        iconModal.classList.remove('active');
+        iconModal.addEventListener('transitionend', function handler() {
+          iconModal.classList.remove('show');
+          document.body.classList.remove('modal-open'); // Remove a classe do body
+          iconModal.removeEventListener('transitionend', handler);
+        }, { once: true }); // Adiciona { once: true }
+      }
+      if (event.target === buttonModal) {
+        buttonModal.classList.remove('active');
+        buttonModal.addEventListener('transitionend', function handler() {
+          buttonModal.classList.remove('show');
+          document.body.classList.remove('modal-open'); // Remove a classe do body
+          buttonModal.removeEventListener('transitionend', handler);
+        }, { once: true }); // Adiciona { once: true }
+      }
+    });
+  </script>
+  <!-- Botão flutuante para visualizar a página -->
+  <a href="/{{ dados.profile }}" target="_blank" class="preview-float-btn">
     <i class="fas fa-eye"></i>
     <span class="preview-float-tooltip">Visualizar Página</span>
-</a>
+  </a>
 </body>
+
 </html>
