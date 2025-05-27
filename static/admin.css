@@ -65,11 +65,16 @@ body {
   border-radius: 12px;
   box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease;
+  position: relative;
+  top: 0;
 }
 
 .form-section:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  /* transform: translateY(-5px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);*/
+  top: -5px; 
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1),
+
 }
 
 .form-section h2 {
@@ -238,50 +243,54 @@ body {
 
 /* Modal styles */
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 9999;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0,0,0,0.7);
-    overflow-y: auto;
-    justify-content: center;
-    align-items: center;
-    contain: layout size style; /* Adicione esta linha */
-    isolation: isolate; /* Adicione esta linha */
-    -webkit-backface-visibility: hidden; /* Para garantir compatibilidade com aceleração de hardware */
-    backface-visibility: hidden; /* Para garantir compatibilidade com aceleração de hardware */
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.7);
+  overflow-y: auto;
+  justify-content: center;
+  align-items: center;
+  contain: layout size style;
+  isolation: isolate;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: transform, opacity;
 }
 
 .modal.show {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  /* Exibe o modal como flexbox quando 'show' está presente */
+  justify-content: center;
+  align-items: center;
 }
 
 .modal-content {
-    background-color: white;
-    padding: 2.5rem;
-    border-radius: var(--border-radius);
-    width: 90%;
-    max-width: 650px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
-    transform: scale(0.9);
-    opacity: 0;
-    transition: transform 0.4s ease-out, opacity 0.4s ease-out;
+  background-color: white;
+  padding: 2.5rem;
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 650px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  transform: scale(0.9);
+  opacity: 0;
+  transition: transform 0.4s ease-out, opacity 0.4s ease-out;
 }
 
 .modal.active .modal-content {
-    transform: scale(1);
-    opacity: 1;
+  transform: scale(1);
+  opacity: 1;
 }
 
 body.modal-open {
-    overflow: hidden;
+  overflow: hidden;
+  /* Isso é bom para evitar scroll na página de fundo */
 }
 
 .close {
@@ -308,7 +317,8 @@ body.modal-open {
   transition: var(--transition);
 }
 
-.icon-option:hover, .icon-option.selected {
+.icon-option:hover,
+.icon-option.selected {
   border-color: var(--primary-color);
   background-color: rgba(67, 97, 238, 0.1);
 }
@@ -320,20 +330,21 @@ body.modal-open {
 }
 
 /* Estilos para os itens adicionados */
-.social-item, .custom-button-item {
-    background: #f8f9fa;
-    padding: 1rem;
-    border-radius: var(--border-radius);
-    margin-bottom: 1rem;
-    display: flex;
-    gap: 1rem;
-    align-items: center;
+.social-item,
+.custom-button-item {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 .remove-item {
-    color: var(--danger-color);
-    cursor: pointer;
-    margin-left: auto;
+  color: var(--danger-color);
+  cursor: pointer;
+  margin-left: auto;
 }
 
 /* Estilo para visualização do botão */
@@ -348,12 +359,13 @@ body.modal-open {
   .form-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .form-actions {
     flex-direction: column;
   }
-  
-  .btn-save, .btn-logout {
+
+  .btn-save,
+  .btn-logout {
     width: 100%;
     justify-content: center;
   }
@@ -441,49 +453,49 @@ body.modal-open {
 
 /* Botão flutuante de visualização */
 .preview-float-btn {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    background-color: var(--primary-color);
-    color: white;
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    cursor: pointer;
-    z-index: 100;
-    transition: all 0.3s ease;
-    text-decoration: none;
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background-color: var(--primary-color);
+  color: white;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  z-index: 100;
+  transition: all 0.3s ease;
+  text-decoration: none;
 }
 
 .preview-float-btn:hover {
-    background-color: var(--secondary-color);
-    transform: translateY(-3px);
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  background-color: var(--secondary-color);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .preview-float-btn i {
-    font-size: 1.5rem;
+  font-size: 1.5rem;
 }
 
 .preview-float-tooltip {
-    position: absolute;
-    right: 70px;
-    white-space: nowrap;
-    background: var(--dark-color);
-    color: white;
-    padding: 6px 12px;
-    border-radius: var(--border-radius);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
+  position: absolute;
+  right: 70px;
+  white-space: nowrap;
+  background: var(--dark-color);
+  color: white;
+  padding: 6px 12px;
+  border-radius: var(--border-radius);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
 .preview-float-btn:hover .preview-float-tooltip {
-    opacity: 1;
+  opacity: 1;
 }
 
 /* Responsividade */
@@ -491,7 +503,7 @@ body.modal-open {
   .login-card {
     padding: 1.5rem;
   }
-  
+
   .login-header h1 {
     font-size: 1.5rem;
   }
@@ -499,32 +511,85 @@ body.modal-open {
 
 /* Adicione no final do arquivo */
 .flash-messages {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
 }
 
 .alert {
-    padding: 15px;
-    border-radius: var(--border-radius);
-    margin-bottom: 1rem;
-    animation: slideIn 0.3s ease-out;
+  padding: 15px;
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  animation: slideIn 0.3s ease-out;
 }
 
 .alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
 }
 
 .alert-error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 
 @keyframes slideIn {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.pagination-container {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Espaçamento entre os botões e a grid */
+    margin: 1.5rem 0 1rem; /* Ajuste a margem conforme necessário */
+}
+
+.pagination-btn {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.6rem 0.8rem; /* Padding menor para botões de seta */
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem; /* Tamanho do ícone da seta */
+    flex-shrink: 0; /* Evita que o botão encolha */
+}
+
+.pagination-btn:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px); /* Mantém o efeito de pulinho se desejar */
+}
+
+.pagination-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.icons-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 colunas como antes */
+    gap: 1rem;
+    flex-grow: 1; /* Permite que a grid ocupe o espaço restante */
+    overflow-y: auto; /* Adiciona scroll se houver muitos ícones em uma página */
+    max-height: 250px; /* Altura máxima para a área de ícones, adicione scroll se ultrapassar */
+    padding: 5px; /* Pequeno padding para o scrollbar não encostar no conteúdo */
+}
+
+/* Ajuste se o form-input não tiver um margin-bottom suficiente */
+#icon-search {
+    margin-bottom: 1rem;
 }

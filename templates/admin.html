@@ -211,9 +211,23 @@
             <div class="modal-content">
               <span class="close">&times;</span>
               <h3>Selecione um ícone</h3>
-              <div class="icons-grid">
-                <!-- Ícones serão inseridos aqui via JavaScript -->
+
+              <div class="form-group">
+                <input type="text" id="icon-search" class="form-input" placeholder="Buscar ícones...">
               </div>
+
+              <div class="pagination-container">
+                <button type="button" class="pagination-btn" id="prev-icon-page"><i
+                    class="fas fa-chevron-left"></i></button>
+                <div class="icons-grid">
+                </div>
+                <button type="button" class="pagination-btn" id="next-icon-page"><i
+                    class="fas fa-chevron-right"></i></button>
+              </div>
+              <div class="page-info" style="text-align: center; margin-top: 10px; font-size: 0.9rem; color: #666;">
+                Página <span id="current-page">1</span></div>
+
+
               <button id="save-icon" class="btn-save">Salvar Ícone</button>
             </div>
           </div>
@@ -311,256 +325,286 @@
       } catch (e) {
         console.error('Erro ao carregar dados existentes:', e);
       }
-    });
 
-    // Função para mostrar o preview da imagem selecionada
-    function previewImage(input, previewId) {
-      const previewContainer = document.getElementById(previewId + '_container');
-      const preview = document.getElementById(previewId);
-      const fileInfo = document.getElementById(previewId.replace('_preview', '_info'));
-      const wrapper = input.closest('.file-upload-wrapper');
+      // Prevenir que cliques dentro do conteúdo do modal fechem o modal (propagação)
+      document.querySelector('#icon-modal .modal-content').addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+      document.querySelector('#button-modal .modal-content').addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
 
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
+      // INÍCIO DAS LÓGICAS DE PAGINAÇÃO E BUSCA DE ÍCONES
+      const iconModal = document.getElementById('icon-modal');
+      const buttonModal = document.getElementById('button-modal');
+      const addIconBtn = document.getElementById('add-icon-btn');
+      const addButtonBtn = document.getElementById('add-button-btn');
+      const closeButtons = document.querySelectorAll('.close');
 
-        reader.onload = function (e) {
-          preview.src = e.target.result;
-          preview.style.display = 'block';
-          previewContainer.classList.add('preview-active');
-          fileInfo.textContent = input.files[0].name + ' (' + formatFileSize(input.files[0].size) + ')';
-          wrapper.classList.add('has-file');
+      const iconsGrid = document.querySelector('#icon-modal .icons-grid'); // Seleciona a grid dentro do modal de ícones
+      const iconSearchInput = document.getElementById('icon-search');
+      const prevIconPageBtn = document.getElementById('prev-icon-page');
+      const nextIconPageBtn = document.getElementById('next-icon-page');
+      const currentPageSpan = document.getElementById('current-page');
+
+      // Lista completa de ícones sociais disponíveis
+      // Certifique-se de que os arquivos .png correspondentes estão em static/icons/
+      const allSocialIcons = [
+        { name: 'instagram', path: '/static/icons/instagram.png' },
+        { name: 'linkedin', path: '/static/icons/linkedin.png' },
+        { name: 'github', path: '/static/icons/github.png' },
+        { name: 'email', path: '/static/icons/email.png' },
+        { name: 'whatsapp', path: '/static/icons/whatsapp.png' },
+        { name: 'twitter', path: '/static/icons/twitter.png' },
+        { name: 'facebook', path: '/static/icons/facebook.png' },
+        { name: 'youtube', path: '/static/icons/youtube.png' },
+        { name: 'telegram', path: '/static/icons/telegram.png' },
+        { name: 'tiktok', path: '/static/icons/tiktok.png' },
+        { name: 'pinterest', path: '/static/icons/pinterest.png' },
+        { name: 'twitch', path: '/static/icons/twitch.png' },
+        { name: 'discord', path: '/static/icons/discord.png' },
+        { name: 'snapchat', path: '/static/icons/snapchat.png' },
+        { name: 'reddit', path: '/static/icons/reddit.png' },
+        { name: 'vimeo', path: '/static/icons/vimeo.png' },
+        { name: 'medium', path: '/static/icons/medium.png' },
+        { name: 'spotify', path: '/static/icons/spotify.png' },
+        { name: 'soundcloud', path: '/static/icons/soundcloud.png' },
+        { name: 'behance', path: '/static/icons/behance.png' },
+        { name: 'dribbble', path: '/static/icons/dribbble.png' },
+        { name: 'flickr', path: '/static/icons/flickr.png' },
+        { name: 'etsy', path: '/static/icons/etsy.png' },
+        { name: 'paypal', path: '/static/icons/paypal.png' },
+        { name: 'google-drive', path: '/static/icons/google-drive.png' },
+        { name: 'dropbox', path: '/static/icons/dropbox.png' },
+        { name: 'link', path: '/static/icons/link.png' },
+        { name: 'phone', path: '/static/icons/phone.png' },
+        { name: 'website', path: '/static/icons/website.png' },
+        { name: 'xing', path: '/static/icons/xing.png' },
+        { name: 'mastodon', path: '/static/icons/mastodon.png' },
+        { name: 'stack-overflow', path: '/static/icons/stack-overflow.png' },
+        { name: 'gitlab', path: '/static/icons/gitlab.png' },
+        { name: 'bitbucket', path: '/static/icons/bitbucket.png' },
+        { name: 'codepen', path: '/static/icons/codepen.png' },
+        { name: 'dev-to', path: '/static/icons/dev-to.png' },
+        { name: 'freecodecamp', path: '/static/icons/freecodecamp.png' },
+        { name: 'hashnode', path: '/static/icons/hashnode.png' },
+        { name: 'product-hunt', path: '/static/icons/product-hunt.png' },
+        { name: 'unsplash', path: '/static/icons/unsplash.png' },
+        { name: 'medium', path: '/static/icons/medium.png' },
+        { name: 'patreon', path: '/static/icons/patreon.png' },
+        { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' },
+        { name: 'ko-fi', path: '/static/icons/ko-fi.png' },
+        { name: 'discord', path: '/static/icons/discord.png' },
+        { name: 'slack', path: '/static/icons/slack.png' },
+        { name: 'teams', path: '/static/icons/teams.png' },
+        { name: 'skype', path: '/static/icons/skype.png' },
+        { name: 'google-scholar', path: '/static/icons/google-scholar.png' },
+        { name: 'researchgate', path: '/static/icons/researchgate.png' },
+        { name: 'academia-edu', path: '/static/icons/academia-edu.png' }
+        // Adicione mais ícones aqui conforme precisar
+      ];
+
+      let filteredIcons = [];
+      let currentPage = 1;
+      const iconsPerPage = 8; // Exibir 8 ícones por página (2 linhas de 4)
+
+      function renderIcons() {
+        iconsGrid.innerHTML = '';
+        const start = (currentPage - 1) * iconsPerPage;
+        const end = start + iconsPerPage;
+        const iconsToRender = filteredIcons.slice(start, end);
+
+        // Ajusta a página atual se, após a filtragem, ela ficou vazia e não é a primeira
+        if (iconsToRender.length === 0 && filteredIcons.length > 0 && currentPage > 1) {
+          currentPage--;
+          renderIcons();
+          return;
         }
 
-        reader.readAsDataURL(input.files[0]);
-      } else {
-        preview.src = "";
-        previewContainer.classList.remove('preview-active');
-        fileInfo.textContent = 'Nenhum arquivo selecionado';
-        wrapper.classList.remove('has-file');
-      }
-    }
-
-    // Função para formatar o tamanho do arquivo
-    function formatFileSize(bytes) {
-      if (bytes === 0) return '0 Bytes';
-      const k = 1024;
-      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2) + ' ' + sizes[i])
-    }
-  </script>
-
-  <script>
-    // Modal de ícones
-    const iconModal = document.getElementById('icon-modal');
-    const buttonModal = document.getElementById('button-modal');
-    const addIconBtn = document.getElementById('add-icon-btn');
-    const addButtonBtn = document.getElementById('add-button-btn');
-    const closeButtons = document.querySelectorAll('.close');
-
-    // Lista de ícones
-    const socialIcons = [
-      { name: 'instagram', path: '/static/icons/instagram.png' },
-      { name: 'linkedin', path: '/static/icons/linkedin.png' },
-      { name: 'github', path: '/static/icons/github.png' },
-      { name: 'email', path: '/static/icons/email.png' },
-      { name: 'whatsapp', path: '/static/icons/whatsapp.png' },
-      { name: 'twitter', path: '/static/icons/twitter.png' },
-      { name: 'facebook', path: '/static/icons/facebook.png' },
-      { name: 'youtube', path: '/static/icons/youtube.png' }
-    ];
-
-    // Função para renderizar ícones existentes
-    function renderExistingSocialIcons(socialLinks) {
-      const container = document.getElementById('social-icons-container');
-      container.innerHTML = '';
-
-      socialLinks.forEach(link => {
-        const iconName = link.icon;
-        const iconPath = `/static/icons/${iconName}.png`;
-
-        const iconField = document.createElement('div');
-        iconField.className = 'social-item';
-        iconField.innerHTML = `
-                <img src="${iconPath}" alt="${iconName}" width="24">
-                <input type="text" name="social_icon_${iconName}"
-                        placeholder="Link para ${iconName}"
-                        class="form-input" value="${link.url}">
-                <span class="remove-item"><i class="fas fa-times"></i></span>
-            `;
-
-        container.appendChild(iconField);
-
-        // Adicionar evento de remoção
-        iconField.querySelector('.remove-item').addEventListener('click', function () {
-          this.closest('.social-item').remove();
-        });
-      });
-    }
-
-
-    // Abrir modais
-    addIconBtn.addEventListener('click', () => {
-      const iconsGrid = document.querySelector('.icons-grid');
-      iconsGrid.innerHTML = '';
-
-      socialIcons.forEach(icon => {
-        const iconElement = document.createElement('div');
-        iconElement.className = 'icon-option';
-        iconElement.innerHTML = `
-                <img src="${icon.path}" alt="${icon.name}">
-                <p>${icon.name}</p>
-            `;
-        iconElement.addEventListener('click', function () {
-          document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
-          this.classList.add('selected');
-        });
-        iconsGrid.appendChild(iconElement);
-      });
-
-      iconModal.classList.add('show');
-      document.body.classList.add('modal-open'); // Adiciona a classe ao body
-      setTimeout(() => iconModal.classList.add('active'), 50); // Aumenta o delay para 50ms
-    });
-
-    addButtonBtn.addEventListener('click', () => {
-      buttonModal.classList.add('show');
-      document.body.classList.add('modal-open'); // Adiciona a classe ao body
-      setTimeout(() => buttonModal.classList.add('active'), 50); // Aumenta o delay para 50ms
-    });
-
-    // Fechar modais (botões de fechar dentro dos modais)
-    closeButtons.forEach(btn => {
-      btn.addEventListener('click', function () {
-        const modalToClose = this.closest('.modal');
-        modalToClose.classList.remove('active');
-        modalToClose.addEventListener('transitionend', function handler() {
-          modalToClose.classList.remove('show');
-          document.body.classList.remove('modal-open'); // Remove a classe do body
-          modalToClose.removeEventListener('transitionend', handler);
-        }, { once: true }); // Adiciona { once: true }
-      });
-    });
-
-    // Atualizar valor do range
-    document.getElementById('button-radius').addEventListener('input', function () {
-      document.getElementById('radius-value').textContent = `${this.value}px`;
-    });
-
-    // Salvar ícone selecionado
-    document.getElementById('save-icon').addEventListener('click', function () {
-      const selectedIcon = document.querySelector('.icon-option.selected');
-      if (selectedIcon) {
-        // Remove a classe 'active' para iniciar a animação de saída
-        iconModal.classList.remove('active');
-        iconModal.addEventListener('transitionend', function handler() {
-          // Remove a classe 'show' após a transição, para ocultar completamente
-          iconModal.classList.remove('show');
-          document.body.classList.remove('modal-open'); // Remove a classe do body
-          iconModal.removeEventListener('transitionend', handler);
-
-          const iconName = selectedIcon.querySelector('p').textContent.toLowerCase();
-          const iconPath = `/static/icons/${iconName}.png`;
-
-          // Verificar se o ícone já foi adicionado
-          if (document.querySelector(`input[name="social_icon_${iconName}"]`)) {
-            alert('Este ícone já foi adicionado!');
-            return;
-          }
-
-          // Adicionar novo campo para o ícone
-          const newIconField = document.createElement('div');
-          newIconField.className = 'social-item';
-          newIconField.innerHTML = `
-                    <img src="${iconPath}" alt="${iconName}" width="24">
-                    <input type="text" name="social_icon_${iconName}"
-                            placeholder="Insira o link para ${iconName}"
-                            class="form-input" required>
-                    <span class="remove-item"><i class="fas fa-times"></i></span>
-                `;
-
-          document.getElementById('social-icons-container').appendChild(newIconField);
-
-          // Adicionar evento de remoção
-          newIconField.querySelector('.remove-item').addEventListener('click', function () {
-            this.closest('.social-item').remove();
+        iconsToRender.forEach(icon => {
+          const iconElement = document.createElement('div');
+          iconElement.className = 'icon-option';
+          iconElement.innerHTML = `
+                    <img src="${icon.path}" alt="${icon.name}">
+                    <p>${icon.name.replace(/-/g, ' ')}</p> `;
+          iconElement.addEventListener('click', function () {
+            document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
+            this.classList.add('selected');
           });
+          iconsGrid.appendChild(iconElement);
+        });
 
-          // Focar no campo de input recém-criado
-          newIconField.querySelector('input').focus();
-        }, { once: true }); // Adiciona { once: true }
-      } else {
-        alert('Por favor, selecione um ícone primeiro!');
+        updatePaginationControls();
       }
-    });
 
-    // Salvar botão personalizado
-    document.getElementById('save-button').addEventListener('click', function () {
-      const buttonText = document.getElementById('button-text').value;
-      const buttonLink = document.getElementById('button-link').value;
-      const buttonColor = document.getElementById('button-color').value;
-      const buttonRadius = document.getElementById('button-radius').value;
+      function updatePaginationControls() {
+        const totalPages = Math.ceil(filteredIcons.length / iconsPerPage);
+        currentPageSpan.textContent = currentPage;
+        prevIconPageBtn.disabled = currentPage === 1;
+        nextIconPageBtn.disabled = currentPage >= totalPages || filteredIcons.length === 0;
+      }
 
-      // Remove a classe 'active' para iniciar a animação de saída
-      buttonModal.classList.remove('active');
-      buttonModal.addEventListener('transitionend', function handler() {
-        // Remove a classe 'show' após a transição, para ocultar completamente
-        buttonModal.classList.remove('show');
-        document.body.classList.remove('modal-open'); // Remove a classe do body
-        buttonModal.removeEventListener('transitionend', handler);
-
-        if (buttonText && buttonLink) {
-          const newButtonField = document.createElement('div');
-          newButtonField.className = 'custom-button-item';
-          newButtonField.innerHTML = `
-                    <div style="flex-grow: 1;">
-                        <div class="button-preview" style="background: ${buttonColor}; border-radius: ${buttonRadius}px; padding: 8px; margin-bottom: 8px; color: white;">
-                            ${buttonText}
-                        </div>
-                        <input type="hidden" name="custom_button_text[]" value="${buttonText}">
-                        <input type="hidden" name="custom_button_link[]" value="${buttonLink}">
-                        <input type="hidden" name="custom_button_color[]" value="${buttonColor}">
-                        <input type="hidden" name="custom_button_radius[]" value="${buttonRadius}">
-                    </div>
-                    <span class="remove-item"><i class="fas fa-times"></i></span>
-                `;
-
-          document.getElementById('custom-buttons-container').appendChild(newButtonField);
-
-          // Resetar formulário
-          document.getElementById('button-text').value = '';
-          document.getElementById('button-link').value = '';
-          document.getElementById('button-color').value = '#4CAF50'; // Resetar para cor padrão
-          document.getElementById('button-radius').value = '10'; // Resetar para radius padrão
-          document.getElementById('radius-value').textContent = '10px';
-
-          // Adicionar evento de remoção
-          newButtonField.querySelector('.remove-item').addEventListener('click', function () {
-            this.closest('.custom-button-item').remove();
-          });
+      function filterAndRenderIcons() {
+        const searchTerm = iconSearchInput.value.toLowerCase().trim();
+        if (searchTerm === '') {
+          filteredIcons = [...allSocialIcons];
+        } else {
+          filteredIcons = allSocialIcons.filter(icon =>
+            icon.name.toLowerCase().includes(searchTerm)
+          );
         }
-      }, { once: true }); // Adiciona { once: true }
-    });
-
-    // Fechar modal ao clicar fora da área do conteúdo do modal
-    window.addEventListener('click', function (event) {
-      if (event.target === iconModal) {
-        iconModal.classList.remove('active');
-        iconModal.addEventListener('transitionend', function handler() {
-          iconModal.classList.remove('show');
-          document.body.classList.remove('modal-open'); // Remove a classe do body
-          iconModal.removeEventListener('transitionend', handler);
-        }, { once: true }); // Adiciona { once: true }
+        currentPage = 1; // Reseta para a primeira página ao filtrar
+        renderIcons();
       }
-      if (event.target === buttonModal) {
+
+      // Event Listeners para Paginação e Busca
+      iconSearchInput.addEventListener('input', filterAndRenderIcons);
+
+      prevIconPageBtn.addEventListener('click', () => {
+        if (currentPage > 1) {
+          currentPage--;
+          renderIcons();
+        }
+      });
+
+      nextIconPageBtn.addEventListener('click', () => {
+        const totalPages = Math.ceil(filteredIcons.length / iconsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderIcons();
+        }
+      });
+
+      // Abrir modal de ícones - LÓGICA ATUALIZADA
+      addIconBtn.addEventListener('click', () => {
+        filterAndRenderIcons(); // Renderiza os ícones iniciais (ou filtrados se houver texto na busca)
+        iconModal.classList.add('show');
+        document.body.classList.add('modal-open');
+        setTimeout(() => iconModal.classList.add('active'), 50);
+      });
+
+      // Salvar ícone selecionado
+      document.getElementById('save-icon').addEventListener('click', function () {
+        const selectedIcon = document.querySelector('.icon-option.selected');
+        if (selectedIcon) {
+          iconModal.classList.remove('active');
+          iconModal.addEventListener('transitionend', function handler() {
+            iconModal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            iconModal.removeEventListener('transitionend', handler);
+
+            // Garante que o nome do ícone corresponda ao arquivo (minúsculas, hífens)
+            const iconName = selectedIcon.querySelector('p').textContent.toLowerCase().replace(/ /g, '-');
+            const iconPath = `/static/icons/${iconName}.png`;
+
+            // Verificar se o ícone já foi adicionado
+            if (document.querySelector(`input[name="social_icon_${iconName}"]`)) {
+              alert('Este ícone já foi adicionado!');
+              return;
+            }
+
+            const newIconField = document.createElement('div');
+            newIconField.className = 'social-item';
+            newIconField.innerHTML = `
+                        <img src="${iconPath}" alt="${iconName}" width="24">
+                        <input type="text" name="social_icon_${iconName}"
+                                placeholder="Insira o link para ${iconName.replace(/-/g, ' ')}"
+                                class="form-input" required>
+                        <span class="remove-item"><i class="fas fa-times"></i></span>
+                    `;
+
+            document.getElementById('social-icons-container').appendChild(newIconField);
+
+            newIconField.querySelector('.remove-item').addEventListener('click', function () {
+              this.closest('.social-item').remove();
+            });
+
+            newIconField.querySelector('input').focus();
+          }, { once: true });
+        } else {
+          alert('Por favor, selecione um ícone primeiro!');
+        }
+      });
+      // FIM DAS LÓGICAS DE PAGINAÇÃO E BUSCA DE ÍCONES
+
+      // Atualizar valor do range do botão personalizado
+      document.getElementById('button-radius').addEventListener('input', function () {
+        document.getElementById('radius-value').textContent = `${this.value}px`;
+      });
+
+      // Abrir modal de botões
+      addButtonBtn.addEventListener('click', () => {
+        buttonModal.classList.add('show');
+        document.body.classList.add('modal-open');
+        setTimeout(() => buttonModal.classList.add('active'), 50);
+      });
+
+      // Salvar botão personalizado
+      document.getElementById('save-button').addEventListener('click', function () {
+        const buttonText = document.getElementById('button-text').value;
+        const buttonLink = document.getElementById('button-link').value;
+        const buttonColor = document.getElementById('button-color').value;
+        const buttonRadius = document.getElementById('button-radius').value;
+
         buttonModal.classList.remove('active');
         buttonModal.addEventListener('transitionend', function handler() {
           buttonModal.classList.remove('show');
-          document.body.classList.remove('modal-open'); // Remove a classe do body
+          document.body.classList.remove('modal-open');
           buttonModal.removeEventListener('transitionend', handler);
-        }, { once: true }); // Adiciona { once: true }
-      }
-    });
+
+          if (buttonText && buttonLink) {
+            const newButtonField = document.createElement('div');
+            newButtonField.className = 'custom-button-item';
+            newButtonField.innerHTML = `
+                        <div style="flex-grow: 1;">
+                            <div class="button-preview" style="background: ${buttonColor}; border-radius: ${buttonRadius}px; padding: 8px; margin-bottom: 8px; color: white;">
+                                ${buttonText}
+                            </div>
+                            <input type="hidden" name="custom_button_text[]" value="${buttonText}">
+                            <input type="hidden" name="custom_button_link[]" value="${buttonLink}">
+                            <input type="hidden" name="custom_button_color[]" value="${buttonColor}">
+                            <input type="hidden" name="custom_button_radius[]" value="${buttonRadius}">
+                        </div>
+                        <span class="remove-item"><i class="fas fa-times"></i></span>
+                    `;
+
+            document.getElementById('custom-buttons-container').appendChild(newButtonField);
+
+            // Resetar formulário
+            document.getElementById('button-text').value = '';
+            document.getElementById('button-link').value = '';
+            document.getElementById('button-color').value = '#4CAF50';
+            document.getElementById('button-radius').value = '10';
+            document.getElementById('radius-value').textContent = '10px';
+
+            // Adicionar evento de remoção
+            newButtonField.querySelector('.remove-item').addEventListener('click', function () {
+              this.closest('.custom-button-item').remove();
+            });
+          }
+        }, { once: true });
+      });
+
+      // Fechar modal ao clicar fora da área do conteúdo do modal
+      window.addEventListener('click', function (event) {
+        if (event.target === iconModal) {
+          iconModal.classList.remove('active');
+          iconModal.addEventListener('transitionend', function handler() {
+            iconModal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            iconModal.removeEventListener('transitionend', handler);
+          }, { once: true });
+        }
+        if (event.target === buttonModal) {
+          buttonModal.classList.remove('active');
+          buttonModal.addEventListener('transitionend', function handler() {
+            buttonModal.classList.remove('show');
+            document.body.classList.remove('modal-open');
+            buttonModal.removeEventListener('transitionend', handler);
+          }, { once: true });
+        }
+      });
+    }); // FIM DO DOMContentLoaded
   </script>
   <!-- Botão flutuante para visualizar a página -->
   <a href="/{{ dados.profile }}" target="_blank" class="preview-float-btn">
