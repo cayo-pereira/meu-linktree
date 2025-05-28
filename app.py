@@ -42,33 +42,20 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-def migrate_existing_images():
-    users = supabase.table('usuarios').select('*').execute().data
-    for user in users:
-        updates = {}
-        if user.get('foto') and not user['foto'].startswith('http'):
-            pass
-        if updates:
-            supabase.table('usuarios').update(updates).eq('id', user['id']).execute()
-
 def upload_to_supabase(file, user_id, field_type):
     try:
-        # Configura autenticação
         headers = {
             "Authorization": f"Bearer {session.get('access_token')}",
             "apikey": SUPABASE_KEY,
             "Content-Type": "application/json"
         }
         
-        # Gera nome único para o arquivo
         file_ext = os.path.splitext(secure_filename(file.filename))[1].lower()
         unique_filename = f"{user_id}_{field_type}{file_ext}"
         
-        # Salva temporariamente
         temp_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         file.save(temp_path)
         
-        # Faz upload via API REST diretamente
         upload_url = f"{SUPABASE_URL}/storage/v1/object/usuarios/{unique_filename}"
         with open(temp_path, 'rb') as f:
             response = requests.put(
@@ -192,22 +179,36 @@ def user_page(profile):
             abort(404)
         
         user_data = res.data[0]
-        # Converter custom_buttons de JSON string para lista/dict
+        
+        # Processar custom_buttons
         if 'custom_buttons' in user_data and user_data['custom_buttons']:
             try:
-                user_data['custom_buttons'] = json.loads(user_data['custom_buttons'])
-            except json.JSONDecodeError:
-                logger.warning(f"Erro ao decodificar custom_buttons para o usuário. Inicializando como vazio.")
+                if isinstance(user_data['custom_buttons'], str):
+                    user_data['custom_buttons'] = json.loads(user_data['custom_buttons'])
+                
+                # Normalizar os tipos de dados dos botões
+                for button in user_data['custom_buttons']:
+                    button['bold'] = str(button.get('bold', False)).lower() == 'true'
+                    button['italic'] = str(button.get('italic', False)).lower() == 'true'
+                    button['hasBorder'] = str(button.get('hasBorder', False)).lower() == 'true'
+                    button['hasHoverEffect'] = str(button.get('hasHoverEffect', False)).lower() == 'true'
+                    button['fontSize'] = int(button.get('fontSize', 16))
+                    button['borderWidth'] = int(button.get('borderWidth', 2))
+                    button.setdefault('textColor', '#FFFFFF')
+                    button.setdefault('borderColor', '#000000')
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.warning(f"Erro ao processar custom_buttons: {str(e)}")
                 user_data['custom_buttons'] = []
         else:
             user_data['custom_buttons'] = []
         
-        # Converter social_links de JSON string para lista/dict
+        # Processar social_links
         if 'social_links' in user_data and user_data['social_links']:
             try:
-                user_data['social_links'] = json.loads(user_data['social_links'])
+                if isinstance(user_data['social_links'], str):
+                    user_data['social_links'] = json.loads(user_data['social_links'])
             except json.JSONDecodeError:
-                logger.warning(f"Erro ao decodificar social_links para o usuário. Inicializando como vazio.")
+                logger.warning(f"Erro ao decodificar social_links")
                 user_data['social_links'] = []
         else:
             user_data['social_links'] = []
@@ -315,37 +316,38 @@ def admin_panel(username):
             
         user_data = res.data[0]
         
-        if isinstance(user_data.get('social_links'), str):
+        # Processar custom_buttons
+        if 'custom_buttons' in user_data and user_data['custom_buttons']:
             try:
-                user_data['social_links'] = json.loads(user_data['social_links'])
-            except json.JSONDecodeError:
-                logger.warning(f"Erro ao decodificar social_links para o usuário {session['user_id']}. Inicializando como vazio.")
-                user_data['social_links'] = []
-        elif user_data.get('social_links') is None:
-            user_data['social_links'] = []
-        
-        if isinstance(user_data.get('custom_buttons'), str):
-            try:
-                user_data['custom_buttons'] = json.loads(user_data['custom_buttons'])
-            except json.JSONDecodeError:
-                logger.warning(f"Erro ao decodificar custom_buttons para o usuário {session['user_id']}. Inicializando como vazio.")
+                if isinstance(user_data['custom_buttons'], str):
+                    user_data['custom_buttons'] = json.loads(user_data['custom_buttons'])
+                
+                # Normalizar os tipos de dados dos botões
+                for button in user_data['custom_buttons']:
+                    button['bold'] = str(button.get('bold', False)).lower() == 'true'
+                    button['italic'] = str(button.get('italic', False)).lower() == 'true'
+                    button['hasBorder'] = str(button.get('hasBorder', False)).lower() == 'true'
+                    button['hasHoverEffect'] = str(button.get('hasHoverEffect', False)).lower() == 'true'
+                    button['fontSize'] = int(button.get('fontSize', 16))
+                    button['borderWidth'] = int(button.get('borderWidth', 2))
+                    button.setdefault('textColor', '#FFFFFF')
+                    button.setdefault('borderColor', '#000000')
+            except (json.JSONDecodeError, ValueError) as e:
+                logger.warning(f"Erro ao processar custom_buttons: {str(e)}")
                 user_data['custom_buttons'] = []
-        elif user_data.get('custom_buttons') is None:
+        else:
             user_data['custom_buttons'] = []
         
-        # --- CORREÇÃO: Normalizar tipos de dados ao carregar custom_buttons ---
-        for btn in user_data['custom_buttons']:
-            # Garante que os valores booleanos sejam tratados como True/False
-            btn['bold'] = str(btn.get('bold', False)).lower() == 'true'
-            btn['italic'] = str(btn.get('italic', False)).lower() == 'true'
-            btn['hasBorder'] = str(btn.get('hasBorder', False)).lower() == 'true'
-            btn['hasHoverEffect'] = str(btn.get('hasHoverEffect', False)).lower() == 'true'
-            
-            # Garante que 'borderColor' e 'borderWidth' tenham valores padrão se ausentes
-            btn.setdefault('borderColor', '#000000')
-            btn.setdefault('borderWidth', 2) # Garante que borderWidth seja um inteiro
-            btn.setdefault('textColor', '#FFFFFF') # Garante um valor padrão para textColor
-            btn.setdefault('fontSize', 16) # Garante um valor padrão para fontSize
+        # Processar social_links
+        if 'social_links' in user_data and user_data['social_links']:
+            try:
+                if isinstance(user_data['social_links'], str):
+                    user_data['social_links'] = json.loads(user_data['social_links'])
+            except json.JSONDecodeError:
+                logger.warning(f"Erro ao decodificar social_links")
+                user_data['social_links'] = []
+        else:
+            user_data['social_links'] = []
 
         if request.method == 'POST':
             update_data = {
@@ -354,6 +356,7 @@ def admin_panel(username):
                 'profile': request.form.get('profile')
             }
 
+            # Processar social_links
             social_links = []
             for key, value in request.form.items():
                 if key.startswith('social_icon_'):
@@ -372,6 +375,7 @@ def admin_panel(username):
 
             update_data['social_links'] = json.dumps(social_links)
 
+            # Processar custom_buttons
             custom_buttons = []
             button_texts = request.form.getlist('custom_button_text[]')
             button_links = request.form.getlist('custom_button_link[]')
@@ -386,35 +390,33 @@ def admin_panel(username):
             button_border_widths = request.form.getlist('custom_button_border_width[]')
             button_has_hovers = request.form.getlist('custom_button_has_hover[]')
             
+            logger.info(f"Processando {len(button_texts)} botões personalizados")
+            
             for i in range(len(button_texts)):
                 if button_texts[i]:
-                    # Garante que os valores booleanos sejam convertidos corretamente
-                    bold_val = button_text_bolds[i].lower() == 'true'
-                    italic_val = button_text_italics[i].lower() == 'true'
-                    has_border_val = button_has_borders[i].lower() == 'true'
-                    has_hover_val = button_has_hovers[i].lower() == 'true'
-                    
-                    # Converte o tamanho da borda e tamanho da fonte para inteiro com fallback
-                    font_size_val = int(button_font_sizes[i]) if button_font_sizes[i].isdigit() else 16
-                    border_width_val = int(button_border_widths[i]) if button_border_widths[i].isdigit() else 2
-                    
-                    custom_buttons.append({
-                        'text': button_texts[i],
-                        'link': button_links[i],
-                        'color': button_colors[i],
-                        'radius': button_radii[i],
-                        'textColor': button_text_colors[i],
-                        'bold': bold_val,
-                        'italic': italic_val,
-                        'fontSize': font_size_val,
-                        'hasBorder': has_border_val,
-                        'borderColor': button_border_colors[i],
-                        'borderWidth': border_width_val,
-                        'hasHoverEffect': has_hover_val
-                    })
-            
-            update_data['custom_buttons'] = json.dumps(custom_buttons)
+                    try:
+                        custom_buttons.append({
+                            'text': button_texts[i],
+                            'link': button_links[i],
+                            'color': button_colors[i],
+                            'radius': int(button_radii[i]),
+                            'textColor': button_text_colors[i],
+                            'bold': str(button_text_bolds[i]).lower() == 'true',
+                            'italic': str(button_text_italics[i]).lower() == 'true',
+                            'fontSize': int(button_font_sizes[i]),
+                            'hasBorder': str(button_has_borders[i]).lower() == 'true',
+                            'borderColor': button_border_colors[i],
+                            'borderWidth': int(button_border_widths[i]),
+                            'hasHoverEffect': str(button_has_hovers[i]).lower() == 'true'
+                        })
+                    except (ValueError, IndexError) as e:
+                        logger.error(f"Erro ao processar botão {i}: {str(e)}")
+                        continue
 
+            update_data['custom_buttons'] = json.dumps(custom_buttons)
+            logger.info(f"Botões a serem salvos: {update_data['custom_buttons']}")
+
+            # Processar uploads de arquivos
             for field in ['foto', 'background']:
                 file = request.files.get(f'{field}_upload')
                 if file and arquivo_permitido(file.filename):
@@ -422,6 +424,7 @@ def admin_panel(username):
                     if file_url:
                         update_data[field] = file_url
 
+            # Atualizar no banco de dados
             response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
             
             try:
@@ -446,20 +449,38 @@ def admin_panel(username):
         try:
             res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
             user_data = res.data[0] if res.data else {}
-            user_data['social_links'] = json.loads(user_data.get('social_links', '[]'))
-            user_data['custom_buttons'] = json.loads(user_data.get('custom_buttons', '[]'))
             
-            # --- CORREÇÃO: Normalizar tipos de dados no bloco de erro ---
-            for btn in user_data['custom_buttons']:
-                btn['bold'] = str(btn.get('bold', False)).lower() == 'true'
-                btn['italic'] = str(btn.get('italic', False)).lower() == 'true'
-                btn['hasBorder'] = str(btn.get('hasBorder', False)).lower() == 'true'
-                btn['hasHoverEffect'] = str(btn.get('hasHoverEffect', False)).lower() == 'true'
-                
-                btn.setdefault('borderColor', '#000000')
-                btn.setdefault('borderWidth', 2)
-                btn.setdefault('textColor', '#FFFFFF')
-                btn.setdefault('fontSize', 16)
+            # Processar custom_buttons em caso de erro
+            if 'custom_buttons' in user_data and user_data['custom_buttons']:
+                try:
+                    if isinstance(user_data['custom_buttons'], str):
+                        user_data['custom_buttons'] = json.loads(user_data['custom_buttons'])
+                    
+                    for button in user_data['custom_buttons']:
+                        button['bold'] = str(button.get('bold', False)).lower() == 'true'
+                        button['italic'] = str(button.get('italic', False)).lower() == 'true'
+                        button['hasBorder'] = str(button.get('hasBorder', False)).lower() == 'true'
+                        button['hasHoverEffect'] = str(button.get('hasHoverEffect', False)).lower() == 'true'
+                        button['fontSize'] = int(button.get('fontSize', 16))
+                        button['borderWidth'] = int(button.get('borderWidth', 2))
+                        button.setdefault('textColor', '#FFFFFF')
+                        button.setdefault('borderColor', '#000000')
+                except (json.JSONDecodeError, ValueError) as e:
+                    logger.warning(f"Erro ao processar custom_buttons após erro: {str(e)}")
+                    user_data['custom_buttons'] = []
+            else:
+                user_data['custom_buttons'] = []
+            
+            # Processar social_links em caso de erro
+            if 'social_links' in user_data and user_data['social_links']:
+                try:
+                    if isinstance(user_data['social_links'], str):
+                        user_data['social_links'] = json.loads(user_data['social_links'])
+                except json.JSONDecodeError:
+                    logger.warning(f"Erro ao decodificar social_links após erro")
+                    user_data['social_links'] = []
+            else:
+                user_data['social_links'] = []
                 
         except Exception as inner_e:
             logger.error(f"Erro ao recuperar dados após erro inicial: {str(inner_e)}")

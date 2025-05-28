@@ -91,48 +91,40 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            /* Espaçamento entre os elementos */
             margin-bottom: 15px;
         }
 
         .form-group-inline label {
             margin-bottom: 0;
-            /* Remove margem inferior padrão das labels */
             font-weight: normal;
-            /* Ajusta o peso da fonte para checkboxes/radios */
         }
 
         .form-group-inline input[type="checkbox"] {
             width: auto;
-            /* Deixa o checkbox ter largura automática */
             margin-right: 5px;
-            /* Pequena margem à direita do checkbox */
         }
 
-        /* Estilo para o preview do botão personalizado no admin.html */
         .custom-button-item .button-preview {
-            border: 1px solid transparent; /* Adicione uma borda transparente por padrão */
-            transition: all 0.3s ease; /* Transição para o hover */
+            border: 1px solid transparent;
+            transition: all 0.3s ease;
         }
-        /* Estilo para quando a borda está ativada no preview */
+
         .custom-button-item .button-preview.has-border-preview {
             border-style: solid;
         }
 
-        /* Classes para o efeito hover no preview */
         .custom-button-item .button-preview.hover-effect-preview:hover {
             transform: translateY(-3px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
-        /* Estilo para alinhar os campos de borda */
         .border-options-group {
             display: flex;
             align-items: center;
             gap: 15px;
         }
         .border-options-group .form-group-inline {
-            margin-bottom: 0; /* Remove margem inferior para alinhamento */
+            margin-bottom: 0;
         }
     </style>
 </head>
@@ -180,7 +172,6 @@
                         <label for="bio">Biografia</label>
                         <textarea id="bio" name="bio" class="form-textarea">{{ dados.bio }}</textarea>
                     </div>
-
 
                     <div class="form-group">
                         <label for="profile">URL da sua página</label>
@@ -248,7 +239,32 @@
                     </div>
 
                     <div id="custom-buttons-container">
-                        </div>
+                        {% if dados.custom_buttons %}
+                            {% for button in dados.custom_buttons %}
+                            <div class="custom-button-item">
+                                <div style="flex-grow: 1;">
+                                    <div class="button-preview {% if button.hasBorder %}has-border-preview{% endif %} {% if button.hasHoverEffect %}hover-effect-preview{% endif %}"
+                                        style="background: {{ button.color }}; border-radius: {{ button.radius }}px; padding: 8px; margin-bottom: 8px; color: {{ button.textColor }}; font-weight: {{ 'bold' if button.bold else 'normal' }}; font-style: {{ 'italic' if button.italic else 'normal' }}; font-size: {{ button.fontSize }}px; {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor }};{% endif %}">
+                                        {{ button.text }}
+                                    </div>
+                                    <input type="hidden" name="custom_button_text[]" value="{{ button.text }}">
+                                    <input type="hidden" name="custom_button_link[]" value="{{ button.link }}">
+                                    <input type="hidden" name="custom_button_color[]" value="{{ button.color }}">
+                                    <input type="hidden" name="custom_button_radius[]" value="{{ button.radius }}">
+                                    <input type="hidden" name="custom_button_text_color[]" value="{{ button.textColor }}">
+                                    <input type="hidden" name="custom_button_text_bold[]" value="{{ 'true' if button.bold else 'false' }}">
+                                    <input type="hidden" name="custom_button_text_italic[]" value="{{ 'true' if button.italic else 'false' }}">
+                                    <input type="hidden" name="custom_button_font_size[]" value="{{ button.fontSize }}">
+                                    <input type="hidden" name="custom_button_has_border[]" value="{{ 'true' if button.hasBorder else 'false' }}">
+                                    <input type="hidden" name="custom_button_border_color[]" value="{{ button.borderColor }}">
+                                    <input type="hidden" name="custom_button_border_width[]" value="{{ button.borderWidth }}">
+                                    <input type="hidden" name="custom_button_has_hover[]" value="{{ 'true' if button.hasHoverEffect else 'false' }}">
+                                </div>
+                                <span class="remove-item"><i class="fas fa-times"></i></span>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
 
                     <div id="icon-modal" class="modal">
                         <div class="modal-content">
@@ -269,7 +285,6 @@
                             </div>
                             <div class="page-info" style="text-align: center; margin-top: 10px; font-size: 0.9rem; color: #666;">
                                 Página <span id="current-page">1</span></div>
-
 
                             <button type="button" id="save-icon" class="btn-save">Salvar Ícone</button>
                         </div>
@@ -364,7 +379,7 @@
                 const reader = new FileReader();
                 reader.onload = function (e) {
                     previewImage.src = e.target.result;
-                    previewImage.style.display = 'block'; // Mostra a imagem
+                    previewImage.style.display = 'block';
                     previewContainer.classList.add('preview-active');
                     fileInfo.textContent = input.files[0].name;
                     fileWrapper.classList.add('has-file');
@@ -372,7 +387,7 @@
                 reader.readAsDataURL(input.files[0]);
             } else {
                 previewImage.src = '';
-                previewImage.style.display = 'none'; // Esconde a imagem se não houver arquivo
+                previewImage.style.display = 'none';
                 previewContainer.classList.remove('preview-active');
                 fileInfo.textContent = 'Nenhum arquivo selecionado';
                 fileWrapper.classList.remove('has-file');
@@ -396,17 +411,6 @@
                 document.querySelector('#background_upload').closest('.file-upload-wrapper').classList.add('has-file');
             }
 
-            try {
-                const socialLinks = {{ dados.social_links | tojson | safe }};
-                renderExistingSocialIcons(socialLinks);
-
-                const customButtons = {{ dados.custom_buttons | tojson | safe }};
-                // --- CORREÇÃO: Usar uma função para renderizar os botões existentes ---
-                renderExistingCustomButtons(customButtons);
-            } catch (e) {
-                console.error('Erro ao carregar dados existentes:', e);
-            }
-
             // Função auxiliar para escapar HTML (prevenir XSS)
             function escapeHtml(text) {
                 const map = {
@@ -419,66 +423,94 @@
                 return text.replace(/[&<>"']/g, function (m) { return map[m]; });
             }
 
-            // --- NOVA FUNÇÃO: renderExistingCustomButtons ---
-            function renderExistingCustomButtons(buttonsArray) {
+            // Função para renderizar botões personalizados
+            function renderCustomButton(buttonData) {
                 const customButtonsContainer = document.getElementById('custom-buttons-container');
-                customButtonsContainer.innerHTML = ''; // Limpa antes de renderizar (evita duplicação ao carregar)
+                
+                const buttonField = document.createElement('div');
+                buttonField.className = 'custom-button-item';
 
-                buttonsArray.forEach(button => {
-                    const buttonField = document.createElement('div');
-                    buttonField.className = 'custom-button-item';
+                const textColor = buttonData.textColor || '#FFFFFF';
+                const bold = buttonData.bold || false;
+                const italic = buttonData.italic || false;
+                const fontSize = buttonData.fontSize || 16;
+                const hasBorder = buttonData.hasBorder || false;
+                const borderColor = buttonData.borderColor || '#000000';
+                const borderWidth = buttonData.borderWidth || 2;
+                const hasHoverEffect = buttonData.hasHoverEffect || false;
 
-                    // Valores já normalizados para booleanos/números no app.py
-                    const textColor = button.textColor;
-                    const bold = button.bold;
-                    const italic = button.italic;
-                    const fontSize = button.fontSize;
-                    const hasBorder = button.hasBorder;
-                    const borderColor = button.borderColor;
-                    const borderWidth = button.borderWidth;
-                    const hasHoverEffect = button.hasHoverEffect;
+                let borderStyle = '';
+                let buttonPreviewClasses = ['button-preview'];
+                if (hasBorder) {
+                    borderStyle = `border: ${borderWidth}px solid ${borderColor};`;
+                    buttonPreviewClasses.push('has-border-preview');
+                }
+                if (hasHoverEffect) {
+                    buttonPreviewClasses.push('hover-effect-preview');
+                }
 
-                    let borderStyle = '';
-                    let buttonPreviewClasses = ['button-preview'];
-                    if (hasBorder) {
-                        borderStyle = `border: ${borderWidth}px solid ${borderColor};`;
-                        buttonPreviewClasses.push('has-border-preview');
-                    }
-                    if (hasHoverEffect) {
-                        buttonPreviewClasses.push('hover-effect-preview');
-                    }
-
-                    buttonField.innerHTML = `
-                        <div style="flex-grow: 1;">
-                            <div class="${buttonPreviewClasses.join(' ')}" 
-                                style="background: ${button.color}; border-radius: ${button.radius}px; padding: 8px; margin-bottom: 8px; color: ${textColor}; font-weight: ${bold ? 'bold' : 'normal'}; font-style: ${italic ? 'italic' : 'normal'}; font-size: ${fontSize}px; ${borderStyle}">
-                                ${escapeHtml(button.text)}
-                            </div>
-                            <input type="hidden" name="custom_button_text[]" value="${escapeHtml(button.text)}">
-                            <input type="hidden" name="custom_button_link[]" value="${escapeHtml(button.link)}">
-                            <input type="hidden" name="custom_button_color[]" value="${escapeHtml(button.color)}">
-                            <input type="hidden" name="custom_button_radius[]" value="${escapeHtml(button.radius)}">
-                            <input type="hidden" name="custom_button_text_color[]" value="${escapeHtml(textColor)}">
-                            <input type="hidden" name="custom_button_text_bold[]" value="${bold}">
-                            <input type="hidden" name="custom_button_text_italic[]" value="${italic}">
-                            <input type="hidden" name="custom_button_font_size[]" value="${fontSize}">
-                            <input type="hidden" name="custom_button_has_border[]" value="${hasBorder}">
-                            <input type="hidden" name="custom_button_border_color[]" value="${escapeHtml(borderColor)}">
-                            <input type="hidden" name="custom_button_border_width[]" value="${escapeHtml(borderWidth)}">
-                            <input type="hidden" name="custom_button_has_hover[]" value="${hasHoverEffect}">
+                buttonField.innerHTML = `
+                    <div style="flex-grow: 1;">
+                        <div class="${buttonPreviewClasses.join(' ')}" 
+                            style="background: ${buttonData.color}; border-radius: ${buttonData.radius}px; padding: 8px; margin-bottom: 8px; color: ${textColor}; font-weight: ${bold ? 'bold' : 'normal'}; font-style: ${italic ? 'italic' : 'normal'}; font-size: ${fontSize}px; ${borderStyle}">
+                            ${escapeHtml(buttonData.text)}
                         </div>
+                        <input type="hidden" name="custom_button_text[]" value="${escapeHtml(buttonData.text)}">
+                        <input type="hidden" name="custom_button_link[]" value="${escapeHtml(buttonData.link)}">
+                        <input type="hidden" name="custom_button_color[]" value="${escapeHtml(buttonData.color)}">
+                        <input type="hidden" name="custom_button_radius[]" value="${escapeHtml(buttonData.radius)}">
+                        <input type="hidden" name="custom_button_text_color[]" value="${escapeHtml(textColor)}">
+                        <input type="hidden" name="custom_button_text_bold[]" value="${bold}">
+                        <input type="hidden" name="custom_button_text_italic[]" value="${italic}">
+                        <input type="hidden" name="custom_button_font_size[]" value="${fontSize}">
+                        <input type="hidden" name="custom_button_has_border[]" value="${hasBorder}">
+                        <input type="hidden" name="custom_button_border_color[]" value="${escapeHtml(borderColor)}">
+                        <input type="hidden" name="custom_button_border_width[]" value="${escapeHtml(borderWidth)}">
+                        <input type="hidden" name="custom_button_has_hover[]" value="${hasHoverEffect}">
+                    </div>
+                    <span class="remove-item"><i class="fas fa-times"></i></span>
+                `;
+                customButtonsContainer.appendChild(buttonField);
+
+                // Adicionar evento de remoção para o botão recém-criado
+                buttonField.querySelector('.remove-item').addEventListener('click', function () {
+                    this.closest('.custom-button-item').remove();
+                });
+            }
+
+            // Função para renderizar ícones sociais existentes
+            function renderExistingSocialIcons(socialLinks) {
+                const socialIconsContainer = document.getElementById('social-icons-container');
+                socialIconsContainer.innerHTML = '';
+
+                socialLinks.forEach(link => {
+                    const newIconField = document.createElement('div');
+                    newIconField.className = 'social-item';
+                    const iconPath = `/static/icons/${link.icon}.png`;
+
+                    newIconField.innerHTML = `
+                        <img src="${iconPath}" alt="${link.icon}" width="24">
+                        <input type="text" name="social_icon_${link.icon}"
+                                value="${escapeHtml(link.url)}"
+                                placeholder="Insira o link para ${link.icon.replace(/-/g, ' ')}"
+                                class="form-input" required>
                         <span class="remove-item"><i class="fas fa-times"></i></span>
                     `;
-                    customButtonsContainer.appendChild(buttonField);
+                    socialIconsContainer.appendChild(newIconField);
 
-                    // Adicionar evento de remoção para o botão recém-criado
-                    buttonField.querySelector('.remove-item').addEventListener('click', function () {
-                        this.closest('.custom-button-item').remove();
+                    newIconField.querySelector('.remove-item').addEventListener('click', function () {
+                        this.closest('.social-item').remove();
                     });
                 });
             }
-            // --- FIM da NOVA FUNÇÃO ---
 
+            // Carregar dados existentes
+            try {
+                const socialLinks = {{ dados.social_links | tojson | safe }};
+                renderExistingSocialIcons(socialLinks);
+            } catch (e) {
+                console.error('Erro ao carregar ícones sociais:', e);
+            }
 
             // Prevenir que cliques dentro do conteúdo do modal fechem o modal (propagação)
             document.querySelector('#icon-modal .modal-content').addEventListener('click', (e) => {
@@ -498,7 +530,7 @@
             const iconModalCloseBtn = document.querySelector('.icon-modal-close');
             const buttonModalCloseBtn = document.querySelector('.button-modal-close');
 
-            const iconsGrid = document.querySelector('#icon-modal .icons-grid'); // Seleciona a grid dentro do modal de ícones
+            const iconsGrid = document.querySelector('#icon-modal .icons-grid');
             const iconSearchInput = document.getElementById('icon-search');
             const prevIconPageBtn = document.getElementById('prev-icon-page');
             const nextIconPageBtn = document.getElementById('next-icon-page');
@@ -559,7 +591,7 @@
 
             let filteredIcons = [];
             let currentPage = 1;
-            const iconsPerPage = 8; // Exibir 8 ícones por página (2 linhas de 4)
+            const iconsPerPage = 8;
 
             function renderIcons() {
                 iconsGrid.innerHTML = '';
@@ -605,7 +637,7 @@
                         icon.name.toLowerCase().includes(searchTerm)
                     );
                 }
-                currentPage = 1; // Reseta para a primeira página ao filtrar
+                currentPage = 1;
                 renderIcons();
             }
 
@@ -615,7 +647,6 @@
                 buttonModal.classList.remove('active', 'show');
                 document.body.classList.remove('modal-open');
             }
-
 
             // Event Listeners para Paginação e Busca
             iconSearchInput.addEventListener('input', filterAndRenderIcons);
@@ -737,7 +768,6 @@
                 const buttonHasHover = document.getElementById('button-has-hover').checked;
 
                 if (buttonText && buttonLink) {
-                    // Crie um objeto com as propriedades do novo botão
                     const newButtonData = {
                         text: buttonText,
                         link: buttonLink,
@@ -753,10 +783,7 @@
                         hasHoverEffect: buttonHasHover
                     };
                     
-                    // --- CORREÇÃO: Adicionar o novo botão à lista de botões existentes renderizando-o ---
-                    renderExistingCustomButtons([newButtonData]); // Reusa a função de renderização para adicionar o novo
-                    // O `renderExistingCustomButtons` já apenda ao container, não precisamos de um `newButtonField` separado aqui.
-
+                    renderCustomButton(newButtonData);
                     closeModals();
                 } else {
                     alert('Por favor, preencha o texto e o link do botão!');
@@ -767,7 +794,6 @@
             iconModalCloseBtn.addEventListener('click', closeModals);
             buttonModalCloseBtn.addEventListener('click', closeModals);
 
-
             // Fechar modal ao clicar fora da área do conteúdo do modal
             window.addEventListener('click', function (event) {
                 if (event.target === iconModal || event.target === buttonModal) {
@@ -775,31 +801,12 @@
                 }
             });
 
-            // Função para renderizar ícones sociais existentes
-            function renderExistingSocialIcons(socialLinks) {
-                const socialIconsContainer = document.getElementById('social-icons-container');
-                socialIconsContainer.innerHTML = '';
-
-                socialLinks.forEach(link => {
-                    const newIconField = document.createElement('div');
-                    newIconField.className = 'social-item';
-                    const iconPath = `/static/icons/${link.icon}.png`;
-
-                    newIconField.innerHTML = `
-                        <img src="${iconPath}" alt="${link.icon}" width="24">
-                        <input type="text" name="social_icon_${link.icon}"
-                                value="${escapeHtml(link.url)}"
-                                placeholder="Insira o link para ${link.icon.replace(/-/g, ' ')}"
-                                class="form-input" required>
-                        <span class="remove-item"><i class="fas fa-times"></i></span>
-                    `;
-                    socialIconsContainer.appendChild(newIconField);
-
-                    newIconField.querySelector('.remove-item').addEventListener('click', function () {
-                        this.closest('.social-item').remove();
-                    });
+            // Adicionar eventos de remoção para os botões existentes
+            document.querySelectorAll('.custom-button-item .remove-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    this.closest('.custom-button-item').remove();
                 });
-            }
+            });
 
         }); // FIM DO DOMContentLoaded
     </script>
@@ -808,5 +815,4 @@
         <span class="preview-float-tooltip">Visualizar Página</span>
     </a>
 </body>
-
 </html>

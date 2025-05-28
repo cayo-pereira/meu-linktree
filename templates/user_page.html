@@ -18,7 +18,7 @@
     </a>
 </div>
 {% endif %}
-<body {% if dados.background %}style="background-image: url('{{ url_for('static', filename=dados.background) if dados.background.startswith('uploads/') else dados.background }}'); background-size: cover; background-position: center; background-attachment: fixed;"{% endif %}>
+<body {% if dados.background %}style="background-image: url('{{ dados.background if dados.background.startswith('http') else url_for('static', filename=dados.background) }}'); background-size: cover; background-position: center; background-attachment: fixed;"{% endif %}>
     <div class="container">
         {% if dados.foto %}
         <img src="{{ dados.foto if dados.foto.startswith('http') else url_for('static', filename=dados.foto) }}" 
@@ -46,11 +46,11 @@
                     {% if button.hasHoverEffect %}link-button-hover-{{ loop.index }}{% endif %}"
                     style="background: {{ button.color }}; 
                             border-radius: {{ button.radius }}px; 
-                            color: {{ button.textColor if button.textColor else 'white' }}; 
+                            color: {{ button.textColor }}; 
                             font-weight: {{ 'bold' if button.bold else 'normal' }}; 
                             font-style: {{ 'italic' if button.italic else 'normal' }}; 
-                            font-size: {{ button.fontSize if button.fontSize else '16' }}px;
-                            {% if button.hasBorder %}border: {{ button.borderWidth | default(2) }}px solid {{ button.borderColor }};{% endif %}"
+                            font-size: {{ button.fontSize }}px;
+                            {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor }};{% endif %}"
                     target="_blank">
                     {{ button.text }}
                 </a>
@@ -58,8 +58,6 @@
         {% endif %}
 
         <style>
-            /* Os estilos gerais para .link-button-custom devem estar em style.css */
-            /* Aqui, estamos garantindo que os estilos dinâmicos sobrescrevam o que for necessário */
             .link-button-custom {
                 display: block;
                 width: 100%;
@@ -68,10 +66,9 @@
                 margin: 10px auto;
                 text-align: center;
                 text-decoration: none;
-                transition: all 0.3s ease; /* Transição base para o hover */
+                transition: all 0.3s ease;
             }
 
-            /* Estilos dinâmicos para o efeito hover */
             {% if dados.custom_buttons %}
                 {% for button in dados.custom_buttons %}
                     {% if button.hasHoverEffect %}
