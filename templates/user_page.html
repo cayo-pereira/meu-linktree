@@ -14,7 +14,7 @@
 <div style="position: fixed; bottom: 20px; right: 20px;">
     <a href="{{ url_for('admin_panel', username=dados.profile) }}" 
        style="background: #4361ee; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none;">
-       <i class="fas fa-edit"></i> Editar Página
+        <i class="fas fa-edit"></i> Editar Página
     </a>
 </div>
 {% endif %}
@@ -43,8 +43,12 @@
             {% for button in dados.custom_buttons %}
                 <a href="{{ button.link }}" 
                     class="link-button-custom"
-                    data-color="{{ button.color }}"
-                    data-radius="{{ button.radius }}"
+                    style="background: {{ button.color }}; 
+                           border-radius: {{ button.radius }}px; 
+                           color: {{ button.textColor if button.textColor else 'white' }}; 
+                           font-weight: {{ 'bold' if button.bold else 'normal' }}; 
+                           font-style: {{ 'italic' if button.italic else 'normal' }}; 
+                           font-size: {{ button.fontSize if button.fontSize else '16' }}px;"
                     target="_blank">
                     {{ button.text }}
                 </a>
@@ -52,17 +56,16 @@
         {% endif %}
 
         <style>
+            /* Os estilos gerais para .link-button-custom devem estar em style.css */
+            /* Aqui, estamos garantindo que os estilos dinâmicos sobrescrevam o que for necessário */
             .link-button-custom {
                 display: block;
                 width: 100%;
                 max-width: 350px;
                 padding: 14px;
                 margin: 10px auto;
-                color: white;
                 text-align: center;
                 text-decoration: none;
-                font-size: 16px;
-                font-weight: 500;
                 transition: all 0.3s ease;
             }
         </style>
@@ -86,24 +89,6 @@
                 document.body.style.opacity = 1;
             }, 100);
         });
-    </script>
-    <script>
-    document.querySelectorAll('.link-button-custom').forEach(button => {
-        const color = button.dataset.color;
-        const radius = button.dataset.radius;
-        button.style.cssText = `background: ${color}; border-radius: ${radius}px`;
-    });
-    </script>
-    <script>
-    // Aplicar estilos via JavaScript
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.link-button-custom').forEach(button => {
-            const color = button.dataset.color;
-            const radius = button.dataset.radius;
-            button.style.backgroundColor = color;
-            button.style.borderRadius = `${radius}px`;
-        });
-    });
     </script>
 </body>
 </html>

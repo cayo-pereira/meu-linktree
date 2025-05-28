@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 from supabase.lib.client_options import ClientOptions
 from uuid import uuid4
-import json
+import json # Importar json
 import os
 import requests
 import re
@@ -196,11 +196,22 @@ def user_page(profile):
         if 'custom_buttons' in user_data and user_data['custom_buttons']:
             try:
                 user_data['custom_buttons'] = json.loads(user_data['custom_buttons'])
-            except:
+            except json.JSONDecodeError:
+                logger.warning(f"Erro ao decodificar custom_buttons para o usuário. Inicializando como vazio.")
                 user_data['custom_buttons'] = []
         else:
             user_data['custom_buttons'] = []
         
+        # Converter social_links de JSON string para lista/dict
+        if 'social_links' in user_data and user_data['social_links']:
+            try:
+                user_data['social_links'] = json.loads(user_data['social_links'])
+            except json.JSONDecodeError:
+                logger.warning(f"Erro ao decodificar social_links para o usuário. Inicializando como vazio.")
+                user_data['social_links'] = []
+        else:
+            user_data['social_links'] = []
+
         response = make_response(render_template('user_page.html', dados=user_data))
         response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
         response.headers['Pragma'] = 'no-cache'
@@ -255,12 +266,9 @@ def callback():
                 'email': user.email,
                 'foto': '',
                 'active': True,
-                'instagram': '',
-                'linkedin': '',
-                'github': '',
-                'whatsapp': '',
-                'curriculo': '',
+                # Removendo campos fixos, eles serão tratados por social_links
                 'bio': 'Olá! Esta é minha página pessoal.',
+                'social_links': '[]', # Inicializa como array JSON vazio
                 'custom_buttons': '[]'  # Inicializa como array JSON vazio
             }
             
@@ -296,8 +304,9 @@ def callback():
 @app.route('/admin/<username>', methods=['GET', 'POST'])
 def admin_panel(username):
     if 'user_id' not in session:
-        return redirect(url_for('login'))
+        return redirect(url_for('login_google')) # Redireciona para login do Google
     
+    user_data = {} # Inicializa user_data para garantir que exista
     try:
         supabase.postgrest.auth(session['access_token'])
         res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
@@ -351,7 +360,8 @@ def admin_panel(username):
                 flash("⚠️ Você pode adicionar no máximo 10 ícones", "warning")
                 social_links = social_links[:10]
 
-            update_data['social_links'] = social_links
+            # CONVERTER social_links PARA JSON STRING ANTES DE ENVIAR AO SUPABASE
+            update_data['social_links'] = json.dumps(social_links)
 
             # Processar botões personalizados
             custom_buttons = []
@@ -359,17 +369,33 @@ def admin_panel(username):
             button_links = request.form.getlist('custom_button_link[]')
             button_colors = request.form.getlist('custom_button_color[]')
             button_radii = request.form.getlist('custom_button_radius[]')
+            # NOVOS CAMPOS
+            button_text_colors = request.form.getlist('custom_button_text_color[]')
+            button_text_bolds = request.form.getlist('custom_button_text_bold[]')
+            button_text_italics = request.form.getlist('custom_button_text_italic[]')
+            button_font_sizes = request.form.getlist('custom_button_font_size[]')
             
             for i in range(len(button_texts)):
                 if button_texts[i]:
+                    # Garante que os valores booleanos e inteiros sejam armazenados corretamente
+                    # O JavaScript envia 'true' ou 'false' como strings, convertemos para booleano
+                    bold_val = button_text_bolds[i].lower() == 'true'
+                    italic_val = button_text_italics[i].lower() == 'true'
+                    font_size_val = int(button_font_sizes[i]) if button_font_sizes[i].isdigit() else 16 # Fallback para int
+                    
                     custom_buttons.append({
                         'text': button_texts[i],
                         'link': button_links[i],
                         'color': button_colors[i],
-                        'radius': button_radii[i]
+                        'radius': button_radii[i],
+                        'textColor': button_text_colors[i],
+                        'bold': bold_val,
+                        'italic': italic_val,
+                        'fontSize': font_size_val
                     })
             
-            update_data['custom_buttons'] = custom_buttons
+            # CONVERTER custom_buttons PARA JSON STRING ANTES DE ENVIAR AO SUPABASE
+            update_data['custom_buttons'] = json.dumps(custom_buttons)
 
             # Processar uploads
             for field in ['foto', 'background']:
@@ -390,6 +416,7 @@ def admin_panel(username):
                     
                     # Redireciona para a página do usuário com cache busting
                     profile = update_data.get('profile', username)
+                    flash("✅ Alterações salvas com sucesso!", "success")
                     return redirect(f"{url_for('user_page', profile=profile)}?v={uuid4().hex[:8]}")
                 else:
                     flash("❌ Nenhum dado foi retornado ao salvar", "error")
@@ -402,6 +429,17 @@ def admin_panel(username):
     except Exception as e:
         logger.error(f"ERRO: {str(e)}", exc_info=True)
         flash("⚠️ Erro durante o processamento", "warning")
+        # Tenta carregar os dados do usuário novamente para evitar erro na renderização
+        # caso a exceção ocorra antes de user_data ser completamente populado.
+        try:
+            res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
+            user_data = res.data[0] if res.data else {}
+            # Garante que social_links e custom_buttons sejam listas vazias se não existirem
+            user_data['social_links'] = json.loads(user_data.get('social_links', '[]'))
+            user_data['custom_buttons'] = json.loads(user_data.get('custom_buttons', '[]'))
+        except Exception as inner_e:
+            logger.error(f"Erro ao recuperar dados após erro inicial: {str(inner_e)}")
+            user_data = {} # Garante que `dados` não seja None ou mal-formado
         return render_template('admin.html', dados=user_data)
 
 @app.route('/logout')

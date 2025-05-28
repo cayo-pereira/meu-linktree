@@ -85,6 +85,24 @@
             border-right: none;
             border-radius: 4px 0 0 4px;
         }
+
+        /* Estilos adicionais para os novos campos de botão */
+        .form-group-inline {
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Espaçamento entre os elementos */
+            margin-bottom: 15px;
+        }
+
+        .form-group-inline label {
+            margin-bottom: 0; /* Remove margem inferior padrão das labels */
+            font-weight: normal; /* Ajusta o peso da fonte para checkboxes/radios */
+        }
+        
+        .form-group-inline input[type="checkbox"] {
+            width: auto; /* Deixa o checkbox ter largura automática */
+            margin-right: 5px; /* Pequena margem à direita do checkbox */
+        }
     </style>
 </head>
 
@@ -196,14 +214,15 @@
                     </div>
 
                     <div id="social-icons-container">
-                        </div>
+                    </div>
 
                     <div id="custom-buttons-container">
-                        </div>
+                    </div>
 
                     <div id="icon-modal" class="modal">
                         <div class="modal-content">
-                            <span class="close icon-modal-close">&times;</span> <h3>Selecione um ícone</h3>
+                            <span class="close icon-modal-close">&times;</span>
+                            <h3>Selecione um ícone</h3>
 
                             <div class="form-group">
                                 <input type="text" id="icon-search" class="form-input" placeholder="Buscar ícones...">
@@ -221,12 +240,14 @@
                                 Página <span id="current-page">1</span></div>
 
 
-                            <button type="button" id="save-icon" class="btn-save">Salvar Ícone</button> </div>
+                            <button type="button" id="save-icon" class="btn-save">Salvar Ícone</button>
+                        </div>
                     </div>
 
                     <div id="button-modal" class="modal">
                         <div class="modal-content">
-                            <span class="close button-modal-close">&times;</span> <h3>Criar Novo Botão</h3>
+                            <span class="close button-modal-close">&times;</span>
+                            <h3>Criar Novo Botão</h3>
 
                             <div class="form-group">
                                 <label for="button-text">Texto do Botão</label>
@@ -249,7 +270,23 @@
                                 <span id="radius-value">10px</span>
                             </div>
 
-                            <button type="button" id="save-button" class="btn-save">Salvar Botão</button> </div>
+                            <div class="form-group">
+                                <label for="button-text-color">Cor do Texto</label>
+                                <input type="color" id="button-text-color" value="#FFFFFF">
+                            </div>
+                            <div class="form-group-inline">
+                                <label>Estilo do Texto:</label>
+                                <input type="checkbox" id="button-text-bold" name="button-text-bold">
+                                <label for="button-text-bold">Negrito</label>
+                                <input type="checkbox" id="button-text-italic" name="button-text-italic">
+                                <label for="button-text-italic">Itálico</label>
+                            </div>
+                            <div class="form-group">
+                                <label for="button-font-size">Tamanho da Fonte (px)</label>
+                                <input type="number" id="button-font-size" min="12" max="30" value="16" class="form-input">
+                            </div>
+                            <button type="button" id="save-button" class="btn-save">Salvar Botão</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -316,15 +353,26 @@
                 customButtons.forEach(button => {
                     const buttonField = document.createElement('div');
                     buttonField.className = 'custom-button-item';
+                    
+                    // Definir valores padrão para novos campos se não existirem
+                    const textColor = button.textColor || '#FFFFFF';
+                    const bold = button.bold === true || button.bold === 'true'; // Garante booleano
+                    const italic = button.italic === true || button.italic === 'true'; // Garante booleano
+                    const fontSize = button.fontSize || '16';
+
                     buttonField.innerHTML = `
                         <div style="flex-grow: 1;">
-                            <div class="button-preview" style="background: ${button.color}; border-radius: ${button.radius}px; padding: 8px; margin-bottom: 8px; color: white;">
+                            <div class="button-preview" style="background: ${button.color}; border-radius: ${button.radius}px; padding: 8px; margin-bottom: 8px; color: ${textColor}; font-weight: ${bold ? 'bold' : 'normal'}; font-style: ${italic ? 'italic' : 'normal'}; font-size: ${fontSize}px;">
                                 ${button.text}
                             </div>
                             <input type="hidden" name="custom_button_text[]" value="${escapeHtml(button.text)}">
                             <input type="hidden" name="custom_button_link[]" value="${escapeHtml(button.link)}">
                             <input type="hidden" name="custom_button_color[]" value="${escapeHtml(button.color)}">
                             <input type="hidden" name="custom_button_radius[]" value="${escapeHtml(button.radius)}">
+                            <input type="hidden" name="custom_button_text_color[]" value="${escapeHtml(textColor)}">
+                            <input type="hidden" name="custom_button_text_bold[]" value="${bold}">
+                            <input type="hidden" name="custom_button_text_italic[]" value="${italic}">
+                            <input type="hidden" name="custom_button_font_size[]" value="${fontSize}">
                         </div>
                         <span class="remove-item"><i class="fas fa-times"></i></span>
                     `;
@@ -453,7 +501,7 @@
                     iconElement.className = 'icon-option';
                     iconElement.innerHTML = `
                         <img src="${icon.path}" alt="${icon.name}">
-                        <p>${icon.name.replace(/-/g, ' ')}</p> `;
+                        <p>${icon.name.replace(/-/g, ' ')}</p>`;
                     iconElement.addEventListener('click', function () {
                         document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
                         this.classList.add('selected');
@@ -568,6 +616,16 @@
                 buttonModal.classList.add('show');
                 document.body.classList.add('modal-open');
                 setTimeout(() => buttonModal.classList.add('active'), 50);
+                // Resetar valores do modal ao abrir para um novo botão
+                document.getElementById('button-text').value = '';
+                document.getElementById('button-link').value = '';
+                document.getElementById('button-color').value = '#4CAF50';
+                document.getElementById('button-radius').value = '10';
+                document.getElementById('radius-value').textContent = '10px';
+                document.getElementById('button-text-color').value = '#FFFFFF';
+                document.getElementById('button-text-bold').checked = false;
+                document.getElementById('button-text-italic').checked = false;
+                document.getElementById('button-font-size').value = '16';
             });
 
             // Salvar botão personalizado - ALTERADO para PREVENT DEFAULT
@@ -577,19 +635,27 @@
                 const buttonLink = document.getElementById('button-link').value;
                 const buttonColor = document.getElementById('button-color').value;
                 const buttonRadius = document.getElementById('button-radius').value;
+                const buttonTextColor = document.getElementById('button-text-color').value; // NOVO
+                const buttonTextBold = document.getElementById('button-text-bold').checked; // NOVO
+                const buttonTextItalic = document.getElementById('button-text-italic').checked; // NOVO
+                const buttonFontSize = document.getElementById('button-font-size').value; // NOVO
 
                 if (buttonText && buttonLink) {
                     const newButtonField = document.createElement('div');
                     newButtonField.className = 'custom-button-item';
                     newButtonField.innerHTML = `
                         <div style="flex-grow: 1;">
-                            <div class="button-preview" style="background: ${buttonColor}; border-radius: ${buttonRadius}px; padding: 8px; margin-bottom: 8px; color: white;">
+                            <div class="button-preview" style="background: ${buttonColor}; border-radius: ${buttonRadius}px; padding: 8px; margin-bottom: 8px; color: ${buttonTextColor}; font-weight: ${buttonTextBold ? 'bold' : 'normal'}; font-style: ${buttonTextItalic ? 'italic' : 'normal'}; font-size: ${buttonFontSize}px;">
                                 ${buttonText}
                             </div>
                             <input type="hidden" name="custom_button_text[]" value="${escapeHtml(buttonText)}">
                             <input type="hidden" name="custom_button_link[]" value="${escapeHtml(buttonLink)}">
                             <input type="hidden" name="custom_button_color[]" value="${escapeHtml(buttonColor)}">
                             <input type="hidden" name="custom_button_radius[]" value="${escapeHtml(buttonRadius)}">
+                            <input type="hidden" name="custom_button_text_color[]" value="${escapeHtml(buttonTextColor)}">
+                            <input type="hidden" name="custom_button_text_bold[]" value="${buttonTextBold}">
+                            <input type="hidden" name="custom_button_text_italic[]" value="${buttonTextItalic}">
+                            <input type="hidden" name="custom_button_font_size[]" value="${buttonFontSize}">
                         </div>
                         <span class="remove-item"><i class="fas fa-times"></i></span>
                     `;
@@ -602,6 +668,10 @@
                     document.getElementById('button-color').value = '#4CAF50';
                     document.getElementById('button-radius').value = '10';
                     document.getElementById('radius-value').textContent = '10px';
+                    document.getElementById('button-text-color').value = '#FFFFFF'; // Resetar cor do texto
+                    document.getElementById('button-text-bold').checked = false; // Resetar negrito
+                    document.getElementById('button-text-italic').checked = false; // Resetar itálico
+                    document.getElementById('button-font-size').value = '16'; // Resetar tamanho da fonte
 
                     // Adicionar evento de remoção
                     newButtonField.querySelector('.remove-item').addEventListener('click', function () {
