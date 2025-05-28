@@ -2,510 +2,541 @@
 <html lang="pt-BR">
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Painel Administrativo</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-  <style>
-    /* Estilos para o preview de imagem */
-    .image-preview-container {
-      margin-top: 15px;
-      display: none;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilos para o preview de imagem */
+        .image-preview-container {
+            margin-top: 15px;
+            display: none;
+        }
 
-    .image-preview {
-      width: 100%;
-      max-height: 200px;
-      object-fit: contain;
-      border-radius: var(--border-radius);
-      border: 1px dashed var(--primary-color);
-      padding: 5px;
-      background-color: rgba(67, 97, 238, 0.05);
-      margin-top: 10px;
-    }
+        .image-preview {
+            width: 100%;
+            max-height: 200px;
+            object-fit: contain;
+            border-radius: var(--border-radius);
+            border: 1px dashed var(--primary-color);
+            padding: 5px;
+            background-color: rgba(67, 97, 238, 0.05);
+            margin-top: 10px;
+        }
 
-    .preview-active {
-      display: block;
-    }
+        .preview-active {
+            display: block;
+        }
 
-    .file-upload-wrapper {
-      position: relative;
-      margin-bottom: 15px;
-    }
+        .file-upload-wrapper {
+            position: relative;
+            margin-bottom: 15px;
+        }
 
-    .file-info {
-      display: none;
-      padding: 8px;
-      background-color: #f0f0f0;
-      border-radius: var(--border-radius);
-      margin-top: 5px;
-      font-size: 0.9rem;
-      color: #555;
-    }
+        .file-info {
+            display: none;
+            padding: 8px;
+            background-color: #f0f0f0;
+            border-radius: var(--border-radius);
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #555;
+        }
 
-    .has-file .file-info {
-      display: block;
-    }
+        .has-file .file-info {
+            display: block;
+        }
 
-    .has-file .file-label {
-      background-color: var(--success-color);
-      color: white;
-    }
+        .has-file .file-label {
+            background-color: var(--success-color);
+            color: white;
+        }
 
-    .btn-delete {
-      background-color: #f44336;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: var(--border-radius);
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: var(--transition);
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+        .btn-delete {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-    .btn-delete:hover {
-      background-color: #d32f2f;
-      transform: translateY(-2px);
-    }
+        .btn-delete:hover {
+            background-color: #d32f2f;
+            transform: translateY(-2px);
+        }
 
-    .profile-url {
-      display: flex;
-      align-items: center;
-    }
+        .profile-url {
+            display: flex;
+            align-items: center;
+        }
 
-    .url-prefix {
-      padding: 8px;
-      background: #f0f0f0;
-      border: 1px solid #ddd;
-      border-right: none;
-      border-radius: 4px 0 0 4px;
-    }
-  </style>
+        .url-prefix {
+            padding: 8px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+        }
+    </style>
 </head>
 
 <body>
 
-  <div class="flash-messages">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">
-      {{ message }}
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-  </div>
-
-  <form method="POST" action="{{ url_for('delete_page') }}"
-    onsubmit="return confirm('Tem certeza que deseja APAGAR SUA PÁGINA permanentemente? Esta ação não pode ser desfeita!')"
-    style="position: absolute; top: 20px; left: 20px;">
-    <button type="submit" class="btn-delete">
-      <i class="fas fa-trash"></i> Apagar Página
-    </button>
-  </form>
-
-  <div class="admin-container">
-    <div class="admin-header">
-      <h1><i class="fas fa-cog"></i> Painel Administrativo</h1>
-      <p>Edite suas informações pessoais</p>
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
     </div>
 
-    <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_panel', username=dados.profile) }}"
-      class="admin-form">
-      <div class="form-grid">
-        <!-- Seção de Informações Básicas -->
-        <div class="form-section">
-          <h2><i class="fas fa-user"></i> Informações Pessoais</h2>
-
-          <div class="form-group">
-            <label for="nome">Nome Completo</label>
-            <input type="text" id="nome" name="nome" value="{{ dados.nome }}" class="form-input">
-          </div>
-
-          <div class="form-group">
-            <label for="bio">Biografia</label>
-            <textarea id="bio" name="bio" class="form-textarea">{{ dados.bio }}</textarea>
-          </div>
-
-
-          <div class="form-group">
-            <label for="profile">URL da sua página</label>
-            <div class="profile-url">
-              <span class="url-prefix">cpages.onrender.com/</span>
-              <input type="text" id="profile" name="profile" value="{{ dados.profile }}" class="form-input"
-                pattern="[a-z0-9-]+" title="Apenas letras minúsculas, números e hífens">
-            </div>
-          </div>
-        </div>
-
-        <!-- Seção de Imagens -->
-        <div class="form-section">
-          <h2><i class="fas fa-images"></i> Imagens</h2>
-
-          <div class="form-group">
-            <label for="foto_upload">Foto de Perfil</label>
-            <div class="file-upload-wrapper">
-              <div class="file-upload">
-                <input type="file" id="foto_upload" name="foto_upload" accept="image/*" class="file-input"
-                  onchange="previewImage(this, 'foto_preview')">
-                <label for="foto_upload" class="file-label">
-                  <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
-                </label>
-              </div>
-              <div class="file-info" id="foto_info">Nenhum arquivo selecionado</div>
-              <div class="image-preview-container" id="foto_preview_container">
-                <img src="{{ dados.foto if dados.foto else '' }}" class="image-preview" id="foto_preview"
-                  onerror="this.style.display='none'">
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="background_upload">Imagem de Fundo</label>
-            <div class="file-upload-wrapper">
-              <div class="file-upload">
-                <input type="file" id="background_upload" name="background_upload" accept="image/*" class="file-input"
-                  onchange="previewImage(this, 'background_preview')">
-                <label for="background_upload" class="file-label">
-                  <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
-                </label>
-              </div>
-              <div class="file-info" id="background_info">Nenhum arquivo selecionado</div>
-              <div class="image-preview-container" id="background_preview_container">
-                <img src="{{ dados.background if dados.background else '' }}" class="image-preview"
-                  id="background_preview" onerror="this.style.display='none'">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Seção de Links -->
-        <div class="form-section">
-          <h2><i class="fas fa-link"></i> Links Sociais</h2>
-
-          <div class="buttons-container">
-            <button type="button" class="btn btn-add" id="add-icon-btn">
-              <i class="fas fa-plus"></i> Adicionar Ícone
-            </button>
-            <button type="button" class="btn btn-add" id="add-button-btn">
-              <i class="fas fa-plus"></i> Adicionar Botão
-            </button>
-          </div>
-
-          <div id="social-icons-container">
-            <!-- Ícones existentes serão renderizados aqui -->
-          </div>
-
-          <div id="custom-buttons-container">
-            <!-- Botões personalizados serão renderizados aqui -->
-          </div>
-
-          <!-- Modal para seleção de ícone -->
-          <div id="icon-modal" class="modal">
-            <div class="modal-content">
-              <span class="close">&times;</span>
-              <h3>Selecione um ícone</h3>
-
-              <div class="form-group">
-                <input type="text" id="icon-search" class="form-input" placeholder="Buscar ícones...">
-              </div>
-
-              <div class="pagination-container">
-                <button type="button" class="pagination-btn" id="prev-icon-page"><i
-                    class="fas fa-chevron-left"></i></button>
-                <div class="icons-grid">
-                </div>
-                <button type="button" class="pagination-btn" id="next-icon-page"><i
-                    class="fas fa-chevron-right"></i></button>
-              </div>
-              <div class="page-info" style="text-align: center; margin-top: 10px; font-size: 0.9rem; color: #666;">
-                Página <span id="current-page">1</span></div>
-
-
-              <button id="save-icon" class="btn-save">Salvar Ícone</button>
-            </div>
-          </div>
-
-          <!-- Modal para criação de botão -->
-          <div id="button-modal" class="modal">
-            <div class="modal-content">
-              <span class="close">&times;</span>
-              <h3>Criar Novo Botão</h3>
-
-              <div class="form-group">
-                <label for="button-text">Texto do Botão</label>
-                <input type="text" id="button-text" class="form-input" placeholder="Ex: Currículo">
-              </div>
-
-              <div class="form-group">
-                <label for="button-link">Link</label>
-                <input type="text" id="button-link" class="form-input" placeholder="https://">
-              </div>
-
-              <div class="form-group">
-                <label for="button-color">Cor do Botão</label>
-                <input type="color" id="button-color" value="#4CAF50">
-              </div>
-
-              <div class="form-group">
-                <label for="button-radius">Arredondamento (px)</label>
-                <input type="range" id="button-radius" min="0" max="20" value="10">
-                <span id="radius-value">10px</span>
-              </div>
-
-              <button id="save-button" class="btn-save">Salvar Botão</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" class="btn-save">
-          <i class="fas fa-save"></i> Salvar Alterações
+    <form method="POST" action="{{ url_for('delete_page') }}"
+        onsubmit="return confirm('Tem certeza que deseja APAGAR SUA PÁGINA permanentemente? Esta ação não pode ser desfeita!')"
+        style="position: absolute; top: 20px; left: 20px;">
+        <button type="submit" class="btn-delete">
+            <i class="fas fa-trash"></i> Apagar Página
         </button>
-        <a href="{{ url_for('logout') }}" class="btn-logout">
-          <i class="fas fa-sign-out-alt"></i> Sair
-        </a>
-      </div>
     </form>
-  </div>
-  <script>
-    // Mostra o preview das imagens existentes ao carregar a página
-    document.addEventListener('DOMContentLoaded', function () {
-      const fotoPreview = document.getElementById('foto_preview');
-      const backgroundPreview = document.getElementById('background_preview');
 
-      if (fotoPreview.src && fotoPreview.src !== window.location.href) {
-        document.getElementById('foto_preview_container').classList.add('preview-active');
-        document.getElementById('foto_info').textContent = 'Imagem atual';
-        document.querySelector('#foto_upload').closest('.file-upload-wrapper').classList.add('has-file');
-      }
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1><i class="fas fa-cog"></i> Painel Administrativo</h1>
+            <p>Edite suas informações pessoais</p>
+        </div>
 
-      if (backgroundPreview.src && backgroundPreview.src !== window.location.href) {
-        document.getElementById('background_preview_container').classList.add('preview-active');
-        document.getElementById('background_info').textContent = 'Imagem atual';
-        document.querySelector('#background_upload').closest('.file-upload-wrapper').classList.add('has-file');
-      }
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_panel', username=dados.profile) }}"
+            class="admin-form">
+            <div class="form-grid">
+                <div class="form-section">
+                    <h2><i class="fas fa-user"></i> Informações Pessoais</h2>
 
-      // Ao carregar a página, renderizar ícones e botões existentes
-      try {
-        const socialLinks = JSON.parse('{{ dados.social_links | tojson | safe }}');
-        renderExistingSocialIcons(socialLinks);
-
-        const customButtons = JSON.parse('{{ dados.custom_buttons | tojson | safe }}');
-        customButtons.forEach(button => {
-          const buttonField = document.createElement('div');
-          buttonField.className = 'custom-button-item';
-          buttonField.innerHTML = `
-                    <div style="flex-grow: 1;">
-                        <div class="button-preview" style="background: ${button.color}; border-radius: ${button.radius}px; padding: 8px; margin-bottom: 8px; color: white;">
-                            ${button.text}
-                        </div>
-                        <input type="hidden" name="custom_button_text[]" value="${button.text}">
-                        <input type="hidden" name="custom_button_link[]" value="${button.link}">
-                        <input type="hidden" name="custom_button_color[]" value="${button.color}">
-                        <input type="hidden" name="custom_button_radius[]" value="${button.radius}">
+                    <div class="form-group">
+                        <label for="nome">Nome Completo</label>
+                        <input type="text" id="nome" name="nome" value="{{ dados.nome }}" class="form-input">
                     </div>
-                    <span class="remove-item"><i class="fas fa-times"></i></span>
-                `;
 
-          document.getElementById('custom-buttons-container').appendChild(buttonField);
+                    <div class="form-group">
+                        <label for="bio">Biografia</label>
+                        <textarea id="bio" name="bio" class="form-textarea">{{ dados.bio }}</textarea>
+                    </div>
 
-          // Adicionar evento de remoção
-          buttonField.querySelector('.remove-item').addEventListener('click', function () {
-            this.closest('.custom-button-item').remove();
-          });
-        });
-      } catch (e) {
-        console.error('Erro ao carregar dados existentes:', e);
-      }
 
-      // Prevenir que cliques dentro do conteúdo do modal fechem o modal (propagação)
-      document.querySelector('#icon-modal .modal-content').addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
-      document.querySelector('#button-modal .modal-content').addEventListener('click', (e) => {
-        e.stopPropagation();
-      });
+                    <div class="form-group">
+                        <label for="profile">URL da sua página</label>
+                        <div class="profile-url">
+                            <span class="url-prefix">cpages.onrender.com/</span>
+                            <input type="text" id="profile" name="profile" value="{{ dados.profile }}" class="form-input"
+                                pattern="[a-z0-9-]+" title="Apenas letras minúsculas, números e hífens">
+                        </div>
+                    </div>
+                </div>
 
-      // INÍCIO DAS LÓGICAS DE PAGINAÇÃO E BUSCA DE ÍCONES
-      const iconModal = document.getElementById('icon-modal');
-      const buttonModal = document.getElementById('button-modal');
-      const addIconBtn = document.getElementById('add-icon-btn');
-      const addButtonBtn = document.getElementById('add-button-btn');
-      const closeButtons = document.querySelectorAll('.close');
+                <div class="form-section">
+                    <h2><i class="fas fa-images"></i> Imagens</h2>
 
-      const iconsGrid = document.querySelector('#icon-modal .icons-grid'); // Seleciona a grid dentro do modal de ícones
-      const iconSearchInput = document.getElementById('icon-search');
-      const prevIconPageBtn = document.getElementById('prev-icon-page');
-      const nextIconPageBtn = document.getElementById('next-icon-page');
-      const currentPageSpan = document.getElementById('current-page');
+                    <div class="form-group">
+                        <label for="foto_upload">Foto de Perfil</label>
+                        <div class="file-upload-wrapper">
+                            <div class="file-upload">
+                                <input type="file" id="foto_upload" name="foto_upload" accept="image/*" class="file-input"
+                                    onchange="previewImage(this, 'foto_preview')">
+                                <label for="foto_upload" class="file-label">
+                                    <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
+                                </label>
+                            </div>
+                            <div class="file-info" id="foto_info">Nenhum arquivo selecionado</div>
+                            <div class="image-preview-container" id="foto_preview_container">
+                                <img src="{{ dados.foto if dados.foto else '' }}" class="image-preview" id="foto_preview"
+                                    onerror="this.style.display='none'">
+                            </div>
+                        </div>
+                    </div>
 
-      // Lista completa de ícones sociais disponíveis
-      // Certifique-se de que os arquivos .png correspondentes estão em static/icons/
-      const allSocialIcons = [
-        { name: 'instagram', path: '/static/icons/instagram.png' },
-        { name: 'linkedin', path: '/static/icons/linkedin.png' },
-        { name: 'github', path: '/static/icons/github.png' },
-        { name: 'email', path: '/static/icons/email.png' },
-        { name: 'whatsapp', path: '/static/icons/whatsapp.png' },
-        { name: 'twitter', path: '/static/icons/twitter.png' },
-        { name: 'facebook', path: '/static/icons/facebook.png' },
-        { name: 'youtube', path: '/static/icons/youtube.png' },
-        { name: 'telegram', path: '/static/icons/telegram.png' },
-        { name: 'tiktok', path: '/static/icons/tiktok.png' },
-        { name: 'pinterest', path: '/static/icons/pinterest.png' },
-        { name: 'twitch', path: '/static/icons/twitch.png' },
-        { name: 'discord', path: '/static/icons/discord.png' },
-        { name: 'snapchat', path: '/static/icons/snapchat.png' },
-        { name: 'reddit', path: '/static/icons/reddit.png' },
-        { name: 'vimeo', path: '/static/icons/vimeo.png' },
-        { name: 'medium', path: '/static/icons/medium.png' },
-        { name: 'spotify', path: '/static/icons/spotify.png' },
-        { name: 'soundcloud', path: '/static/icons/soundcloud.png' },
-        { name: 'behance', path: '/static/icons/behance.png' },
-        { name: 'dribbble', path: '/static/icons/dribbble.png' },
-        { name: 'flickr', path: '/static/icons/flickr.png' },
-        { name: 'etsy', path: '/static/icons/etsy.png' },
-        { name: 'paypal', path: '/static/icons/paypal.png' },
-        { name: 'google-drive', path: '/static/icons/google-drive.png' },
-        { name: 'dropbox', path: '/static/icons/dropbox.png' },
-        { name: 'link', path: '/static/icons/link.png' },
-        { name: 'phone', path: '/static/icons/phone.png' },
-        { name: 'website', path: '/static/icons/website.png' },
-        { name: 'xing', path: '/static/icons/xing.png' },
-        { name: 'mastodon', path: '/static/icons/mastodon.png' },
-        { name: 'stack-overflow', path: '/static/icons/stack-overflow.png' },
-        { name: 'gitlab', path: '/static/icons/gitlab.png' },
-        { name: 'bitbucket', path: '/static/icons/bitbucket.png' },
-        { name: 'codepen', path: '/static/icons/codepen.png' },
-        { name: 'dev-to', path: '/static/icons/dev-to.png' },
-        { name: 'freecodecamp', path: '/static/icons/freecodecamp.png' },
-        { name: 'hashnode', path: '/static/icons/hashnode.png' },
-        { name: 'product-hunt', path: '/static/icons/product-hunt.png' },
-        { name: 'unsplash', path: '/static/icons/unsplash.png' },
-        { name: 'medium', path: '/static/icons/medium.png' },
-        { name: 'patreon', path: '/static/icons/patreon.png' },
-        { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' },
-        { name: 'ko-fi', path: '/static/icons/ko-fi.png' },
-        { name: 'discord', path: '/static/icons/discord.png' },
-        { name: 'slack', path: '/static/icons/slack.png' },
-        { name: 'teams', path: '/static/icons/teams.png' },
-        { name: 'skype', path: '/static/icons/skype.png' },
-        { name: 'google-scholar', path: '/static/icons/google-scholar.png' },
-        { name: 'researchgate', path: '/static/icons/researchgate.png' },
-        { name: 'academia-edu', path: '/static/icons/academia-edu.png' }
-        // Adicione mais ícones aqui conforme precisar
-      ];
+                    <div class="form-group">
+                        <label for="background_upload">Imagem de Fundo</label>
+                        <div class="file-upload-wrapper">
+                            <div class="file-upload">
+                                <input type="file" id="background_upload" name="background_upload" accept="image/*" class="file-input"
+                                    onchange="previewImage(this, 'background_preview')">
+                                <label for="background_upload" class="file-label">
+                                    <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
+                                </label>
+                            </div>
+                            <div class="file-info" id="background_info">Nenhum arquivo selecionado</div>
+                            <div class="image-preview-container" id="background_preview_container">
+                                <img src="{{ dados.background if dados.background else '' }}" class="image-preview"
+                                    id="background_preview" onerror="this.style.display='none'">
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-      let filteredIcons = [];
-      let currentPage = 1;
-      const iconsPerPage = 8; // Exibir 8 ícones por página (2 linhas de 4)
+                <div class="form-section">
+                    <h2><i class="fas fa-link"></i> Links Sociais</h2>
 
-      function renderIcons() {
-        iconsGrid.innerHTML = '';
-        const start = (currentPage - 1) * iconsPerPage;
-        const end = start + iconsPerPage;
-        const iconsToRender = filteredIcons.slice(start, end);
+                    <div class="buttons-container">
+                        <button type="button" class="btn btn-add" id="add-icon-btn">
+                            <i class="fas fa-plus"></i> Adicionar Ícone
+                        </button>
+                        <button type="button" class="btn btn-add" id="add-button-btn">
+                            <i class="fas fa-plus"></i> Adicionar Botão
+                        </button>
+                    </div>
 
-        // Ajusta a página atual se, após a filtragem, ela ficou vazia e não é a primeira
-        if (iconsToRender.length === 0 && filteredIcons.length > 0 && currentPage > 1) {
-          currentPage--;
-          renderIcons();
-          return;
+                    <div id="social-icons-container">
+                        </div>
+
+                    <div id="custom-buttons-container">
+                        </div>
+
+                    <div id="icon-modal" class="modal">
+                        <div class="modal-content">
+                            <span class="close icon-modal-close">&times;</span> <h3>Selecione um ícone</h3>
+
+                            <div class="form-group">
+                                <input type="text" id="icon-search" class="form-input" placeholder="Buscar ícones...">
+                            </div>
+
+                            <div class="pagination-container">
+                                <button type="button" class="pagination-btn" id="prev-icon-page"><i
+                                        class="fas fa-chevron-left"></i></button>
+                                <div class="icons-grid">
+                                </div>
+                                <button type="button" class="pagination-btn" id="next-icon-page"><i
+                                        class="fas fa-chevron-right"></i></button>
+                            </div>
+                            <div class="page-info" style="text-align: center; margin-top: 10px; font-size: 0.9rem; color: #666;">
+                                Página <span id="current-page">1</span></div>
+
+
+                            <button type="button" id="save-icon" class="btn-save">Salvar Ícone</button> </div>
+                    </div>
+
+                    <div id="button-modal" class="modal">
+                        <div class="modal-content">
+                            <span class="close button-modal-close">&times;</span> <h3>Criar Novo Botão</h3>
+
+                            <div class="form-group">
+                                <label for="button-text">Texto do Botão</label>
+                                <input type="text" id="button-text" class="form-input" placeholder="Ex: Currículo">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="button-link">Link</label>
+                                <input type="text" id="button-link" class="form-input" placeholder="https://">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="button-color">Cor do Botão</label>
+                                <input type="color" id="button-color" value="#4CAF50">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="button-radius">Arredondamento (px)</label>
+                                <input type="range" id="button-radius" min="0" max="20" value="10">
+                                <span id="radius-value">10px</span>
+                            </div>
+
+                            <button type="button" id="save-button" class="btn-save">Salvar Botão</button> </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i> Salvar Alterações
+                </button>
+                <a href="{{ url_for('logout') }}" class="btn-logout">
+                    <i class="fas fa-sign-out-alt"></i> Sair
+                </a>
+            </div>
+        </form>
+    </div>
+    <script>
+        // Função para mostrar o preview de imagem
+        function previewImage(input, previewId) {
+            const previewContainer = document.getElementById(previewId + '_container');
+            const previewImage = document.getElementById(previewId);
+            const fileInfo = document.getElementById(previewId.replace('_preview', '_info'));
+            const fileWrapper = input.closest('.file-upload-wrapper');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    previewImage.src = e.target.result;
+                    previewImage.style.display = 'block'; // Mostra a imagem
+                    previewContainer.classList.add('preview-active');
+                    fileInfo.textContent = input.files[0].name;
+                    fileWrapper.classList.add('has-file');
+                };
+                reader.readAsDataURL(input.files[0]);
+            } else {
+                previewImage.src = '';
+                previewImage.style.display = 'none'; // Esconde a imagem se não houver arquivo
+                previewContainer.classList.remove('preview-active');
+                fileInfo.textContent = 'Nenhum arquivo selecionado';
+                fileWrapper.classList.remove('has-file');
+            }
         }
 
-        iconsToRender.forEach(icon => {
-          const iconElement = document.createElement('div');
-          iconElement.className = 'icon-option';
-          iconElement.innerHTML = `
-                    <img src="${icon.path}" alt="${icon.name}">
-                    <p>${icon.name.replace(/-/g, ' ')}</p> `;
-          iconElement.addEventListener('click', function () {
-            document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
-            this.classList.add('selected');
-          });
-          iconsGrid.appendChild(iconElement);
-        });
+        // Mostra o preview das imagens existentes ao carregar a página
+        document.addEventListener('DOMContentLoaded', function () {
+            const fotoPreview = document.getElementById('foto_preview');
+            const backgroundPreview = document.getElementById('background_preview');
 
-        updatePaginationControls();
-      }
-
-      function updatePaginationControls() {
-        const totalPages = Math.ceil(filteredIcons.length / iconsPerPage);
-        currentPageSpan.textContent = currentPage;
-        prevIconPageBtn.disabled = currentPage === 1;
-        nextIconPageBtn.disabled = currentPage >= totalPages || filteredIcons.length === 0;
-      }
-
-      function filterAndRenderIcons() {
-        const searchTerm = iconSearchInput.value.toLowerCase().trim();
-        if (searchTerm === '') {
-          filteredIcons = [...allSocialIcons];
-        } else {
-          filteredIcons = allSocialIcons.filter(icon =>
-            icon.name.toLowerCase().includes(searchTerm)
-          );
-        }
-        currentPage = 1; // Reseta para a primeira página ao filtrar
-        renderIcons();
-      }
-
-      // Event Listeners para Paginação e Busca
-      iconSearchInput.addEventListener('input', filterAndRenderIcons);
-
-      prevIconPageBtn.addEventListener('click', () => {
-        if (currentPage > 1) {
-          currentPage--;
-          renderIcons();
-        }
-      });
-
-      nextIconPageBtn.addEventListener('click', () => {
-        const totalPages = Math.ceil(filteredIcons.length / iconsPerPage);
-        if (currentPage < totalPages) {
-          currentPage++;
-          renderIcons();
-        }
-      });
-
-      // Abrir modal de ícones - LÓGICA ATUALIZADA
-      addIconBtn.addEventListener('click', () => {
-        filterAndRenderIcons(); // Renderiza os ícones iniciais (ou filtrados se houver texto na busca)
-        iconModal.classList.add('show');
-        document.body.classList.add('modal-open');
-        setTimeout(() => iconModal.classList.add('active'), 50);
-      });
-
-      // Salvar ícone selecionado
-      document.getElementById('save-icon').addEventListener('click', function () {
-        const selectedIcon = document.querySelector('.icon-option.selected');
-        if (selectedIcon) {
-          iconModal.classList.remove('active');
-          iconModal.addEventListener('transitionend', function handler() {
-            iconModal.classList.remove('show');
-            document.body.classList.remove('modal-open');
-            iconModal.removeEventListener('transitionend', handler);
-
-            // Garante que o nome do ícone corresponda ao arquivo (minúsculas, hífens)
-            const iconName = selectedIcon.querySelector('p').textContent.toLowerCase().replace(/ /g, '-');
-            const iconPath = `/static/icons/${iconName}.png`;
-
-            // Verificar se o ícone já foi adicionado
-            if (document.querySelector(`input[name="social_icon_${iconName}"]`)) {
-              alert('Este ícone já foi adicionado!');
-              return;
+            if (fotoPreview.src && fotoPreview.src !== window.location.href) {
+                document.getElementById('foto_preview_container').classList.add('preview-active');
+                document.getElementById('foto_info').textContent = 'Imagem atual';
+                document.querySelector('#foto_upload').closest('.file-upload-wrapper').classList.add('has-file');
             }
 
-            const newIconField = document.createElement('div');
-            newIconField.className = 'social-item';
-            newIconField.innerHTML = `
+            if (backgroundPreview.src && backgroundPreview.src !== window.location.href) {
+                document.getElementById('background_preview_container').classList.add('preview-active');
+                document.getElementById('background_info').textContent = 'Imagem atual';
+                document.querySelector('#background_upload').closest('.file-upload-wrapper').classList.add('has-file');
+            }
+
+            try {
+                const socialLinks = {{ dados.social_links | tojson | safe }};
+                renderExistingSocialIcons(socialLinks);
+
+                const customButtons = {{ dados.custom_buttons | tojson | safe }};
+                customButtons.forEach(button => {
+                    const buttonField = document.createElement('div');
+                    buttonField.className = 'custom-button-item';
+                    buttonField.innerHTML = `
+                        <div style="flex-grow: 1;">
+                            <div class="button-preview" style="background: ${button.color}; border-radius: ${button.radius}px; padding: 8px; margin-bottom: 8px; color: white;">
+                                ${button.text}
+                            </div>
+                            <input type="hidden" name="custom_button_text[]" value="${escapeHtml(button.text)}">
+                            <input type="hidden" name="custom_button_link[]" value="${escapeHtml(button.link)}">
+                            <input type="hidden" name="custom_button_color[]" value="${escapeHtml(button.color)}">
+                            <input type="hidden" name="custom_button_radius[]" value="${escapeHtml(button.radius)}">
+                        </div>
+                        <span class="remove-item"><i class="fas fa-times"></i></span>
+                    `;
+
+                    document.getElementById('custom-buttons-container').appendChild(buttonField);
+
+                    // Adicionar evento de remoção
+                    buttonField.querySelector('.remove-item').addEventListener('click', function () {
+                        this.closest('.custom-button-item').remove();
+                    });
+                });
+            } catch (e) {
+                console.error('Erro ao carregar dados existentes:', e);
+            }
+
+            // Função auxiliar para escapar HTML (prevenir XSS)
+            function escapeHtml(text) {
+                const map = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
+
+
+            // Prevenir que cliques dentro do conteúdo do modal fechem o modal (propagação)
+            document.querySelector('#icon-modal .modal-content').addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+            document.querySelector('#button-modal .modal-content').addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+
+            // INÍCIO DAS LÓGICAS DE PAGINAÇÃO E BUSCA DE ÍCONES
+            const iconModal = document.getElementById('icon-modal');
+            const buttonModal = document.getElementById('button-modal');
+            const addIconBtn = document.getElementById('add-icon-btn');
+            const addButtonBtn = document.getElementById('add-button-btn');
+
+            // Selecionar os botões de fechar específicos de cada modal
+            const iconModalCloseBtn = document.querySelector('.icon-modal-close');
+            const buttonModalCloseBtn = document.querySelector('.button-modal-close');
+
+            const iconsGrid = document.querySelector('#icon-modal .icons-grid'); // Seleciona a grid dentro do modal de ícones
+            const iconSearchInput = document.getElementById('icon-search');
+            const prevIconPageBtn = document.getElementById('prev-icon-page');
+            const nextIconPageBtn = document.getElementById('next-icon-page');
+            const currentPageSpan = document.getElementById('current-page');
+
+            // Lista completa de ícones sociais disponíveis
+            // Certifique-se de que os arquivos .png correspondem a esses nomes
+            const allSocialIcons = [
+                { name: 'instagram', path: '/static/icons/instagram.png' },
+                { name: 'linkedin', path: '/static/icons/linkedin.png' },
+                { name: 'github', path: '/static/icons/github.png' },
+                { name: 'email', path: '/static/icons/email.png' },
+                { name: 'whatsapp', path: '/static/icons/whatsapp.png' },
+                { name: 'twitter', path: '/static/icons/twitter.png' },
+                { name: 'facebook', path: '/static/icons/facebook.png' },
+                { name: 'youtube', path: '/static/icons/youtube.png' },
+                { name: 'telegram', path: '/static/icons/telegram.png' },
+                { name: 'tiktok', path: '/static/icons/tiktok.png' },
+                { name: 'pinterest', path: '/static/icons/pinterest.png' },
+                { name: 'twitch', path: '/static/icons/twitch.png' },
+                { name: 'discord', path: '/static/icons/discord.png' },
+                { name: 'snapchat', path: '/static/icons/snapchat.png' },
+                { name: 'reddit', path: '/static/icons/reddit.png' },
+                { name: 'vimeo', path: '/static/icons/vimeo.png' },
+                { name: 'medium', path: '/static/icons/medium.png' },
+                { name: 'spotify', path: '/static/icons/spotify.png' },
+                { name: 'soundcloud', path: '/static/icons/soundcloud.png' },
+                { name: 'behance', path: '/static/icons/behance.png' },
+                { name: 'dribbble', path: '/static/icons/dribbble.png' },
+                { name: 'flickr', path: '/static/icons/flickr.png' },
+                { name: 'etsy', path: '/static/icons/etsy.png' },
+                { name: 'paypal', path: '/static/icons/paypal.png' },
+                { name: 'google-drive', path: '/static/icons/google-drive.png' },
+                { name: 'dropbox', path: '/static/icons/dropbox.png' },
+                { name: 'link', path: '/static/icons/link.png' },
+                { name: 'phone', path: '/static/icons/phone.png' },
+                { name: 'website', path: '/static/icons/website.png' },
+                { name: 'xing', path: '/static/icons/xing.png' },
+                { name: 'mastodon', path: '/static/icons/mastodon.png' },
+                { name: 'stack-overflow', path: '/static/icons/stack-overflow.png' },
+                { name: 'gitlab', path: '/static/icons/gitlab.png' },
+                { name: 'bitbucket', path: '/static/icons/bitbucket.png' },
+                { name: 'codepen', path: '/static/icons/codepen.png' },
+                { name: 'dev-to', path: '/static/icons/dev-to.png' },
+                { name: 'freecodecamp', path: '/static/icons/freecodecamp.png' },
+                { name: 'hashnode', path: '/static/icons/hashnode.png' },
+                { name: 'product-hunt', path: '/static/icons/product-hunt.png' },
+                { name: 'unsplash', path: '/static/icons/unsplash.png' },
+                { name: 'patreon', path: '/static/icons/patreon.png' },
+                { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' },
+                { name: 'ko-fi', path: '/static/icons/ko-fi.png' },
+                { name: 'slack', path: '/static/icons/slack.png' },
+                { name: 'teams', path: '/static/icons/teams.png' },
+                { name: 'skype', path: '/static/icons/skype.png' },
+                { name: 'google-scholar', path: '/static/icons/google-scholar.png' },
+                { name: 'researchgate', path: '/static/icons/researchgate.png' },
+                { name: 'academia-edu', path: '/static/icons/academia-edu.png' }
+            ];
+
+            let filteredIcons = [];
+            let currentPage = 1;
+            const iconsPerPage = 8; // Exibir 8 ícones por página (2 linhas de 4)
+
+            function renderIcons() {
+                iconsGrid.innerHTML = '';
+                const start = (currentPage - 1) * iconsPerPage;
+                const end = start + iconsPerPage;
+                const iconsToRender = filteredIcons.slice(start, end);
+
+                // Ajusta a página atual se, após a filtragem, ela ficou vazia e não é a primeira
+                if (iconsToRender.length === 0 && filteredIcons.length > 0 && currentPage > 1) {
+                    currentPage--;
+                    renderIcons();
+                    return;
+                }
+
+                iconsToRender.forEach(icon => {
+                    const iconElement = document.createElement('div');
+                    iconElement.className = 'icon-option';
+                    iconElement.innerHTML = `
+                        <img src="${icon.path}" alt="${icon.name}">
+                        <p>${icon.name.replace(/-/g, ' ')}</p> `;
+                    iconElement.addEventListener('click', function () {
+                        document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
+                        this.classList.add('selected');
+                    });
+                    iconsGrid.appendChild(iconElement);
+                });
+
+                updatePaginationControls();
+            }
+
+            function updatePaginationControls() {
+                const totalPages = Math.ceil(filteredIcons.length / iconsPerPage);
+                currentPageSpan.textContent = currentPage;
+                prevIconPageBtn.disabled = currentPage === 1;
+                nextIconPageBtn.disabled = currentPage >= totalPages || filteredIcons.length === 0;
+            }
+
+            function filterAndRenderIcons() {
+                const searchTerm = iconSearchInput.value.toLowerCase().trim();
+                if (searchTerm === '') {
+                    filteredIcons = [...allSocialIcons];
+                } else {
+                    filteredIcons = allSocialIcons.filter(icon =>
+                        icon.name.toLowerCase().includes(searchTerm)
+                    );
+                }
+                currentPage = 1; // Reseta para a primeira página ao filtrar
+                renderIcons();
+            }
+
+            // Função para fechar qualquer modal
+            function closeModals() {
+                iconModal.classList.remove('active', 'show');
+                buttonModal.classList.remove('active', 'show');
+                document.body.classList.remove('modal-open');
+            }
+
+
+            // Event Listeners para Paginação e Busca
+            iconSearchInput.addEventListener('input', filterAndRenderIcons);
+
+            prevIconPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderIcons();
+                }
+            });
+
+            nextIconPageBtn.addEventListener('click', () => {
+                const totalPages = Math.ceil(filteredIcons.length / iconsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderIcons();
+                }
+            });
+
+            // Abrir modal de ícones - LÓGICA ATUALIZADA
+            addIconBtn.addEventListener('click', () => {
+                filterAndRenderIcons(); // Renderiza os ícones iniciais (ou filtrados se houver texto na busca)
+                iconModal.classList.add('show');
+                document.body.classList.add('modal-open');
+                setTimeout(() => iconModal.classList.add('active'), 50);
+            });
+
+            // Salvar ícone selecionado - ALTERADO para PREVENT DEFAULT
+            document.getElementById('save-icon').addEventListener('click', function (event) {
+                event.preventDefault(); // IMPEDE A SUBMISSÃO DO FORMULÁRIO PRINCIPAL
+                const selectedIcon = document.querySelector('.icon-option.selected');
+                if (selectedIcon) {
+                    // Garante que o nome do ícone corresponda ao arquivo (minúsculas, hífens)
+                    const iconName = selectedIcon.querySelector('p').textContent.toLowerCase().replace(/ /g, '-');
+                    const iconPath = `/static/icons/${iconName}.png`;
+
+                    // Verificar se o ícone já foi adicionado
+                    if (document.querySelector(`input[name="social_icon_${iconName}"]`)) {
+                        alert('Este ícone já foi adicionado!');
+                        closeModals(); // Fecha o modal mesmo se o ícone já existir
+                        return;
+                    }
+
+                    const newIconField = document.createElement('div');
+                    newIconField.className = 'social-item';
+                    newIconField.innerHTML = `
                         <img src="${iconPath}" alt="${iconName}" width="24">
                         <input type="text" name="social_icon_${iconName}"
                                 placeholder="Insira o link para ${iconName.replace(/-/g, ' ')}"
@@ -513,104 +544,119 @@
                         <span class="remove-item"><i class="fas fa-times"></i></span>
                     `;
 
-            document.getElementById('social-icons-container').appendChild(newIconField);
+                    document.getElementById('social-icons-container').appendChild(newIconField);
 
-            newIconField.querySelector('.remove-item').addEventListener('click', function () {
-              this.closest('.social-item').remove();
+                    newIconField.querySelector('.remove-item').addEventListener('click', function () {
+                        this.closest('.social-item').remove();
+                    });
+
+                    closeModals(); // Fecha o modal
+                    newIconField.querySelector('input').focus();
+                } else {
+                    alert('Por favor, selecione um ícone primeiro!');
+                }
+            });
+            // FIM DAS LÓGICAS DE PAGINAÇÃO E BUSCA DE ÍCONES
+
+            // Atualizar valor do range do botão personalizado
+            document.getElementById('button-radius').addEventListener('input', function () {
+                document.getElementById('radius-value').textContent = `${this.value}px`;
             });
 
-            newIconField.querySelector('input').focus();
-          }, { once: true });
-        } else {
-          alert('Por favor, selecione um ícone primeiro!');
-        }
-      });
-      // FIM DAS LÓGICAS DE PAGINAÇÃO E BUSCA DE ÍCONES
+            // Abrir modal de botões
+            addButtonBtn.addEventListener('click', () => {
+                buttonModal.classList.add('show');
+                document.body.classList.add('modal-open');
+                setTimeout(() => buttonModal.classList.add('active'), 50);
+            });
 
-      // Atualizar valor do range do botão personalizado
-      document.getElementById('button-radius').addEventListener('input', function () {
-        document.getElementById('radius-value').textContent = `${this.value}px`;
-      });
+            // Salvar botão personalizado - ALTERADO para PREVENT DEFAULT
+            document.getElementById('save-button').addEventListener('click', function (event) {
+                event.preventDefault(); // IMPEDE A SUBMISSÃO DO FORMULÁRIO PRINCIPAL
+                const buttonText = document.getElementById('button-text').value;
+                const buttonLink = document.getElementById('button-link').value;
+                const buttonColor = document.getElementById('button-color').value;
+                const buttonRadius = document.getElementById('button-radius').value;
 
-      // Abrir modal de botões
-      addButtonBtn.addEventListener('click', () => {
-        buttonModal.classList.add('show');
-        document.body.classList.add('modal-open');
-        setTimeout(() => buttonModal.classList.add('active'), 50);
-      });
-
-      // Salvar botão personalizado
-      document.getElementById('save-button').addEventListener('click', function () {
-        const buttonText = document.getElementById('button-text').value;
-        const buttonLink = document.getElementById('button-link').value;
-        const buttonColor = document.getElementById('button-color').value;
-        const buttonRadius = document.getElementById('button-radius').value;
-
-        buttonModal.classList.remove('active');
-        buttonModal.addEventListener('transitionend', function handler() {
-          buttonModal.classList.remove('show');
-          document.body.classList.remove('modal-open');
-          buttonModal.removeEventListener('transitionend', handler);
-
-          if (buttonText && buttonLink) {
-            const newButtonField = document.createElement('div');
-            newButtonField.className = 'custom-button-item';
-            newButtonField.innerHTML = `
+                if (buttonText && buttonLink) {
+                    const newButtonField = document.createElement('div');
+                    newButtonField.className = 'custom-button-item';
+                    newButtonField.innerHTML = `
                         <div style="flex-grow: 1;">
                             <div class="button-preview" style="background: ${buttonColor}; border-radius: ${buttonRadius}px; padding: 8px; margin-bottom: 8px; color: white;">
                                 ${buttonText}
                             </div>
-                            <input type="hidden" name="custom_button_text[]" value="${buttonText}">
-                            <input type="hidden" name="custom_button_link[]" value="${buttonLink}">
-                            <input type="hidden" name="custom_button_color[]" value="${buttonColor}">
-                            <input type="hidden" name="custom_button_radius[]" value="${buttonRadius}">
+                            <input type="hidden" name="custom_button_text[]" value="${escapeHtml(buttonText)}">
+                            <input type="hidden" name="custom_button_link[]" value="${escapeHtml(buttonLink)}">
+                            <input type="hidden" name="custom_button_color[]" value="${escapeHtml(buttonColor)}">
+                            <input type="hidden" name="custom_button_radius[]" value="${escapeHtml(buttonRadius)}">
                         </div>
                         <span class="remove-item"><i class="fas fa-times"></i></span>
                     `;
 
-            document.getElementById('custom-buttons-container').appendChild(newButtonField);
+                    document.getElementById('custom-buttons-container').appendChild(newButtonField);
 
-            // Resetar formulário
-            document.getElementById('button-text').value = '';
-            document.getElementById('button-link').value = '';
-            document.getElementById('button-color').value = '#4CAF50';
-            document.getElementById('button-radius').value = '10';
-            document.getElementById('radius-value').textContent = '10px';
+                    // Resetar formulário
+                    document.getElementById('button-text').value = '';
+                    document.getElementById('button-link').value = '';
+                    document.getElementById('button-color').value = '#4CAF50';
+                    document.getElementById('button-radius').value = '10';
+                    document.getElementById('radius-value').textContent = '10px';
 
-            // Adicionar evento de remoção
-            newButtonField.querySelector('.remove-item').addEventListener('click', function () {
-              this.closest('.custom-button-item').remove();
+                    // Adicionar evento de remoção
+                    newButtonField.querySelector('.remove-item').addEventListener('click', function () {
+                        this.closest('.custom-button-item').remove();
+                    });
+                    closeModals(); // Fecha o modal
+                } else {
+                    alert('Por favor, preencha o texto e o link do botão!');
+                }
             });
-          }
-        }, { once: true });
-      });
 
-      // Fechar modal ao clicar fora da área do conteúdo do modal
-      window.addEventListener('click', function (event) {
-        if (event.target === iconModal) {
-          iconModal.classList.remove('active');
-          iconModal.addEventListener('transitionend', function handler() {
-            iconModal.classList.remove('show');
-            document.body.classList.remove('modal-open');
-            iconModal.removeEventListener('transitionend', handler);
-          }, { once: true });
-        }
-        if (event.target === buttonModal) {
-          buttonModal.classList.remove('active');
-          buttonModal.addEventListener('transitionend', function handler() {
-            buttonModal.classList.remove('show');
-            document.body.classList.remove('modal-open');
-            buttonModal.removeEventListener('transitionend', handler);
-          }, { once: true });
-        }
-      });
-    }); // FIM DO DOMContentLoaded
-  </script>
-  <!-- Botão flutuante para visualizar a página -->
-  <a href="/{{ dados.profile }}" target="_blank" class="preview-float-btn">
-    <i class="fas fa-eye"></i>
-    <span class="preview-float-tooltip">Visualizar Página</span>
-  </a>
+            // Fechar modal ao clicar nos botões de fechar (x)
+            iconModalCloseBtn.addEventListener('click', closeModals);
+            buttonModalCloseBtn.addEventListener('click', closeModals);
+
+
+            // Fechar modal ao clicar fora da área do conteúdo do modal
+            window.addEventListener('click', function (event) {
+                if (event.target === iconModal || event.target === buttonModal) {
+                    closeModals();
+                }
+            });
+
+            // Função para renderizar ícones sociais existentes
+            function renderExistingSocialIcons(socialLinks) {
+                const socialIconsContainer = document.getElementById('social-icons-container');
+                socialIconsContainer.innerHTML = ''; // Limpa antes de renderizar
+
+                socialLinks.forEach(link => {
+                    const newIconField = document.createElement('div');
+                    newIconField.className = 'social-item';
+                    const iconPath = `/static/icons/${link.icon}.png`; // Constrói o caminho da imagem
+
+                    newIconField.innerHTML = `
+                        <img src="${iconPath}" alt="${link.icon}" width="24">
+                        <input type="text" name="social_icon_${link.icon}"
+                                value="${escapeHtml(link.url)}"
+                                placeholder="Insira o link para ${link.icon.replace(/-/g, ' ')}"
+                                class="form-input" required>
+                        <span class="remove-item"><i class="fas fa-times"></i></span>
+                    `;
+                    socialIconsContainer.appendChild(newIconField);
+
+                    newIconField.querySelector('.remove-item').addEventListener('click', function () {
+                        this.closest('.social-item').remove();
+                    });
+                });
+            }
+
+        }); // FIM DO DOMContentLoaded
+    </script>
+    <a href="/{{ dados.profile }}" target="_blank" class="preview-float-btn">
+        <i class="fas fa-eye"></i>
+        <span class="preview-float-tooltip">Visualizar Página</span>
+    </a>
 </body>
 
 </html>

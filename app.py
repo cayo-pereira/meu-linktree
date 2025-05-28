@@ -309,14 +309,22 @@ def admin_panel(username):
         
         # Corrigir a conversão do social_links
         if isinstance(user_data.get('social_links'), str):
-            user_data['social_links'] = json.loads(user_data.get('social_links', '[]'))
-        elif not isinstance(user_data.get('social_links'), list):
+            try:
+                user_data['social_links'] = json.loads(user_data['social_links'])
+            except json.JSONDecodeError:
+                logger.warning(f"Erro ao decodificar social_links para o usuário {session['user_id']}. Inicializando como vazio.")
+                user_data['social_links'] = []
+        elif user_data.get('social_links') is None: # Se for None, inicializa como lista vazia
             user_data['social_links'] = []
         
         # Corrigir a conversão do custom_buttons
         if isinstance(user_data.get('custom_buttons'), str):
-            user_data['custom_buttons'] = json.loads(user_data.get('custom_buttons', '[]'))
-        elif not isinstance(user_data.get('custom_buttons'), list):
+            try:
+                user_data['custom_buttons'] = json.loads(user_data['custom_buttons'])
+            except json.JSONDecodeError:
+                logger.warning(f"Erro ao decodificar custom_buttons para o usuário {session['user_id']}. Inicializando como vazio.")
+                user_data['custom_buttons'] = []
+        elif user_data.get('custom_buttons') is None: # Se for None, inicializa como lista vazia
             user_data['custom_buttons'] = []
         
         if request.method == 'POST':
