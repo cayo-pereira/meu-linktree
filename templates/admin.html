@@ -90,18 +90,49 @@
         .form-group-inline {
             display: flex;
             align-items: center;
-            gap: 15px; /* Espaçamento entre os elementos */
+            gap: 15px;
+            /* Espaçamento entre os elementos */
             margin-bottom: 15px;
         }
 
         .form-group-inline label {
-            margin-bottom: 0; /* Remove margem inferior padrão das labels */
-            font-weight: normal; /* Ajusta o peso da fonte para checkboxes/radios */
+            margin-bottom: 0;
+            /* Remove margem inferior padrão das labels */
+            font-weight: normal;
+            /* Ajusta o peso da fonte para checkboxes/radios */
         }
-        
+
         .form-group-inline input[type="checkbox"] {
-            width: auto; /* Deixa o checkbox ter largura automática */
-            margin-right: 5px; /* Pequena margem à direita do checkbox */
+            width: auto;
+            /* Deixa o checkbox ter largura automática */
+            margin-right: 5px;
+            /* Pequena margem à direita do checkbox */
+        }
+
+        /* Estilo para o preview do botão personalizado no admin.html */
+        .custom-button-item .button-preview {
+            border: 1px solid transparent; /* Adicione uma borda transparente por padrão */
+            transition: all 0.3s ease; /* Transição para o hover */
+        }
+        /* Estilo para quando a borda está ativada no preview */
+        .custom-button-item .button-preview.has-border-preview {
+            border-style: solid;
+        }
+
+        /* Classes para o efeito hover no preview */
+        .custom-button-item .button-preview.hover-effect-preview:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Estilo para alinhar os campos de borda */
+        .border-options-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .border-options-group .form-group-inline {
+            margin-bottom: 0; /* Remove margem inferior para alinhamento */
         }
     </style>
 </head>
@@ -217,7 +248,7 @@
                     </div>
 
                     <div id="custom-buttons-container">
-                    </div>
+                        </div>
 
                     <div id="icon-modal" class="modal">
                         <div class="modal-content">
@@ -285,6 +316,26 @@
                                 <label for="button-font-size">Tamanho da Fonte (px)</label>
                                 <input type="number" id="button-font-size" min="12" max="30" value="16" class="form-input">
                             </div>
+
+                            <div class="form-group-inline">
+                                <input type="checkbox" id="button-has-border">
+                                <label for="button-has-border">Adicionar Borda</label>
+                                <div id="border-options-group" style="display: none;" class="border-options-group">
+                                    <div class="form-group-inline">
+                                        <label for="button-border-color">Cor</label>
+                                        <input type="color" id="button-border-color" value="#000000">
+                                    </div>
+                                    <div class="form-group-inline">
+                                        <label for="button-border-width">Tamanho (px)</label>
+                                        <input type="number" id="button-border-width" min="1" max="10" value="2" class="form-input" style="width: 60px;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group-inline">
+                                <input type="checkbox" id="button-has-hover">
+                                <label for="button-has-hover">Efeito Hover</label>
+                            </div>
                             <button type="button" id="save-button" class="btn-save">Salvar Botão</button>
                         </div>
                     </div>
@@ -350,40 +401,8 @@
                 renderExistingSocialIcons(socialLinks);
 
                 const customButtons = {{ dados.custom_buttons | tojson | safe }};
-                customButtons.forEach(button => {
-                    const buttonField = document.createElement('div');
-                    buttonField.className = 'custom-button-item';
-                    
-                    // Definir valores padrão para novos campos se não existirem
-                    const textColor = button.textColor || '#FFFFFF';
-                    const bold = button.bold === true || button.bold === 'true'; // Garante booleano
-                    const italic = button.italic === true || button.italic === 'true'; // Garante booleano
-                    const fontSize = button.fontSize || '16';
-
-                    buttonField.innerHTML = `
-                        <div style="flex-grow: 1;">
-                            <div class="button-preview" style="background: ${button.color}; border-radius: ${button.radius}px; padding: 8px; margin-bottom: 8px; color: ${textColor}; font-weight: ${bold ? 'bold' : 'normal'}; font-style: ${italic ? 'italic' : 'normal'}; font-size: ${fontSize}px;">
-                                ${button.text}
-                            </div>
-                            <input type="hidden" name="custom_button_text[]" value="${escapeHtml(button.text)}">
-                            <input type="hidden" name="custom_button_link[]" value="${escapeHtml(button.link)}">
-                            <input type="hidden" name="custom_button_color[]" value="${escapeHtml(button.color)}">
-                            <input type="hidden" name="custom_button_radius[]" value="${escapeHtml(button.radius)}">
-                            <input type="hidden" name="custom_button_text_color[]" value="${escapeHtml(textColor)}">
-                            <input type="hidden" name="custom_button_text_bold[]" value="${bold}">
-                            <input type="hidden" name="custom_button_text_italic[]" value="${italic}">
-                            <input type="hidden" name="custom_button_font_size[]" value="${fontSize}">
-                        </div>
-                        <span class="remove-item"><i class="fas fa-times"></i></span>
-                    `;
-
-                    document.getElementById('custom-buttons-container').appendChild(buttonField);
-
-                    // Adicionar evento de remoção
-                    buttonField.querySelector('.remove-item').addEventListener('click', function () {
-                        this.closest('.custom-button-item').remove();
-                    });
-                });
+                // --- CORREÇÃO: Usar uma função para renderizar os botões existentes ---
+                renderExistingCustomButtons(customButtons);
             } catch (e) {
                 console.error('Erro ao carregar dados existentes:', e);
             }
@@ -397,8 +416,68 @@
                     '"': '&quot;',
                     "'": '&#039;'
                 };
-                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+                return text.replace(/[&<>"']/g, function (m) { return map[m]; });
             }
+
+            // --- NOVA FUNÇÃO: renderExistingCustomButtons ---
+            function renderExistingCustomButtons(buttonsArray) {
+                const customButtonsContainer = document.getElementById('custom-buttons-container');
+                customButtonsContainer.innerHTML = ''; // Limpa antes de renderizar (evita duplicação ao carregar)
+
+                buttonsArray.forEach(button => {
+                    const buttonField = document.createElement('div');
+                    buttonField.className = 'custom-button-item';
+
+                    // Valores já normalizados para booleanos/números no app.py
+                    const textColor = button.textColor;
+                    const bold = button.bold;
+                    const italic = button.italic;
+                    const fontSize = button.fontSize;
+                    const hasBorder = button.hasBorder;
+                    const borderColor = button.borderColor;
+                    const borderWidth = button.borderWidth;
+                    const hasHoverEffect = button.hasHoverEffect;
+
+                    let borderStyle = '';
+                    let buttonPreviewClasses = ['button-preview'];
+                    if (hasBorder) {
+                        borderStyle = `border: ${borderWidth}px solid ${borderColor};`;
+                        buttonPreviewClasses.push('has-border-preview');
+                    }
+                    if (hasHoverEffect) {
+                        buttonPreviewClasses.push('hover-effect-preview');
+                    }
+
+                    buttonField.innerHTML = `
+                        <div style="flex-grow: 1;">
+                            <div class="${buttonPreviewClasses.join(' ')}" 
+                                style="background: ${button.color}; border-radius: ${button.radius}px; padding: 8px; margin-bottom: 8px; color: ${textColor}; font-weight: ${bold ? 'bold' : 'normal'}; font-style: ${italic ? 'italic' : 'normal'}; font-size: ${fontSize}px; ${borderStyle}">
+                                ${escapeHtml(button.text)}
+                            </div>
+                            <input type="hidden" name="custom_button_text[]" value="${escapeHtml(button.text)}">
+                            <input type="hidden" name="custom_button_link[]" value="${escapeHtml(button.link)}">
+                            <input type="hidden" name="custom_button_color[]" value="${escapeHtml(button.color)}">
+                            <input type="hidden" name="custom_button_radius[]" value="${escapeHtml(button.radius)}">
+                            <input type="hidden" name="custom_button_text_color[]" value="${escapeHtml(textColor)}">
+                            <input type="hidden" name="custom_button_text_bold[]" value="${bold}">
+                            <input type="hidden" name="custom_button_text_italic[]" value="${italic}">
+                            <input type="hidden" name="custom_button_font_size[]" value="${fontSize}">
+                            <input type="hidden" name="custom_button_has_border[]" value="${hasBorder}">
+                            <input type="hidden" name="custom_button_border_color[]" value="${escapeHtml(borderColor)}">
+                            <input type="hidden" name="custom_button_border_width[]" value="${escapeHtml(borderWidth)}">
+                            <input type="hidden" name="custom_button_has_hover[]" value="${hasHoverEffect}">
+                        </div>
+                        <span class="remove-item"><i class="fas fa-times"></i></span>
+                    `;
+                    customButtonsContainer.appendChild(buttonField);
+
+                    // Adicionar evento de remoção para o botão recém-criado
+                    buttonField.querySelector('.remove-item').addEventListener('click', function () {
+                        this.closest('.custom-button-item').remove();
+                    });
+                });
+            }
+            // --- FIM da NOVA FUNÇÃO ---
 
 
             // Prevenir que cliques dentro do conteúdo do modal fechem o modal (propagação)
@@ -426,7 +505,6 @@
             const currentPageSpan = document.getElementById('current-page');
 
             // Lista completa de ícones sociais disponíveis
-            // Certifique-se de que os arquivos .png correspondem a esses nomes
             const allSocialIcons = [
                 { name: 'instagram', path: '/static/icons/instagram.png' },
                 { name: 'linkedin', path: '/static/icons/linkedin.png' },
@@ -489,7 +567,6 @@
                 const end = start + iconsPerPage;
                 const iconsToRender = filteredIcons.slice(start, end);
 
-                // Ajusta a página atual se, após a filtragem, ela ficou vazia e não é a primeira
                 if (iconsToRender.length === 0 && filteredIcons.length > 0 && currentPage > 1) {
                     currentPage--;
                     renderIcons();
@@ -558,27 +635,25 @@
                 }
             });
 
-            // Abrir modal de ícones - LÓGICA ATUALIZADA
+            // Abrir modal de ícones
             addIconBtn.addEventListener('click', () => {
-                filterAndRenderIcons(); // Renderiza os ícones iniciais (ou filtrados se houver texto na busca)
+                filterAndRenderIcons();
                 iconModal.classList.add('show');
                 document.body.classList.add('modal-open');
                 setTimeout(() => iconModal.classList.add('active'), 50);
             });
 
-            // Salvar ícone selecionado - ALTERADO para PREVENT DEFAULT
+            // Salvar ícone selecionado
             document.getElementById('save-icon').addEventListener('click', function (event) {
-                event.preventDefault(); // IMPEDE A SUBMISSÃO DO FORMULÁRIO PRINCIPAL
+                event.preventDefault();
                 const selectedIcon = document.querySelector('.icon-option.selected');
                 if (selectedIcon) {
-                    // Garante que o nome do ícone corresponda ao arquivo (minúsculas, hífens)
                     const iconName = selectedIcon.querySelector('p').textContent.toLowerCase().replace(/ /g, '-');
                     const iconPath = `/static/icons/${iconName}.png`;
 
-                    // Verificar se o ícone já foi adicionado
                     if (document.querySelector(`input[name="social_icon_${iconName}"]`)) {
                         alert('Este ícone já foi adicionado!');
-                        closeModals(); // Fecha o modal mesmo se o ícone já existir
+                        closeModals();
                         return;
                     }
 
@@ -598,24 +673,32 @@
                         this.closest('.social-item').remove();
                     });
 
-                    closeModals(); // Fecha o modal
+                    closeModals();
                     newIconField.querySelector('input').focus();
                 } else {
                     alert('Por favor, selecione um ícone primeiro!');
                 }
             });
-            // FIM DAS LÓGICAS DE PAGINAÇÃO E BUSCA DE ÍCONES
 
             // Atualizar valor do range do botão personalizado
             document.getElementById('button-radius').addEventListener('input', function () {
                 document.getElementById('radius-value').textContent = `${this.value}px`;
             });
 
+            // Lógica para mostrar/esconder os campos de cor e tamanho da borda
+            const buttonHasBorderCheckbox = document.getElementById('button-has-border');
+            const borderOptionsGroup = document.getElementById('border-options-group');
+
+            buttonHasBorderCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    borderOptionsGroup.style.display = 'flex';
+                } else {
+                    borderOptionsGroup.style.display = 'none';
+                }
+            });
+
             // Abrir modal de botões
             addButtonBtn.addEventListener('click', () => {
-                buttonModal.classList.add('show');
-                document.body.classList.add('modal-open');
-                setTimeout(() => buttonModal.classList.add('active'), 50);
                 // Resetar valores do modal ao abrir para um novo botão
                 document.getElementById('button-text').value = '';
                 document.getElementById('button-link').value = '';
@@ -626,58 +709,55 @@
                 document.getElementById('button-text-bold').checked = false;
                 document.getElementById('button-text-italic').checked = false;
                 document.getElementById('button-font-size').value = '16';
+                buttonHasBorderCheckbox.checked = false;
+                borderOptionsGroup.style.display = 'none';
+                document.getElementById('button-border-color').value = '#000000';
+                document.getElementById('button-border-width').value = '2';
+                document.getElementById('button-has-hover').checked = false;
+
+                buttonModal.classList.add('show');
+                document.body.classList.add('modal-open');
+                setTimeout(() => buttonModal.classList.add('active'), 50);
             });
 
-            // Salvar botão personalizado - ALTERADO para PREVENT DEFAULT
+            // Salvar botão personalizado
             document.getElementById('save-button').addEventListener('click', function (event) {
-                event.preventDefault(); // IMPEDE A SUBMISSÃO DO FORMULÁRIO PRINCIPAL
+                event.preventDefault();
                 const buttonText = document.getElementById('button-text').value;
                 const buttonLink = document.getElementById('button-link').value;
                 const buttonColor = document.getElementById('button-color').value;
                 const buttonRadius = document.getElementById('button-radius').value;
-                const buttonTextColor = document.getElementById('button-text-color').value; // NOVO
-                const buttonTextBold = document.getElementById('button-text-bold').checked; // NOVO
-                const buttonTextItalic = document.getElementById('button-text-italic').checked; // NOVO
-                const buttonFontSize = document.getElementById('button-font-size').value; // NOVO
+                const buttonTextColor = document.getElementById('button-text-color').value;
+                const buttonTextBold = document.getElementById('button-text-bold').checked;
+                const buttonTextItalic = document.getElementById('button-text-italic').checked;
+                const buttonFontSize = document.getElementById('button-font-size').value;
+                const buttonHasBorder = document.getElementById('button-has-border').checked;
+                const buttonBorderColor = document.getElementById('button-border-color').value;
+                const buttonBorderWidth = document.getElementById('button-border-width').value;
+                const buttonHasHover = document.getElementById('button-has-hover').checked;
 
                 if (buttonText && buttonLink) {
-                    const newButtonField = document.createElement('div');
-                    newButtonField.className = 'custom-button-item';
-                    newButtonField.innerHTML = `
-                        <div style="flex-grow: 1;">
-                            <div class="button-preview" style="background: ${buttonColor}; border-radius: ${buttonRadius}px; padding: 8px; margin-bottom: 8px; color: ${buttonTextColor}; font-weight: ${buttonTextBold ? 'bold' : 'normal'}; font-style: ${buttonTextItalic ? 'italic' : 'normal'}; font-size: ${buttonFontSize}px;">
-                                ${buttonText}
-                            </div>
-                            <input type="hidden" name="custom_button_text[]" value="${escapeHtml(buttonText)}">
-                            <input type="hidden" name="custom_button_link[]" value="${escapeHtml(buttonLink)}">
-                            <input type="hidden" name="custom_button_color[]" value="${escapeHtml(buttonColor)}">
-                            <input type="hidden" name="custom_button_radius[]" value="${escapeHtml(buttonRadius)}">
-                            <input type="hidden" name="custom_button_text_color[]" value="${escapeHtml(buttonTextColor)}">
-                            <input type="hidden" name="custom_button_text_bold[]" value="${buttonTextBold}">
-                            <input type="hidden" name="custom_button_text_italic[]" value="${buttonTextItalic}">
-                            <input type="hidden" name="custom_button_font_size[]" value="${buttonFontSize}">
-                        </div>
-                        <span class="remove-item"><i class="fas fa-times"></i></span>
-                    `;
+                    // Crie um objeto com as propriedades do novo botão
+                    const newButtonData = {
+                        text: buttonText,
+                        link: buttonLink,
+                        color: buttonColor,
+                        radius: buttonRadius,
+                        textColor: buttonTextColor,
+                        bold: buttonTextBold,
+                        italic: buttonTextItalic,
+                        fontSize: buttonFontSize,
+                        hasBorder: buttonHasBorder,
+                        borderColor: buttonBorderColor,
+                        borderWidth: buttonBorderWidth,
+                        hasHoverEffect: buttonHasHover
+                    };
+                    
+                    // --- CORREÇÃO: Adicionar o novo botão à lista de botões existentes renderizando-o ---
+                    renderExistingCustomButtons([newButtonData]); // Reusa a função de renderização para adicionar o novo
+                    // O `renderExistingCustomButtons` já apenda ao container, não precisamos de um `newButtonField` separado aqui.
 
-                    document.getElementById('custom-buttons-container').appendChild(newButtonField);
-
-                    // Resetar formulário
-                    document.getElementById('button-text').value = '';
-                    document.getElementById('button-link').value = '';
-                    document.getElementById('button-color').value = '#4CAF50';
-                    document.getElementById('button-radius').value = '10';
-                    document.getElementById('radius-value').textContent = '10px';
-                    document.getElementById('button-text-color').value = '#FFFFFF'; // Resetar cor do texto
-                    document.getElementById('button-text-bold').checked = false; // Resetar negrito
-                    document.getElementById('button-text-italic').checked = false; // Resetar itálico
-                    document.getElementById('button-font-size').value = '16'; // Resetar tamanho da fonte
-
-                    // Adicionar evento de remoção
-                    newButtonField.querySelector('.remove-item').addEventListener('click', function () {
-                        this.closest('.custom-button-item').remove();
-                    });
-                    closeModals(); // Fecha o modal
+                    closeModals();
                 } else {
                     alert('Por favor, preencha o texto e o link do botão!');
                 }
@@ -698,12 +778,12 @@
             // Função para renderizar ícones sociais existentes
             function renderExistingSocialIcons(socialLinks) {
                 const socialIconsContainer = document.getElementById('social-icons-container');
-                socialIconsContainer.innerHTML = ''; // Limpa antes de renderizar
+                socialIconsContainer.innerHTML = '';
 
                 socialLinks.forEach(link => {
                     const newIconField = document.createElement('div');
                     newIconField.className = 'social-item';
-                    const iconPath = `/static/icons/${link.icon}.png`; // Constrói o caminho da imagem
+                    const iconPath = `/static/icons/${link.icon}.png`;
 
                     newIconField.innerHTML = `
                         <img src="${iconPath}" alt="${link.icon}" width="24">

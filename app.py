@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from supabase import create_client, Client
 from supabase.lib.client_options import ClientOptions
 from uuid import uuid4
-import json # Importar json
+import json
 import os
 import requests
 import re
@@ -266,10 +266,9 @@ def callback():
                 'email': user.email,
                 'foto': '',
                 'active': True,
-                # Removendo campos fixos, eles serão tratados por social_links
                 'bio': 'Olá! Esta é minha página pessoal.',
-                'social_links': '[]', # Inicializa como array JSON vazio
-                'custom_buttons': '[]'  # Inicializa como array JSON vazio
+                'social_links': '[]',
+                'custom_buttons': '[]'
             }
             
             api_url = f"{SUPABASE_URL}/rest/v1/usuarios"
@@ -304,9 +303,9 @@ def callback():
 @app.route('/admin/<username>', methods=['GET', 'POST'])
 def admin_panel(username):
     if 'user_id' not in session:
-        return redirect(url_for('login_google')) # Redireciona para login do Google
+        return redirect(url_for('login_google'))
     
-    user_data = {} # Inicializa user_data para garantir que exista
+    user_data = {}
     try:
         supabase.postgrest.auth(session['access_token'])
         res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
@@ -316,26 +315,38 @@ def admin_panel(username):
             
         user_data = res.data[0]
         
-        # Corrigir a conversão do social_links
         if isinstance(user_data.get('social_links'), str):
             try:
                 user_data['social_links'] = json.loads(user_data['social_links'])
             except json.JSONDecodeError:
                 logger.warning(f"Erro ao decodificar social_links para o usuário {session['user_id']}. Inicializando como vazio.")
                 user_data['social_links'] = []
-        elif user_data.get('social_links') is None: # Se for None, inicializa como lista vazia
+        elif user_data.get('social_links') is None:
             user_data['social_links'] = []
         
-        # Corrigir a conversão do custom_buttons
         if isinstance(user_data.get('custom_buttons'), str):
             try:
                 user_data['custom_buttons'] = json.loads(user_data['custom_buttons'])
             except json.JSONDecodeError:
                 logger.warning(f"Erro ao decodificar custom_buttons para o usuário {session['user_id']}. Inicializando como vazio.")
                 user_data['custom_buttons'] = []
-        elif user_data.get('custom_buttons') is None: # Se for None, inicializa como lista vazia
+        elif user_data.get('custom_buttons') is None:
             user_data['custom_buttons'] = []
         
+        # --- CORREÇÃO: Normalizar tipos de dados ao carregar custom_buttons ---
+        for btn in user_data['custom_buttons']:
+            # Garante que os valores booleanos sejam tratados como True/False
+            btn['bold'] = str(btn.get('bold', False)).lower() == 'true'
+            btn['italic'] = str(btn.get('italic', False)).lower() == 'true'
+            btn['hasBorder'] = str(btn.get('hasBorder', False)).lower() == 'true'
+            btn['hasHoverEffect'] = str(btn.get('hasHoverEffect', False)).lower() == 'true'
+            
+            # Garante que 'borderColor' e 'borderWidth' tenham valores padrão se ausentes
+            btn.setdefault('borderColor', '#000000')
+            btn.setdefault('borderWidth', 2) # Garante que borderWidth seja um inteiro
+            btn.setdefault('textColor', '#FFFFFF') # Garante um valor padrão para textColor
+            btn.setdefault('fontSize', 16) # Garante um valor padrão para fontSize
+
         if request.method == 'POST':
             update_data = {
                 'nome': request.form.get('nome'),
@@ -343,7 +354,6 @@ def admin_panel(username):
                 'profile': request.form.get('profile')
             }
 
-            # Processar ícones sociais dinâmicos
             social_links = []
             for key, value in request.form.items():
                 if key.startswith('social_icon_'):
@@ -360,28 +370,33 @@ def admin_panel(username):
                 flash("⚠️ Você pode adicionar no máximo 10 ícones", "warning")
                 social_links = social_links[:10]
 
-            # CONVERTER social_links PARA JSON STRING ANTES DE ENVIAR AO SUPABASE
             update_data['social_links'] = json.dumps(social_links)
 
-            # Processar botões personalizados
             custom_buttons = []
             button_texts = request.form.getlist('custom_button_text[]')
             button_links = request.form.getlist('custom_button_link[]')
             button_colors = request.form.getlist('custom_button_color[]')
             button_radii = request.form.getlist('custom_button_radius[]')
-            # NOVOS CAMPOS
             button_text_colors = request.form.getlist('custom_button_text_color[]')
             button_text_bolds = request.form.getlist('custom_button_text_bold[]')
             button_text_italics = request.form.getlist('custom_button_text_italic[]')
             button_font_sizes = request.form.getlist('custom_button_font_size[]')
+            button_has_borders = request.form.getlist('custom_button_has_border[]')
+            button_border_colors = request.form.getlist('custom_button_border_color[]')
+            button_border_widths = request.form.getlist('custom_button_border_width[]')
+            button_has_hovers = request.form.getlist('custom_button_has_hover[]')
             
             for i in range(len(button_texts)):
                 if button_texts[i]:
-                    # Garante que os valores booleanos e inteiros sejam armazenados corretamente
-                    # O JavaScript envia 'true' ou 'false' como strings, convertemos para booleano
+                    # Garante que os valores booleanos sejam convertidos corretamente
                     bold_val = button_text_bolds[i].lower() == 'true'
                     italic_val = button_text_italics[i].lower() == 'true'
-                    font_size_val = int(button_font_sizes[i]) if button_font_sizes[i].isdigit() else 16 # Fallback para int
+                    has_border_val = button_has_borders[i].lower() == 'true'
+                    has_hover_val = button_has_hovers[i].lower() == 'true'
+                    
+                    # Converte o tamanho da borda e tamanho da fonte para inteiro com fallback
+                    font_size_val = int(button_font_sizes[i]) if button_font_sizes[i].isdigit() else 16
+                    border_width_val = int(button_border_widths[i]) if button_border_widths[i].isdigit() else 2
                     
                     custom_buttons.append({
                         'text': button_texts[i],
@@ -391,13 +406,15 @@ def admin_panel(username):
                         'textColor': button_text_colors[i],
                         'bold': bold_val,
                         'italic': italic_val,
-                        'fontSize': font_size_val
+                        'fontSize': font_size_val,
+                        'hasBorder': has_border_val,
+                        'borderColor': button_border_colors[i],
+                        'borderWidth': border_width_val,
+                        'hasHoverEffect': has_hover_val
                     })
             
-            # CONVERTER custom_buttons PARA JSON STRING ANTES DE ENVIAR AO SUPABASE
             update_data['custom_buttons'] = json.dumps(custom_buttons)
 
-            # Processar uploads
             for field in ['foto', 'background']:
                 file = request.files.get(f'{field}_upload')
                 if file and arquivo_permitido(file.filename):
@@ -405,16 +422,13 @@ def admin_panel(username):
                     if file_url:
                         update_data[field] = file_url
 
-            # Atualizar no Supabase
             response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
             
             try:
                 if response.data:
-                    # Atualiza o profile na sessão se foi alterado
                     if 'profile' in update_data and update_data['profile'] != username:
                         session['profile'] = update_data['profile']
                     
-                    # Redireciona para a página do usuário com cache busting
                     profile = update_data.get('profile', username)
                     flash("✅ Alterações salvas com sucesso!", "success")
                     return redirect(f"{url_for('user_page', profile=profile)}?v={uuid4().hex[:8]}")
@@ -429,17 +443,27 @@ def admin_panel(username):
     except Exception as e:
         logger.error(f"ERRO: {str(e)}", exc_info=True)
         flash("⚠️ Erro durante o processamento", "warning")
-        # Tenta carregar os dados do usuário novamente para evitar erro na renderização
-        # caso a exceção ocorra antes de user_data ser completamente populado.
         try:
             res = supabase.table('usuarios').select('*').eq('id', session['user_id']).execute()
             user_data = res.data[0] if res.data else {}
-            # Garante que social_links e custom_buttons sejam listas vazias se não existirem
             user_data['social_links'] = json.loads(user_data.get('social_links', '[]'))
             user_data['custom_buttons'] = json.loads(user_data.get('custom_buttons', '[]'))
+            
+            # --- CORREÇÃO: Normalizar tipos de dados no bloco de erro ---
+            for btn in user_data['custom_buttons']:
+                btn['bold'] = str(btn.get('bold', False)).lower() == 'true'
+                btn['italic'] = str(btn.get('italic', False)).lower() == 'true'
+                btn['hasBorder'] = str(btn.get('hasBorder', False)).lower() == 'true'
+                btn['hasHoverEffect'] = str(btn.get('hasHoverEffect', False)).lower() == 'true'
+                
+                btn.setdefault('borderColor', '#000000')
+                btn.setdefault('borderWidth', 2)
+                btn.setdefault('textColor', '#FFFFFF')
+                btn.setdefault('fontSize', 16)
+                
         except Exception as inner_e:
             logger.error(f"Erro ao recuperar dados após erro inicial: {str(inner_e)}")
-            user_data = {} # Garante que `dados` não seja None ou mal-formado
+            user_data = {}
         return render_template('admin.html', dados=user_data)
 
 @app.route('/logout')

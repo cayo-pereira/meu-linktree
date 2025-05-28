@@ -42,13 +42,15 @@
         {% if dados.custom_buttons %}
             {% for button in dados.custom_buttons %}
                 <a href="{{ button.link }}" 
-                    class="link-button-custom"
+                    class="link-button-custom 
+                    {% if button.hasHoverEffect %}link-button-hover-{{ loop.index }}{% endif %}"
                     style="background: {{ button.color }}; 
-                           border-radius: {{ button.radius }}px; 
-                           color: {{ button.textColor if button.textColor else 'white' }}; 
-                           font-weight: {{ 'bold' if button.bold else 'normal' }}; 
-                           font-style: {{ 'italic' if button.italic else 'normal' }}; 
-                           font-size: {{ button.fontSize if button.fontSize else '16' }}px;"
+                            border-radius: {{ button.radius }}px; 
+                            color: {{ button.textColor if button.textColor else 'white' }}; 
+                            font-weight: {{ 'bold' if button.bold else 'normal' }}; 
+                            font-style: {{ 'italic' if button.italic else 'normal' }}; 
+                            font-size: {{ button.fontSize if button.fontSize else '16' }}px;
+                            {% if button.hasBorder %}border: {{ button.borderWidth | default(2) }}px solid {{ button.borderColor }};{% endif %}"
                     target="_blank">
                     {{ button.text }}
                 </a>
@@ -66,8 +68,20 @@
                 margin: 10px auto;
                 text-align: center;
                 text-decoration: none;
-                transition: all 0.3s ease;
+                transition: all 0.3s ease; /* Transição base para o hover */
             }
+
+            /* Estilos dinâmicos para o efeito hover */
+            {% if dados.custom_buttons %}
+                {% for button in dados.custom_buttons %}
+                    {% if button.hasHoverEffect %}
+                    .link-button-hover-{{ loop.index }}:hover {
+                        transform: translateY(-3px);
+                        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                    }
+                    {% endif %}
+                {% endfor %}
+            {% endif %}
         </style>
 
         {% if dados.curriculo %}

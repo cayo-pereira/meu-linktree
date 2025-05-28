@@ -458,7 +458,7 @@ body.modal-open {
   right: 30px;
   background-color: var(--primary-color);
   color: white;
-  width: 60px;
+  width: 70px;
   height: 60px;
   border-radius: 50%;
   display: flex;
