@@ -356,26 +356,31 @@ def admin_panel(username):
                 'profile': request.form.get('profile')
             }
 
-            # Processar social_links
+            # Processar social_links (AGORA COLETA PELA ORDEM DO DOM)
             social_links = []
-            for key, value in request.form.items():
-                if key.startswith('social_icon_'):
-                    icon_name = key.replace('social_icon_', '')
-                    if value and value.startswith(('http://', 'https://')):
-                        social_links.append({
-                            'icon': icon_name,
-                            'url': value
-                        })
-                    elif value:
-                        flash(f"⚠️ O link para {icon_name} deve começar com http:// ou https://", "warning")
+            # 'social_icon_name[]' e 'social_icon_url[]' são arrays enviados pelo frontend,
+            # que o SortableJS manterá na ordem em que foram arrastados.
+            social_icon_names = request.form.getlist('social_icon_name[]')
+            social_icon_urls = request.form.getlist('social_icon_url[]')
 
-            if len(social_links) > 10:
+            for i in range(len(social_icon_names)):
+                icon_name = social_icon_names[i]
+                url = social_icon_urls[i]
+                if url and url.startswith(('http://', 'https://')):
+                    social_links.append({
+                        'icon': icon_name,
+                        'url': url
+                    })
+                elif url: # Se tiver URL mas não começar com http/https
+                    flash(f"⚠️ O link para {icon_name.replace('-', ' ').title()} deve começar com http:// ou https://", "warning")
+
+            if len(social_links) > 10: # Limite de 10 ícones
                 flash("⚠️ Você pode adicionar no máximo 10 ícones", "warning")
                 social_links = social_links[:10]
 
             update_data['social_links'] = json.dumps(social_links)
 
-            # Processar custom_buttons
+            # Processar custom_buttons (Já usa getlist, está OK para ordenação)
             custom_buttons = []
             button_texts = request.form.getlist('custom_button_text[]')
             button_links = request.form.getlist('custom_button_link[]')

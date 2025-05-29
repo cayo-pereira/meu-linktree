@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
         /* Estilos para o preview de imagem */
         .image-preview-container {
@@ -126,6 +127,47 @@
         .border-options-group .form-group-inline {
             margin-bottom: 0;
         }
+
+        /* Adicione estilos para o arrastar e soltar (SortableJS) */
+        .social-item,
+        .custom-button-item {
+            cursor: grab; /* Indica que o item pode ser arrastado */
+            display: flex; /* Manter display flex para os itens */
+            align-items: center;
+            gap: 1rem;
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Um pouco de sombra para destacar */
+            transition: box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .social-item:hover,
+        .custom-button-item:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        /* Estilo para o item sendo arrastado */
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #e0e0e0;
+            border: 1px dashed var(--primary-color);
+        }
+
+        /* Estilo para o item selecionado para arrastar (quando o cursor está sobre ele e está sendo arrastado) */
+        .sortable-chosen {
+            cursor: grabbing;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        
+        /* Adicione um ícone de "handle" para arrastar */
+        .drag-handle {
+            cursor: grab;
+            font-size: 1.2rem;
+            color: #888;
+            margin-right: 0.5rem;
+        }
     </style>
 </head>
 
@@ -236,13 +278,26 @@
                     </div>
 
                     <div id="social-icons-container">
+                        {% if dados.social_links %}
+                            {% for link in dados.social_links %}
+                            <div class="social-item">
+                                <i class="fas fa-grip-vertical drag-handle"></i> <img src="/static/icons/{{ link.icon }}.png" alt="{{ link.icon }}" width="24">
+                                <input type="hidden" name="social_icon_name[]" value="{{ link.icon }}">
+                                <input type="text" name="social_icon_url[]"
+                                            value="{{ link.url }}"
+                                            placeholder="Insira o link para {{ link.icon.replace('-', ' ') }}"
+                                            class="form-input" required>
+                                <span class="remove-item"><i class="fas fa-times"></i></span>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
                     </div>
 
                     <div id="custom-buttons-container">
                         {% if dados.custom_buttons %}
                             {% for button in dados.custom_buttons %}
                             <div class="custom-button-item">
-                                <div style="flex-grow: 1;">
+                                <i class="fas fa-grip-vertical drag-handle"></i> <div style="flex-grow: 1;">
                                     <div class="button-preview {% if button.hasBorder %}has-border-preview{% endif %} {% if button.hasHoverEffect %}hover-effect-preview{% endif %}"
                                         style="background: {{ button.color }}; border-radius: {{ button.radius }}px; padding: 8px; margin-bottom: 8px; color: {{ button.textColor }}; font-weight: {{ 'bold' if button.bold else 'normal' }}; font-style: {{ 'italic' if button.italic else 'normal' }}; font-size: {{ button.fontSize }}px; {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor }};{% endif %}">
                                         {{ button.text }}
@@ -277,11 +332,11 @@
 
                             <div class="pagination-container">
                                 <button type="button" class="pagination-btn" id="prev-icon-page"><i
-                                        class="fas fa-chevron-left"></i></button>
+                                            class="fas fa-chevron-left"></i></button>
                                 <div class="icons-grid">
                                 </div>
                                 <button type="button" class="pagination-btn" id="next-icon-page"><i
-                                        class="fas fa-chevron-right"></i></button>
+                                            class="fas fa-chevron-right"></i></button>
                             </div>
                             <div class="page-info" style="text-align: center; margin-top: 10px; font-size: 0.9rem; color: #666;">
                                 Página <span id="current-page">1</span></div>
@@ -394,7 +449,6 @@
             }
         }
 
-        // Mostra o preview das imagens existentes ao carregar a página
         document.addEventListener('DOMContentLoaded', function () {
             const fotoPreview = document.getElementById('foto_preview');
             const backgroundPreview = document.getElementById('background_preview');
@@ -428,7 +482,7 @@
                 const customButtonsContainer = document.getElementById('custom-buttons-container');
                 
                 const buttonField = document.createElement('div');
-                buttonField.className = 'custom-button-item';
+                buttonField.className = 'custom-button-item'; // Classe para o SortableJS
 
                 const textColor = buttonData.textColor || '#FFFFFF';
                 const bold = buttonData.bold || false;
@@ -450,7 +504,7 @@
                 }
 
                 buttonField.innerHTML = `
-                    <div style="flex-grow: 1;">
+                    <i class="fas fa-grip-vertical drag-handle"></i> <div style="flex-grow: 1;">
                         <div class="${buttonPreviewClasses.join(' ')}" 
                             style="background: ${buttonData.color}; border-radius: ${buttonData.radius}px; padding: 8px; margin-bottom: 8px; color: ${textColor}; font-weight: ${bold ? 'bold' : 'normal'}; font-style: ${italic ? 'italic' : 'normal'}; font-size: ${fontSize}px; ${borderStyle}">
                             ${escapeHtml(buttonData.text)}
@@ -489,11 +543,12 @@
                     const iconPath = `/static/icons/${link.icon}.png`;
 
                     newIconField.innerHTML = `
-                        <img src="${iconPath}" alt="${link.icon}" width="24">
-                        <input type="text" name="social_icon_${link.icon}"
-                                value="${escapeHtml(link.url)}"
-                                placeholder="Insira o link para ${link.icon.replace(/-/g, ' ')}"
-                                class="form-input" required>
+                        <i class="fas fa-grip-vertical drag-handle"></i> <img src="${iconPath}" alt="${link.icon}" width="24">
+                        <input type="hidden" name="social_icon_name[]" value="${escapeHtml(link.icon)}">
+                        <input type="text" name="social_icon_url[]"
+                                    value="${escapeHtml(link.url)}"
+                                    placeholder="Insira o link para ${link.icon.replace(/-/g, ' ')}"
+                                    class="form-input" required>
                         <span class="remove-item"><i class="fas fa-times"></i></span>
                     `;
                     socialIconsContainer.appendChild(newIconField);
@@ -519,6 +574,27 @@
             document.querySelector('#button-modal .modal-content').addEventListener('click', (e) => {
                 e.stopPropagation();
             });
+
+            // INICIALIZAÇÃO DO SORTABLEJS
+            const socialIconsContainer = document.getElementById('social-icons-container');
+            const customButtonsContainer = document.getElementById('custom-buttons-container');
+
+            new Sortable(socialIconsContainer, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                handle: '.drag-handle',
+                // onUpdate: function (evt) { /* Não precisa de lógica aqui, o SortableJS move os próprios elementos */ }
+            });
+
+            new Sortable(customButtonsContainer, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                handle: '.drag-handle',
+                // onUpdate: function (evt) { /* Não precisa de lógica aqui, o SortableJS move os próprios elementos */ }
+            });
+            // FIM DA INICIALIZAÇÃO DO SORTABLEJS
 
             // INÍCIO DAS LÓGICAS DE PAGINAÇÃO E BUSCA DE ÍCONES
             const iconModal = document.getElementById('icon-modal');
@@ -682,7 +758,15 @@
                     const iconName = selectedIcon.querySelector('p').textContent.toLowerCase().replace(/ /g, '-');
                     const iconPath = `/static/icons/${iconName}.png`;
 
-                    if (document.querySelector(`input[name="social_icon_${iconName}"]`)) {
+                    // Verificar se o ícone já existe pelo input hidden
+                    let iconExists = false;
+                    document.querySelectorAll('input[name="social_icon_name[]"]').forEach(input => {
+                        if (input.value === iconName) {
+                            iconExists = true;
+                        }
+                    });
+
+                    if (iconExists) {
                         alert('Este ícone já foi adicionado!');
                         closeModals();
                         return;
@@ -691,21 +775,22 @@
                     const newIconField = document.createElement('div');
                     newIconField.className = 'social-item';
                     newIconField.innerHTML = `
-                        <img src="${iconPath}" alt="${iconName}" width="24">
-                        <input type="text" name="social_icon_${iconName}"
-                                placeholder="Insira o link para ${iconName.replace(/-/g, ' ')}"
-                                class="form-input" required>
+                        <i class="fas fa-grip-vertical drag-handle"></i> <img src="${iconPath}" alt="${iconName}" width="24">
+                        <input type="hidden" name="social_icon_name[]" value="${escapeHtml(iconName)}">
+                        <input type="text" name="social_icon_url[]"
+                                    placeholder="Insira o link para ${iconName.replace(/-/g, ' ')}"
+                                    class="form-input" required>
                         <span class="remove-item"><i class="fas fa-times"></i></span>
                     `;
 
-                    document.getElementById('social-icons-container').appendChild(newIconField);
+                    socialIconsContainer.appendChild(newIconField);
 
                     newIconField.querySelector('.remove-item').addEventListener('click', function () {
                         this.closest('.social-item').remove();
                     });
 
                     closeModals();
-                    newIconField.querySelector('input').focus();
+                    newIconField.querySelector('input[name="social_icon_url[]"]').focus();
                 } else {
                     alert('Por favor, selecione um ícone primeiro!');
                 }
@@ -802,9 +887,9 @@
             });
 
             // Adicionar eventos de remoção para os botões existentes
-            document.querySelectorAll('.custom-button-item .remove-item').forEach(item => {
+            document.querySelectorAll('.social-item .remove-item, .custom-button-item .remove-item').forEach(item => {
                 item.addEventListener('click', function() {
-                    this.closest('.custom-button-item').remove();
+                    this.closest('.social-item, .custom-button-item').remove();
                 });
             });
 
