@@ -1,0 +1,263 @@
+/* static/css/dark-mode.css */
+
+/* Variáveis de cores para o Light Mode (padrão) */
+:root {
+    --bg-color-light: #f5f7fa;
+    --text-color-light: #333;
+    --card-bg-light: #ffffff;
+    --header-bg-light: rgba(255, 255, 255, 0.9);
+    --border-color-light: #ddd;
+    --input-bg-light: #ffffff;
+    --placeholder-color-light: #999;
+    --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --button-secondary-bg-light: #f0f2f5;
+    --button-secondary-text-light: var(--dark-color);
+    --button-secondary-border-light: #e0e2e5;
+    --footer-bg-light: white;
+    --footer-border-light: #eee;
+    --link-color-light: var(--primary-color);
+}
+
+/* Variáveis de cores para o Dark Mode */
+body.dark-mode {
+    --bg-color-light: #1a1a2e; /* Fundo escuro principal */
+    --text-color-light: #f8f9fa; /* Texto claro */
+    --card-bg-light: #2c2c4d; /* Fundo de cartões/seções mais escuro */
+    --header-bg-light: rgba(26, 26, 46, 0.9); /* Header semi-transparente escuro */
+    --border-color-light: #444; /* Bordas mais escuras */
+    --input-bg-light: #3a3a5e; /* Fundo de inputs escuro */
+    --placeholder-color-light: #bbb; /* Placeholder claro */
+    --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.4); /* Sombra mais intensa */
+    --button-secondary-bg-light: #4a4a7a; /* Botão secundário escuro */
+    --button-secondary-text-light: #f8f9fa; /* Texto do botão secundário claro */
+    --button-secondary-border-light: #5a5a8a; /* Borda do botão secundário escura */
+    --footer-bg-light: #2c2c4d; /* Rodapé escuro */
+    --footer-border-light: #444; /* Borda do rodapé escura */
+    --link-color-light: #809eff; /* Links em azul mais claro para contraste */
+}
+
+/* Regras que aplicam as variáveis de cor para o Dark Mode */
+body.dark-mode {
+    background-color: var(--bg-color-light) !important; /* Usando !important para sobrescrever estilos inline/gerais */
+    color: var(--text-color-light) !important;
+}
+
+body.dark-mode .admin-header h1,
+body.dark-mode .hero-section h1,
+body.dark-mode .login-header h1,
+body.dark-mode .feature-card h3,
+body.dark-mode .form-section h2,
+body.dark-mode .logo {
+    color: var(--text-color-light) !important;
+}
+
+body.dark-mode .admin-form,
+body.dark-mode .hero-section,
+body.dark-mode .login-card,
+body.dark-mode .feature-card,
+body.dark-mode .modal-content,
+body.dark-mode .loading-container {
+    background: var(--card-bg-light) !important;
+    box-shadow: var(--shadow-light) !important;
+}
+
+body.dark-mode .form-section {
+    background: var(--card-bg-light) !important; /* Para garantir que o hover também seja escuro */
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+}
+
+body.dark-mode .top-header {
+    background-color: var(--header-bg-light) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+body.dark-mode .main-footer {
+    background-color: var(--footer-bg-light) !important;
+    border-top-color: var(--footer-border-light) !important;
+    color: var(--text-color-light) !important;
+}
+
+body.dark-mode .form-group label,
+body.dark-mode .hero-section .main-subtitle,
+body.dark-mode .feature-card p,
+body.dark-mode .login-header p,
+body.dark-mode .file-info,
+body.dark-mode .icon-option p,
+body.dark-mode .page-info,
+body.dark-mode .debug-info,
+body.dark-mode .loading-container p {
+    color: var(--text-color-light) !important;
+}
+
+body.dark-mode .form-input,
+body.dark-mode .form-textarea,
+body.dark-mode #icon-search {
+    background-color: var(--input-bg-light) !important;
+    color: var(--text-color-light) !important;
+    border-color: var(--border-color-light) !important;
+}
+
+body.dark-mode .form-input::placeholder,
+body.dark-mode .form-textarea::placeholder,
+body.dark-mode #icon-search::placeholder {
+    color: var(--placeholder-color-light) !important;
+}
+
+body.dark-mode .form-input:focus,
+body.dark-mode .form-textarea:focus,
+body.dark-mode #icon-search:focus {
+    box-shadow: 0 0 0 3px rgba(128, 158, 255, 0.3) !important; /* Sombra de foco para Dark Mode */
+}
+
+body.dark-mode .file-label {
+    background-color: var(--input-bg-light) !important;
+    border-color: var(--border-color-light) !important;
+    color: var(--text-color-light) !important;
+}
+
+body.dark-mode .file-label:hover {
+    background-color: #4a4a7a !important;
+}
+
+body.dark-mode .file-label i {
+    color: var(--primary-color) !important;
+}
+
+body.dark-mode .has-file .file-label {
+    background-color: var(--primary-color) !important; /* Cor mais vibrante para arquivo selecionado */
+    color: white !important;
+}
+
+body.dark-mode .cta-secondary {
+    background-color: var(--button-secondary-bg-light) !important;
+    color: var(--button-secondary-text-light) !important;
+    border-color: var(--button-secondary-border-light) !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2) !important;
+}
+
+body.dark-mode .cta-secondary:hover {
+    background-color: #5a5a8a !important;
+}
+
+body.dark-mode .login-error {
+    background-color: #4d2630 !important;
+    color: var(--danger-color) !important;
+    border-color: #721c24 !important;
+}
+
+body.dark-mode .url-prefix,
+body.dark-mode .pagination-btn:disabled,
+body.dark-mode .progress-container {
+    background: #3a3a5e !important;
+    border-color: #444 !important;
+    color: var(--text-color-light) !important;
+}
+
+body.dark-mode .social-item,
+body.dark-mode .custom-button-item,
+body.dark-mode .icon-option {
+    background: var(--input-bg-light) !important;
+    border-color: var(--border-color-light) !important;
+}
+
+body.dark-mode .icon-option:hover,
+body.dark-mode .icon-option.selected {
+    border-color: var(--primary-color) !important;
+    background-color: rgba(128, 158, 255, 0.15) !important;
+}
+
+/* Estilo para o ícone de alternância Dark Mode */
+.dark-mode-toggle {
+    position: fixed; /* Fixa o botão na tela */
+    top: 20px; /* 20px do topo */
+    right: 20px; /* 20px da direita */
+    background-color: var(--primary-color); /* Cor de fundo principal */
+    color: white; /* Cor do ícone */
+    width: 40px; /* Largura do botão */
+    height: 40px; /* Altura do botão */
+    border-radius: 50%; /* Torna-o circular */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Sombra para destaque */
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease; /* Transições suaves */
+    z-index: 1001; /* Garante que fique acima de outros elementos, como o cabeçalho */
+}
+
+.dark-mode-toggle:hover {
+    background-color: var(--secondary-color); /* Cor de fundo ao passar o mouse */
+    transform: translateY(-2px); /* Pequeno efeito de "subir" */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Sombra mais pronunciada */
+}
+
+.dark-mode-toggle i {
+    font-size: 1.2rem; /* Tamanho do ícone */
+}
+
+/* Ajustes para o modo escuro com a classe .dark-mode */
+body.dark-mode .dark-mode-toggle {
+    background-color: var(--secondary-color); /* Cor do botão em modo escuro */
+    color: var(--light-color); /* Cor do ícone em modo escuro */
+}
+
+body.dark-mode .dark-mode-toggle:hover {
+    background-color: var(--primary-color); /* Hover do botão em modo escuro */
+}
+
+/* Transição suave para todas as propriedades de cor */
+body,
+.admin-form,
+.hero-section,
+.login-card,
+.feature-card,
+.modal-content,
+.loading-container,
+.top-header,
+.main-footer,
+.form-input,
+.form-textarea,
+#icon-search,
+.file-label,
+.cta-secondary,
+.login-error,
+.url-prefix,
+.pagination-btn:disabled,
+.progress-container,
+.social-item,
+.custom-button-item,
+.icon-option {
+    transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+/* Transição específica para textos que mudam de cor */
+body.dark-mode .admin-header h1,
+body.dark-mode .hero-section h1,
+body.dark-mode .login-header h1,
+body.dark-mode .feature-card h3,
+body.dark-mode .form-section h2,
+body.dark-mode .logo,
+body.dark-mode .form-group label,
+body.dark-mode .hero-section .main-subtitle,
+body.dark-mode .feature-card p,
+body.dark-mode .login-header p,
+body.dark-mode .file-info,
+body.dark-mode .icon-option p,
+body.dark-mode .page-info,
+body.dark-mode .debug-info,
+body.dark-mode .loading-container p {
+    transition: color 0.5s ease;
+}
+
+/* Efeito de background para o index.html em dark mode */
+body.dark-mode::before {
+    background: #4361ee; /* Cor do blob de fundo do index */
+    filter: blur(100px); /* Mais blur para ser mais sutil */
+    opacity: 0.2; /* Aumenta a opacidade para ser mais visível no escuro */
+}
+
+body.dark-mode::after {
+    background: #3f37c9; /* Outra cor do blob de fundo do index */
+    filter: blur(120px);
+    opacity: 0.25;
+}

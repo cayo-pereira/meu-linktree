@@ -6,18 +6,13 @@
     <title>Processando Login - CPages</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
     <style>
-        :root {
-            --primary-color: #4361ee;
-            --secondary-color: #3f37c9;
-            --dark-color: #1a1a2e;
-            --light-color: #f8f9fa;
-        }
-        
+        /* Estilos específicos para o callback.html para garantir consistência com o tema branco e azul */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: var(--dark-color);
-            color: white;
+            background-color: var(--light-color); /* Fundo branco */
+            color: var(--dark-color); /* Cor de texto padrão para o fundo branco */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -28,30 +23,33 @@
         }
         
         .loading-container {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: white; /* Fundo branco para o container */
+            border-radius: var(--border-radius); /* Usando variável do admin.css se definida */
+            border: 1px solid #e0e2e5; /* Borda mais clara */
             padding: 40px;
             max-width: 450px;
             width: 100%;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--box-shadow); /* Usando variável do admin.css se definida */
+            transition: all 0.3s ease; /* Adicionando transição para um efeito suave */
         }
+
+        /* Removendo backdrop-filter pois o fundo não é mais transparente */
+        /* .loading-container { backdrop-filter: blur(10px); } */
         
         .logo {
             font-size: 1.8rem;
             font-weight: 600;
-            color: white;
+            color: var(--dark-color); /* Cor do logo para o fundo branco */
             margin-bottom: 10px;
         }
         
         .logo span {
-            color: var(--primary-color);
+            color: var(--primary-color); /* Cor azul para o 'Pages' */
         }
         
         .loading-icon {
             font-size: 2.5rem;
-            color: var(--primary-color);
+            color: var(--primary-color); /* Ícone de carregamento azul */
             margin: 20px 0;
             animation: spin 1.5s linear infinite;
         }
@@ -62,14 +60,14 @@
         }
         
         h1 {
-            color: white;
+            color: var(--dark-color); /* Título em cor escura */
             margin-bottom: 15px;
             font-weight: 500;
             font-size: 1.5rem;
         }
         
         p {
-            color: rgba(255, 255, 255, 0.7);
+            color: #666; /* Cor de texto cinza para contraste */
             margin-bottom: 25px;
             line-height: 1.6;
         }
@@ -77,7 +75,7 @@
         .progress-container {
             width: 100%;
             height: 6px;
-            background-color: rgba(255, 255, 255, 0.1);
+            background-color: #e0e2e5; /* Cor de fundo da barra de progresso mais clara */
             border-radius: 3px;
             margin: 25px 0;
             overflow: hidden;
@@ -86,7 +84,7 @@
         .progress-bar {
             height: 100%;
             width: 0%;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); /* Gradiente azul */
             animation: progress 2.5s ease-in-out infinite;
             border-radius: 3px;
         }
@@ -101,22 +99,22 @@
             display: inline-block;
             margin-top: 20px;
             padding: 10px 20px;
-            background-color: var(--primary-color);
+            background-color: var(--primary-color); /* Botão azul */
             color: white;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: var(--border-radius); /* Usando variável do admin.css se definida */
             font-weight: 500;
             transition: all 0.3s ease;
         }
         
         .btn:hover {
-            background-color: var(--secondary-color);
+            background-color: var(--secondary-color); /* Hover do botão azul mais escuro */
             transform: translateY(-2px);
         }
         
         .debug-info {
             font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.4);
+            color: #888; /* Cor do texto de debug mais clara */
             margin-top: 30px;
         }
     </style>
