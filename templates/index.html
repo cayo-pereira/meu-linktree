@@ -1,20 +1,350 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CPages - Sua página pessoal</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPages - Sua Página Pessoal Profissional</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--light-color);
+            color: var(--dark-color);
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        body::before, body::after {
+            content: '';
+            position: absolute;
+            z-index: -1;
+            border-radius: 50%;
+            opacity: 0.1;
+            filter: blur(80px);
+        }
+
+        body::before {
+            width: 300px;
+            height: 300px;
+            background: var(--primary-color);
+            top: -50px;
+            left: -50px;
+        }
+
+        body::after {
+            width: 400px;
+            height: 400px;
+            background: var(--secondary-color);
+            bottom: -80px;
+            right: -80px;
+        }
+
+        .top-header {
+            width: 100%;
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .top-header .logo-img {
+            height: 130px;
+            width: auto;
+            display: block;
+        }
+        
+        .top-header .logo {
+            display: none; 
+        }
+
+        .main-wrapper {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+        }
+
+        .hero-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 4rem 2rem;
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 3rem;
+            animation: slideInFromTop 0.8s ease-out;
+            margin-top: 2rem;
+        }
+
+        @keyframes slideInFromTop {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-section h1 {
+            color: var(--dark-color);
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            line-height: 1.1;
+            font-weight: 700;
+        }
+
+        .hero-section h1 strong {
+            color: var(--primary-color);
+        }
+        
+        .hero-section .main-subtitle {
+            color: #555;
+            font-size: 1.4rem;
+            max-width: 600px;
+            margin: 0 auto 2.5rem auto;
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 1.5rem;
+        }
+
+        .cta-button {
+            padding: 1.3rem 2.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+        }
+
+        .cta-primary {
+            background-color: var(--primary-color);
+        }
+
+        .cta-primary:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .cta-secondary {
+            background-color: #f0f2f5;
+            color: var(--dark-color);
+            border: 1px solid #e0e2e5;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .cta-secondary:hover {
+            background-color: #e5e7eb;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .button-icon {
+            margin-right: 0.8rem;
+            font-size: 1.3rem;
+        }
+
+        .features-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            width: 100%;
+            padding: 0 1rem;
+            margin-bottom: 4rem;
+        }
+
+        .feature-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2.5rem;
+            text-align: center;
+            transition: var(--transition);
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+        }
+
+        .feature-card:nth-child(1) { animation-delay: 0.2s; }
+        .feature-card:nth-child(2) { animation-delay: 0.4s; }
+        .feature-card:nth-child(3) { animation-delay: 0.6s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .feature-card i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.6rem;
+            color: var(--dark-color);
+            margin-bottom: 0.8rem;
+        }
+
+        .feature-card p {
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* Rodapé */
+        .main-footer {
+            margin-top: auto;
+            padding: 1.5rem 1rem;
+            width: 100%;
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+            background-color: white;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .hero-section h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero-section .main-subtitle {
+                font-size: 1.2rem;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+            }
+
+            .feature-card {
+                padding: 2rem;
+            }
+
+            .top-header {
+                padding: 0.8rem 1.5rem;
+            }
+
+            .top-header .logo-img {
+                height: 45px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-section {
+                padding: 3rem 1.5rem;
+            }
+            .hero-section h1 {
+                font-size: 2rem;
+            }
+            .hero-section .main-subtitle {
+                font-size: 1rem;
+            }
+            .cta-button {
+                padding: 1rem;
+                font-size: 1rem;
+            }
+            .button-icon {
+                font-size: 1rem;
+            }
+            .feature-card i {
+                font-size: 2.5rem;
+            }
+            .feature-card h3 {
+                font-size: 1.4rem;
+            }
+            .top-header .logo-img {
+                height: 40px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Bem-vindo ao CPages</h1>
-    <p>Crie sua página pessoal em minutos</p>
-    
-    <a href="{{ url_for('login_google') }}" class="btn-google-login">
-      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" style="height: 18px; margin-right: 8px;">
-      Criar minha página com Google
-    </a>
-  </div>
+    <header class="top-header">
+        <a href="/">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="CPages Logo" class="logo-img">
+        </a>
+    </header>
+
+    <div class="main-wrapper">
+        <section class="hero-section">
+            <h1>Crie sua página pessoal <br><strong>profissional</strong> em minutos!</h1>
+            <p class="main-subtitle">Conecte-se com o mundo. Compartilhe seus links, projetos e informações em um só lugar.</p>
+            <div class="cta-buttons">
+                <a href="{{ url_for('login_google') }}" class="cta-button cta-primary">
+                    <span class="button-icon"><i class="fas fa-rocket"></i></span> Começar Agora!
+                </a>
+                <a href="{{ url_for('login_google') }}" class="cta-button cta-secondary">
+                    <span class="button-icon"><i class="fab fa-google"></i></span> Entrar com o Google
+                </a>
+            </div>
+        </section>
+
+        <section class="features-section">
+            <div class="feature-card">
+                <i class="fas fa-palette"></i>
+                <h3>Personalize Fácil</h3>
+                <p>Altere cores, fontes e adicione sua foto de perfil para uma página única, refletindo sua identidade.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-share-alt"></i>
+                <h3>Todos os seus Links</h3>
+                <p>Centralize links de redes sociais, portfólio, projetos e muito mais, tudo em um só lugar.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-mobile-alt"></i>
+                <h3>Design Moderno</h3>
+                <p>Sua página terá um visual profissional e responsivo em qualquer dispositivo, do celular ao desktop.</p>
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        &copy; 2025 CPages. Todos os direitos reservados.
+    </footer>
 </body>
 </html>
