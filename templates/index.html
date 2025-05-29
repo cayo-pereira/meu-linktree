@@ -1,47 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CPages - Crie sua página pessoal em minutos</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CPages - Sua página pessoal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <div class="main-container">
-        <header class="header">
-            <h1 class="logo">CPages</h1>
-        </header>
-
-        <section class="hero-section">
-            <h2>Crie sua página pessoal profissional em minutos!</h2>
-            <p>Conecte-se com o mundo. Compartilhe seus links, projetos e informações em um só lugar.</p>
-            
-            <a href="{{ url_for('login_google') }}" class="btn-primary">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" class="google-icon">
-                Criar minha página com Google
-            </a>
-            <p class="small-text">É rápido, fácil e totalmente gratuito.</p>
-        </section>
-
-        <section class="features-section">
-            <div class="feature-card">
-                <h3>Personalize Fácil</h3>
-                <p>Altere cores, fontes e adicione sua foto de perfil para uma página única.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Todos os seus Links</h3>
-                <p>Centralize links de redes sociais, portfólio, projetos e muito mais.</p>
-            </div>
-            <div class="feature-card">
-                <h3>Design Moderno</h3>
-                <p>Sua página terá um visual profissional e responsivo em qualquer dispositivo.</p>
-            </div>
-        </section>
-
-        <footer class="footer">
-            <p>&copy; 2025 CPages. Todos os direitos reservados.</p>
-        </footer>
-    </div>
+  <div class="container">
+    <h1>Bem-vindo ao CPages</h1>
+    <p>Crie sua página pessoal em minutos</p>
+    
+    <a href="{{ url_for('login_google') }}" class="btn-google-login">
+      <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt="Google" style="height: 18px; margin-right: 8px;">
+      Criar minha página com Google
+    </a>
+  </div>
 </body>
 </html>
