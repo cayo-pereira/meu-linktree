@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CPages - Sua Página Pessoal Profissional</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
@@ -13,8 +14,9 @@
             justify-content: flex-start;
             align-items: center;
             min-height: 100vh;
-            background-color: var(--light-color);
-            color: var(--dark-color);
+            /* Usar as variáveis CSS para cores de fundo e texto */
+            background-color: var(--bg-color-light); 
+            color: var(--text-color-light);
             font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
@@ -23,27 +25,31 @@
             position: relative;
         }
 
-        body::before, body::after {
+        /* Usando as variáveis de dark-mode.css para os blobs de fundo */
+        body::before {
             content: '';
             position: absolute;
             z-index: -1;
             border-radius: 50%;
             opacity: 0.1;
             filter: blur(80px);
-        }
-
-        body::before {
+            background: var(--primary-color); /* A cor é definida por uma variável que o dark-mode.css sobrescreve */
             width: 300px;
             height: 300px;
-            background: var(--primary-color);
             top: -50px;
             left: -50px;
         }
 
         body::after {
+            content: '';
+            position: absolute;
+            z-index: -1;
+            border-radius: 50%;
+            opacity: 0.1;
+            filter: blur(80px);
+            background: var(--secondary-color); /* A cor é definida por uma variável que o dark-mode.css sobrescreve */
             width: 400px;
             height: 400px;
-            background: var(--secondary-color);
             bottom: -80px;
             right: -80px;
         }
@@ -51,7 +57,8 @@
         .top-header {
             width: 100%;
             text-align: center;
-            background-color: rgba(255, 255, 255, 0.9);
+            /* Usar variável para o background do header */
+            background-color: var(--header-bg-light);
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             position: sticky;
             top: 0;
@@ -84,9 +91,10 @@
         }
 
         .hero-section {
-            background-color: white;
+            /* Usar variável para o background e sombra do hero */
+            background-color: var(--card-bg-light);
             border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
+            box-shadow: var(--shadow-light);
             padding: 4rem 2rem;
             text-align: center;
             max-width: 800px;
@@ -108,7 +116,8 @@
         }
 
         .hero-section h1 {
-            color: var(--dark-color);
+            /* Usar variável para a cor do título */
+            color: var(--text-color-light);
             font-size: 3.5rem;
             margin-bottom: 1rem;
             line-height: 1.1;
@@ -120,7 +129,8 @@
         }
         
         .hero-section .main-subtitle {
-            color: #555;
+            /* Usar variável para a cor do subtítulo */
+            color: var(--text-color-light);
             font-size: 1.4rem;
             max-width: 600px;
             margin: 0 auto 2.5rem auto;
@@ -164,14 +174,15 @@
         }
 
         .cta-secondary {
-            background-color: #f0f2f5;
-            color: var(--dark-color);
-            border: 1px solid #e0e2e5;
+            /* Usar variáveis para o botão secundário */
+            background-color: var(--button-secondary-bg-light);
+            color: var(--button-secondary-text-light);
+            border: 1px solid var(--button-secondary-border-light);
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }
 
         .cta-secondary:hover {
-            background-color: #e5e7eb;
+            background-color: #e5e7eb; /* Este hover pode ser ajustado para uma variável também, se quiser uma transição suave entre light/dark hover */
             transform: translateY(-3px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
@@ -191,9 +202,10 @@
         }
 
         .feature-card {
-            background-color: white;
+            /* Usar variáveis para o background e sombra do cartão */
+            background-color: var(--card-bg-light);
             border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
+            box-shadow: var(--shadow-light);
             padding: 2.5rem;
             text-align: center;
             transition: var(--transition);
@@ -224,13 +236,15 @@
 
         .feature-card h3 {
             font-size: 1.6rem;
-            color: var(--dark-color);
+            /* Usar variável para a cor do título do cartão */
+            color: var(--text-color-light);
             margin-bottom: 0.8rem;
         }
 
         .feature-card p {
             font-size: 1rem;
-            color: #666;
+            /* Usar variável para a cor do parágrafo do cartão */
+            color: var(--text-color-light);
             line-height: 1.5;
         }
 
@@ -240,10 +254,11 @@
             padding: 1.5rem 1rem;
             width: 100%;
             text-align: center;
-            color: #888;
+            /* Usar variáveis para o rodapé */
+            color: var(--text-color-light);
             font-size: 0.9rem;
-            border-top: 1px solid #eee;
-            background-color: white;
+            border-top: 1px solid var(--footer-border-light);
+            background-color: var(--footer-bg-light);
             box-shadow: 0 -2px 10px rgba(0,0,0,0.03);
         }
 
@@ -346,5 +361,6 @@
     <footer class="main-footer">
         &copy; 2025 CPages. Todos os direitos reservados.
     </footer>
+    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
 </body>
 </html>

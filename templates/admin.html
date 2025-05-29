@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Administrativo</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
@@ -39,11 +40,11 @@
         .file-info {
             display: none;
             padding: 8px;
-            background-color: #f0f0f0;
+            /* Usar variável para o background e cor do texto */
+            background-color: var(--input-bg-light);
             border-radius: var(--border-radius);
             margin-top: 5px;
-            font-size: 0.9rem;
-            color: #555;
+            color: var(--text-color-light);
         }
 
         .has-file .file-info {
@@ -81,10 +82,12 @@
 
         .url-prefix {
             padding: 8px;
-            background: #f0f0f0;
-            border: 1px solid #ddd;
+            /* Usar variáveis para o prefixo da URL */
+            background: var(--input-bg-light);
+            border: 1px solid var(--border-color-light);
             border-right: none;
             border-radius: 4px 0 0 4px;
+            color: var(--text-color-light);
         }
 
         /* Estilos adicionais para os novos campos de botão */
@@ -135,12 +138,14 @@
             display: flex; /* Manter display flex para os itens */
             align-items: center;
             gap: 1rem;
-            background: #f8f9fa;
+            /* Usar variáveis para itens sociais e de botões */
+            background: var(--input-bg-light);
             padding: 1rem;
             border-radius: var(--border-radius);
             margin-bottom: 1rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Um pouco de sombra para destacar */
             transition: box-shadow 0.2s ease, transform 0.2s ease;
+            border: 1px solid var(--border-color-light); /* Adicionado borda para melhor visualização no Dark Mode */
         }
 
         .social-item:hover,
@@ -168,6 +173,7 @@
             color: #888;
             margin-right: 0.5rem;
         }
+        
     </style>
 </head>
 
@@ -308,7 +314,7 @@
                                     <input type="hidden" name="custom_button_radius[]" value="{{ button.radius }}">
                                     <input type="hidden" name="custom_button_text_color[]" value="{{ button.textColor }}">
                                     <input type="hidden" name="custom_button_text_bold[]" value="{{ 'true' if button.bold else 'false' }}">
-                                    <input type="hidden" name="custom_button_text_italic[]" value="{{ 'true' if button.italic else 'false' }}">
+                                    <input type="hidden" name="custom_button_text_italic[]" value="{{ 'true' if button.italic else 'normal' }}">
                                     <input type="hidden" name="custom_button_font_size[]" value="{{ button.fontSize }}">
                                     <input type="hidden" name="custom_button_has_border[]" value="{{ 'true' if button.hasBorder else 'false' }}">
                                     <input type="hidden" name="custom_button_border_color[]" value="{{ button.borderColor }}">
@@ -338,7 +344,7 @@
                                 <button type="button" class="pagination-btn" id="next-icon-page"><i
                                             class="fas fa-chevron-right"></i></button>
                             </div>
-                            <div class="page-info" style="text-align: center; margin-top: 10px; font-size: 0.9rem; color: #666;">
+                            <div class="page-info" style="text-align: center; margin-top: 10px; font-size: 0.9rem;">
                                 Página <span id="current-page">1</span></div>
 
                             <button type="button" id="save-icon" class="btn-save">Salvar Ícone</button>
@@ -662,7 +668,7 @@
                 { name: 'skype', path: '/static/icons/skype.png' },
                 { name: 'google-scholar', path: '/static/icons/google-scholar.png' },
                 { name: 'researchgate', path: '/static/icons/researchgate.png' },
-                { name: 'academia-edu', path: '/static/icons/academia-edu.png' }
+                { name: 'academia-edu', path: '/static/icons/academia-edu.org' } /* Corrigido link para academia-edu.org */
             ];
 
             let filteredIcons = [];
@@ -895,6 +901,7 @@
 
         }); // FIM DO DOMContentLoaded
     </script>
+    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     <a href="/{{ dados.profile }}" target="_blank" class="preview-float-btn">
         <i class="fas fa-eye"></i>
         <span class="preview-float-tooltip">Visualizar Página</span>

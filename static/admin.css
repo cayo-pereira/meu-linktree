@@ -1,14 +1,32 @@
+/* static/css/admin.css */
+
 :root {
   --primary-color: #4361ee;
   --secondary-color: #3f37c9;
   --dark-color: #1a1a2e;
   --light-color: #f8f9fa;
-  --success-color: #4cc9f0;
+  --success-color: #21348d;
   --danger-color: #f72585;
   --warning-color: #f8961e;
   --border-radius: 8px;
   --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   --transition: all 0.3s ease;
+
+  /* Variáveis de cores para o Light Mode (padrão) - Duplicadas do dark-mode.css para consistência */
+  --bg-color-light: #f5f7fa;
+  --text-color-light: #333;
+  --card-bg-light: #ffffff;
+  --header-bg-light: rgba(255, 255, 255, 0.9);
+  --border-color-light: #ddd;
+  --input-bg-light: #ffffff;
+  --placeholder-color-light: #999;
+  --shadow-light: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --button-secondary-bg-light: #f0f2f5;
+  --button-secondary-text-light: var(--dark-color);
+  --button-secondary-border-light: #e0e2e5;
+  --footer-bg-light: white;
+  --footer-border-light: #eee;
+  --link-color-light: var(--primary-color);
 }
 
 * {
@@ -19,8 +37,8 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: #f5f7fa;
-  color: #333;
+  background-color: var(--bg-color-light); /* Usando variável */
+  color: var(--text-color-light); /* Usando variável */
   line-height: 1.6;
 }
 
@@ -37,19 +55,19 @@ body {
 
 .admin-header h1 {
   font-size: 2.2rem;
-  color: var(--dark-color);
+  color: var(--text-color-light); /* Usando variável */
   margin-bottom: 0.5rem;
 }
 
 .admin-header p {
-  color: #666;
+  color: var(--text-color-light); /* Usando variável */
   font-size: 1.1rem;
 }
 
 .admin-form {
-  background: white;
+  background: var(--card-bg-light); /* Usando variável */
   border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  box-shadow: var(--shadow-light); /* Usando variável */
   padding: 2rem;
 }
 
@@ -61,20 +79,17 @@ body {
 }
 
 .form-section {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--card-bg-light); /* Usando variável */
   border-radius: 12px;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05); /* Manter sombra original, será sobrescrito se dark-mode.css tiver !important */
   transition: transform 0.3s ease;
   position: relative;
   top: 0;
 }
 
 .form-section:hover {
-  /* transform: translateY(-5px);
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);*/
   top: -5px; 
-  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1),
-
+  box-shadow: var(--shadow-light); /* Usando variável para hover */
 }
 
 .form-section h2 {
@@ -94,17 +109,19 @@ body {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: #444;
+  color: var(--text-color-light); /* Usando variável */
 }
 
 .form-input {
   width: 100%;
   padding: 0.8rem 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color-light); /* Usando variável */
   border-radius: var(--border-radius);
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
   transition: var(--transition);
+  background-color: var(--input-bg-light); /* Usando variável */
+  color: var(--text-color-light); /* Usando variável */
 }
 
 .form-input:focus {
@@ -113,22 +130,32 @@ body {
   box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
 }
 
+.form-input::placeholder {
+    color: var(--placeholder-color-light); /* Usando variável */
+}
+
 .form-textarea {
   width: 100%;
   min-height: 120px;
   padding: 0.8rem 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color-light); /* Usando variável */
   border-radius: var(--border-radius);
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
   resize: vertical;
   transition: var(--transition);
+  background-color: var(--input-bg-light); /* Usando variável */
+  color: var(--text-color-light); /* Usando variável */
 }
 
 .form-textarea:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+}
+
+.form-textarea::placeholder {
+    color: var(--placeholder-color-light); /* Usando variável */
 }
 
 .file-upload {
@@ -151,16 +178,17 @@ body {
 .file-label {
   display: block;
   padding: 0.8rem 1rem;
-  background-color: rgb(255, 255, 255);
-  border: 1px dashed #aaa;
+  background-color: var(--input-bg-light); /* Usando variável */
+  border: 1px dashed var(--border-color-light); /* Usando variável */
   border-radius: var(--border-radius);
   text-align: center;
   cursor: pointer;
   transition: var(--transition);
+  color: var(--text-color-light); /* Usando variável */
 }
 
 .file-label:hover {
-  background-color: #f0f0f0;
+  background-color: var(--button-secondary-bg-light); /* Usando variável para hover */
   border-color: var(--primary-color);
 }
 
@@ -264,20 +292,19 @@ body {
 
 .modal.show {
   display: flex;
-  /* Exibe o modal como flexbox quando 'show' está presente */
   justify-content: center;
   align-items: center;
 }
 
 .modal-content {
-  background-color: white;
+  background-color: var(--card-bg-light); /* Usando variável */
   padding: 2.5rem;
   border-radius: var(--border-radius);
   width: 90%;
   max-width: 650px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--shadow-light); /* Usando variável */
   transform: scale(0.9);
   opacity: 0;
   transition: transform 0.4s ease-out, opacity 0.4s ease-out;
@@ -290,7 +317,6 @@ body {
 
 body.modal-open {
   overflow: hidden;
-  /* Isso é bom para evitar scroll na página de fundo */
 }
 
 .close {
@@ -310,11 +336,12 @@ body.modal-open {
 
 .icon-option {
   padding: 1rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color-light); /* Usando variável */
   border-radius: var(--border-radius);
   text-align: center;
   cursor: pointer;
   transition: var(--transition);
+  background: var(--input-bg-light); /* Usando variável */
 }
 
 .icon-option:hover,
@@ -332,13 +359,14 @@ body.modal-open {
 /* Estilos para os itens adicionados */
 .social-item,
 .custom-button-item {
-  background: #f8f9fa;
+  background: var(--input-bg-light); /* Usando variável */
   padding: 1rem;
   border-radius: var(--border-radius);
   margin-bottom: 1rem;
   display: flex;
   gap: 1rem;
   align-items: center;
+  border: 1px solid var(--border-color-light); /* Usando variável */
 }
 
 .remove-item {
@@ -377,14 +405,14 @@ body.modal-open {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: #f5f7fa;
+  background-color: var(--bg-color-light); /* Usando variável */
   padding: 1rem;
 }
 
 .login-card {
-  background: white;
+  background: var(--card-bg-light); /* Usando variável */
   border-radius: var(--border-radius);
-  box-shadow: var(--box-shadow);
+  box-shadow: var(--shadow-light); /* Usando variável */
   padding: 2.5rem;
   width: 100%;
   max-width: 450px;
@@ -397,12 +425,12 @@ body.modal-open {
 
 .login-header h1 {
   font-size: 1.8rem;
-  color: var(--dark-color);
+  color: var(--text-color-light); /* Usando variável */
   margin-bottom: 0.5rem;
 }
 
 .login-header p {
-  color: #666;
+  color: var(--text-color-light); /* Usando variável */
   font-size: 1rem;
 }
 
@@ -434,7 +462,7 @@ body.modal-open {
 }
 
 .login-error {
-  background-color: #ffeeee;
+  background-color: #ffeeee; /* Manter fixo ou criar variável específica se desejar */
   color: var(--danger-color);
   padding: 1rem;
   border-radius: var(--border-radius);
@@ -442,7 +470,7 @@ body.modal-open {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid #ffcccc;
+  border: 1px solid #ffcccc; /* Manter fixo */
 }
 
 /* Efeito de foco nos inputs */
@@ -549,47 +577,59 @@ body.modal-open {
 .pagination-container {
     display: flex;
     align-items: center;
-    gap: 10px; /* Espaçamento entre os botões e a grid */
-    margin: 1.5rem 0 1rem; /* Ajuste a margem conforme necessário */
+    gap: 10px;
+    margin: 1.5rem 0 1rem;
 }
 
 .pagination-btn {
     background-color: var(--primary-color);
     color: white;
     border: none;
-    padding: 0.6rem 0.8rem; /* Padding menor para botões de seta */
+    padding: 0.6rem 0.8rem;
     border-radius: var(--border-radius);
     cursor: pointer;
     transition: var(--transition);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1rem; /* Tamanho do ícone da seta */
-    flex-shrink: 0; /* Evita que o botão encolha */
+    font-size: 1rem;
+    flex-shrink: 0;
 }
 
 .pagination-btn:hover {
     background-color: var(--secondary-color);
-    transform: translateY(-2px); /* Mantém o efeito de pulinho se desejar */
+    transform: translateY(-2px);
 }
 
 .pagination-btn:disabled {
-    background-color: #cccccc;
+    background-color: var(--border-color-light); /* Usando variável */
     cursor: not-allowed;
     transform: none;
 }
 
 .icons-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 colunas como antes */
+    grid-template-columns: repeat(4, 1fr);
     gap: 1rem;
-    flex-grow: 1; /* Permite que a grid ocupe o espaço restante */
-    overflow-y: auto; /* Adiciona scroll se houver muitos ícones em uma página */
-    max-height: 250px; /* Altura máxima para a área de ícones, adicione scroll se ultrapassar */
-    padding: 5px; /* Pequeno padding para o scrollbar não encostar no conteúdo */
+    flex-grow: 1;
+    overflow-y: auto;
+    max-height: 250px;
+    padding: 5px;
 }
 
-/* Ajuste se o form-input não tiver um margin-bottom suficiente */
 #icon-search {
     margin-bottom: 1rem;
+    background-color: var(--input-bg-light); /* Usando variável */
+    color: var(--text-color-light); /* Usando variável */
+    border-color: var(--border-color-light); /* Usando variável */
+}
+
+#icon-search::placeholder {
+    color: var(--placeholder-color-light); /* Usando variável */
+}
+
+#icon-search:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
 }

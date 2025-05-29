@@ -63,7 +63,7 @@ body.dark-mode .loading-container {
 
 body.dark-mode .form-section {
     background: var(--card-bg-light) !important; /* Para garantir que o hover também seja escuro */
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1); /* Manter sombra original, será sobrescrito se dark-mode.css tiver !important */
 }
 
 body.dark-mode .top-header {
@@ -124,7 +124,7 @@ body.dark-mode .file-label i {
 }
 
 body.dark-mode .has-file .file-label {
-    background-color: var(--primary-color) !important; /* Cor mais vibrante para arquivo selecionado */
+    background-color: var(--success-color) !important; /* Cor mais vibrante para arquivo selecionado */
     color: white !important;
 }
 
@@ -148,8 +148,8 @@ body.dark-mode .login-error {
 body.dark-mode .url-prefix,
 body.dark-mode .pagination-btn:disabled,
 body.dark-mode .progress-container {
-    background: #3a3a5e !important;
-    border-color: #444 !important;
+    background: var(--input-bg-light) !important; /* Usar input-bg-light para consistência */
+    border-color: var(--border-color-light) !important; /* Usar border-color-light para consistência */
     color: var(--text-color-light) !important;
 }
 
@@ -191,10 +191,6 @@ body.dark-mode .icon-option.selected {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Sombra mais pronunciada */
 }
 
-.dark-mode-toggle i {
-    font-size: 1.2rem; /* Tamanho do ícone */
-}
-
 /* Ajustes para o modo escuro com a classe .dark-mode */
 body.dark-mode .dark-mode-toggle {
     background-color: var(--secondary-color); /* Cor do botão em modo escuro */
@@ -222,7 +218,7 @@ body,
 .cta-secondary,
 .login-error,
 .url-prefix,
-.pagination-btn:disabled,
+.pagination-btn, /* Adicionado para transição suave */
 .progress-container,
 .social-item,
 .custom-button-item,
