@@ -196,6 +196,7 @@ def user_page(profile):
                     button['borderWidth'] = int(button.get('borderWidth', 2))
                     button.setdefault('textColor', '#FFFFFF')
                     button.setdefault('borderColor', '#000000')
+                    button.setdefault('shadowType', 'none') # Adiciona default para shadowType
             except (json.JSONDecodeError, ValueError) as e:
                 logger.warning(f"Erro ao processar custom_buttons: {str(e)}")
                 user_data['custom_buttons'] = []
@@ -332,6 +333,7 @@ def admin_panel(username):
                     button['borderWidth'] = int(button.get('borderWidth', 2))
                     button.setdefault('textColor', '#FFFFFF')
                     button.setdefault('borderColor', '#000000')
+                    button.setdefault('shadowType', 'none') # Adiciona default para shadowType
             except (json.JSONDecodeError, ValueError) as e:
                 logger.warning(f"Erro ao processar custom_buttons: {str(e)}")
                 user_data['custom_buttons'] = []
@@ -394,6 +396,7 @@ def admin_panel(username):
             button_border_colors = request.form.getlist('custom_button_border_color[]')
             button_border_widths = request.form.getlist('custom_button_border_width[]')
             button_has_hovers = request.form.getlist('custom_button_has_hover[]')
+            button_shadow_types = request.form.getlist('custom_button_shadow_type[]') # Novo: tipo de sombra
             
             logger.info(f"Processando {len(button_texts)} botões personalizados")
             
@@ -412,7 +415,8 @@ def admin_panel(username):
                             'hasBorder': str(button_has_borders[i]).lower() == 'true',
                             'borderColor': button_border_colors[i],
                             'borderWidth': int(button_border_widths[i]),
-                            'hasHoverEffect': str(button_has_hovers[i]).lower() == 'true'
+                            'hasHoverEffect': str(button_has_hovers[i]).lower() == 'true',
+                            'shadowType': button_shadow_types[i] # Adiciona o tipo de sombra
                         })
                     except (ValueError, IndexError) as e:
                         logger.error(f"Erro ao processar botão {i}: {str(e)}")
@@ -470,6 +474,7 @@ def admin_panel(username):
                         button['borderWidth'] = int(button.get('borderWidth', 2))
                         button.setdefault('textColor', '#FFFFFF')
                         button.setdefault('borderColor', '#000000')
+                        button.setdefault('shadowType', 'none') # Adiciona default para shadowType
                 except (json.JSONDecodeError, ValueError) as e:
                     logger.warning(f"Erro ao processar custom_buttons após erro: {str(e)}")
                     user_data['custom_buttons'] = []

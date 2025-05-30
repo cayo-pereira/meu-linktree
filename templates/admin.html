@@ -173,6 +173,44 @@
             color: #888;
             margin-right: 0.5rem;
         }
+
+        /* Estilos para o Preview do Botão no Modal */
+        #button-preview-area {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: var(--input-bg-light);
+            border: 1px dashed var(--border-color-light);
+            border-radius: var(--border-radius);
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #live-button-preview {
+            padding: 10px 20px;
+            border-radius: 10px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            font-weight: normal;
+            font-style: normal;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.1s ease-out; /* Transição para o preview */
+            white-space: nowrap; /* Evita quebra de linha no preview */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 90%; /* Para não ultrapassar o container */
+        }
+
+        /* Estilos para tipos de sombra */
+        .shadow-none { box-shadow: none; }
+        .shadow-soft { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+        .shadow-medium { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+        .shadow-hard { box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); }
+        .shadow-inset { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2); }
         
     </style>
 </head>
@@ -304,7 +342,7 @@
                             {% for button in dados.custom_buttons %}
                             <div class="custom-button-item">
                                 <i class="fas fa-grip-vertical drag-handle"></i> <div style="flex-grow: 1;">
-                                    <div class="button-preview {% if button.hasBorder %}has-border-preview{% endif %} {% if button.hasHoverEffect %}hover-effect-preview{% endif %}"
+                                    <div class="button-preview {% if button.hasBorder %}has-border-preview{% endif %} {% if button.hasHoverEffect %}hover-effect-preview{% endif %} {% if button.shadowType %}shadow-{{ button.shadowType }}{% endif %}"
                                         style="background: {{ button.color }}; border-radius: {{ button.radius }}px; padding: 8px; margin-bottom: 8px; color: {{ button.textColor }}; font-weight: {{ 'bold' if button.bold else 'normal' }}; font-style: {{ 'italic' if button.italic else 'normal' }}; font-size: {{ button.fontSize }}px; {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor }};{% endif %}">
                                         {{ button.text }}
                                     </div>
@@ -320,6 +358,7 @@
                                     <input type="hidden" name="custom_button_border_color[]" value="{{ button.borderColor }}">
                                     <input type="hidden" name="custom_button_border_width[]" value="{{ button.borderWidth }}">
                                     <input type="hidden" name="custom_button_has_hover[]" value="{{ 'true' if button.hasHoverEffect else 'false' }}">
+                                    <input type="hidden" name="custom_button_shadow_type[]" value="{{ button.shadowType | default('none') }}">
                                 </div>
                                 <span class="remove-item"><i class="fas fa-times"></i></span>
                             </div>
@@ -355,6 +394,10 @@
                         <div class="modal-content">
                             <span class="close button-modal-close">&times;</span>
                             <h3>Criar Novo Botão</h3>
+
+                            <div id="button-preview-area">
+                                <a href="#" id="live-button-preview">Texto do Botão</a>
+                            </div>
 
                             <div class="form-group">
                                 <label for="button-text">Texto do Botão</label>
@@ -412,6 +455,18 @@
                                 <input type="checkbox" id="button-has-hover">
                                 <label for="button-has-hover">Efeito Hover</label>
                             </div>
+
+                            <div class="form-group">
+                                <label for="button-shadow-type">Tipo de Sombra</label>
+                                <select id="button-shadow-type" class="form-input">
+                                    <option value="none">Nenhuma</option>
+                                    <option value="soft">Suave</option>
+                                    <option value="medium">Média</option>
+                                    <option value="hard">Forte</option>
+                                    <option value="inset">Interna (Inset)</option>
+                                </select>
+                            </div>
+
                             <button type="button" id="save-button" class="btn-save">Salvar Botão</button>
                         </div>
                     </div>
@@ -498,6 +553,7 @@
                 const borderColor = buttonData.borderColor || '#000000';
                 const borderWidth = buttonData.borderWidth || 2;
                 const hasHoverEffect = buttonData.hasHoverEffect || false;
+                const shadowType = buttonData.shadowType || 'none'; // Nova propriedade de sombra
 
                 let borderStyle = '';
                 let buttonPreviewClasses = ['button-preview'];
@@ -507,6 +563,9 @@
                 }
                 if (hasHoverEffect) {
                     buttonPreviewClasses.push('hover-effect-preview');
+                }
+                if (shadowType && shadowType !== 'none') { // Adiciona a classe de sombra
+                    buttonPreviewClasses.push(`shadow-${shadowType}`);
                 }
 
                 buttonField.innerHTML = `
@@ -527,6 +586,7 @@
                         <input type="hidden" name="custom_button_border_color[]" value="${escapeHtml(borderColor)}">
                         <input type="hidden" name="custom_button_border_width[]" value="${escapeHtml(borderWidth)}">
                         <input type="hidden" name="custom_button_has_hover[]" value="${hasHoverEffect}">
+                        <input type="hidden" name="custom_button_shadow_type[]" value="${escapeHtml(shadowType)}">
                     </div>
                     <span class="remove-item"><i class="fas fa-times"></i></span>
                 `;
@@ -802,11 +862,6 @@
                 }
             });
 
-            // Atualizar valor do range do botão personalizado
-            document.getElementById('button-radius').addEventListener('input', function () {
-                document.getElementById('radius-value').textContent = `${this.value}px`;
-            });
-
             // Lógica para mostrar/esconder os campos de cor e tamanho da borda
             const buttonHasBorderCheckbox = document.getElementById('button-has-border');
             const borderOptionsGroup = document.getElementById('border-options-group');
@@ -817,25 +872,93 @@
                 } else {
                     borderOptionsGroup.style.display = 'none';
                 }
+                updateButtonPreview(); // Atualiza o preview ao mudar a borda
             });
+
+            // Selecionar elementos do modal de botão para o preview
+            const liveButtonPreview = document.getElementById('live-button-preview');
+            const buttonText = document.getElementById('button-text');
+            const buttonColor = document.getElementById('button-color');
+            const buttonRadius = document.getElementById('button-radius');
+            const radiusValueSpan = document.getElementById('radius-value');
+            const buttonTextColor = document.getElementById('button-text-color');
+            const buttonTextBold = document.getElementById('button-text-bold');
+            const buttonTextItalic = document.getElementById('button-text-italic');
+            const buttonFontSize = document.getElementById('button-font-size');
+            const buttonBorderColor = document.getElementById('button-border-color');
+            const buttonBorderWidth = document.getElementById('button-border-width');
+            const buttonHasHover = document.getElementById('button-has-hover');
+            const buttonShadowType = document.getElementById('button-shadow-type'); // Novo campo de sombra
+
+            // Função para atualizar o preview do botão
+            function updateButtonPreview() {
+                liveButtonPreview.textContent = buttonText.value || 'Texto do Botão';
+                liveButtonPreview.style.backgroundColor = buttonColor.value;
+                liveButtonPreview.style.borderRadius = `${buttonRadius.value}px`;
+                radiusValueSpan.textContent = `${buttonRadius.value}px`;
+                liveButtonPreview.style.color = buttonTextColor.value;
+                liveButtonPreview.style.fontWeight = buttonTextBold.checked ? 'bold' : 'normal';
+                liveButtonPreview.style.fontStyle = buttonTextItalic.checked ? 'italic' : 'normal';
+                liveButtonPreview.style.fontSize = `${buttonFontSize.value}px`;
+
+                // Lógica da Borda
+                if (buttonHasBorderCheckbox.checked) {
+                    liveButtonPreview.style.border = `${buttonBorderWidth.value}px solid ${buttonBorderColor.value}`;
+                } else {
+                    liveButtonPreview.style.border = 'none';
+                }
+
+                // Lógica da Sombra
+                // Remove todas as classes de sombra existentes
+                ['shadow-soft', 'shadow-medium', 'shadow-hard', 'shadow-inset'].forEach(cls => {
+                    liveButtonPreview.classList.remove(cls);
+                });
+                // Adiciona a classe de sombra selecionada
+                if (buttonShadowType.value !== 'none') {
+                    liveButtonPreview.classList.add(`shadow-${buttonShadowType.value}`);
+                }
+
+                // Lógica do Hover (adiciona uma classe para o CSS)
+                if (buttonHasHover.checked) {
+                    liveButtonPreview.classList.add('hover-effect-preview'); // Esta classe já existe e aplica o efeito no CSS
+                } else {
+                    liveButtonPreview.classList.remove('hover-effect-preview');
+                }
+            }
+
+            // Adicionar event listeners para atualizar o preview
+            buttonText.addEventListener('input', updateButtonPreview);
+            buttonColor.addEventListener('input', updateButtonPreview);
+            buttonRadius.addEventListener('input', updateButtonPreview);
+            buttonTextColor.addEventListener('input', updateButtonPreview);
+            buttonTextBold.addEventListener('change', updateButtonPreview);
+            buttonTextItalic.addEventListener('change', updateButtonPreview);
+            buttonFontSize.addEventListener('input', updateButtonPreview);
+            buttonBorderColor.addEventListener('input', updateButtonPreview);
+            buttonBorderWidth.addEventListener('input', updateButtonPreview);
+            buttonHasHover.addEventListener('change', updateButtonPreview);
+            buttonShadowType.addEventListener('change', updateButtonPreview); // Event listener para o novo campo de sombra
 
             // Abrir modal de botões
             addButtonBtn.addEventListener('click', () => {
                 // Resetar valores do modal ao abrir para um novo botão
-                document.getElementById('button-text').value = '';
+                buttonText.value = '';
                 document.getElementById('button-link').value = '';
-                document.getElementById('button-color').value = '#4CAF50';
-                document.getElementById('button-radius').value = '10';
-                document.getElementById('radius-value').textContent = '10px';
-                document.getElementById('button-text-color').value = '#FFFFFF';
-                document.getElementById('button-text-bold').checked = false;
-                document.getElementById('button-text-italic').checked = false;
-                document.getElementById('button-font-size').value = '16';
+                buttonColor.value = '#4CAF50';
+                buttonRadius.value = '10';
+                radiusValueSpan.textContent = '10px';
+                buttonTextColor.value = '#FFFFFF';
+                buttonTextBold.checked = false;
+                buttonTextItalic.checked = false;
+                buttonFontSize.value = '16';
                 buttonHasBorderCheckbox.checked = false;
                 borderOptionsGroup.style.display = 'none';
-                document.getElementById('button-border-color').value = '#000000';
-                document.getElementById('button-border-width').value = '2';
-                document.getElementById('button-has-hover').checked = false;
+                buttonBorderColor.value = '#000000';
+                buttonBorderWidth.value = '2';
+                buttonHasHover.checked = false;
+                buttonShadowType.value = 'none'; // Reseta o tipo de sombra
+
+                updateButtonPreview(); // Atualiza o preview com os valores resetados
 
                 buttonModal.classList.add('show');
                 document.body.classList.add('modal-open');
@@ -845,33 +968,35 @@
             // Salvar botão personalizado
             document.getElementById('save-button').addEventListener('click', function (event) {
                 event.preventDefault();
-                const buttonText = document.getElementById('button-text').value;
-                const buttonLink = document.getElementById('button-link').value;
-                const buttonColor = document.getElementById('button-color').value;
-                const buttonRadius = document.getElementById('button-radius').value;
-                const buttonTextColor = document.getElementById('button-text-color').value;
-                const buttonTextBold = document.getElementById('button-text-bold').checked;
-                const buttonTextItalic = document.getElementById('button-text-italic').checked;
-                const buttonFontSize = document.getElementById('button-font-size').value;
-                const buttonHasBorder = document.getElementById('button-has-border').checked;
-                const buttonBorderColor = document.getElementById('button-border-color').value;
-                const buttonBorderWidth = document.getElementById('button-border-width').value;
-                const buttonHasHover = document.getElementById('button-has-hover').checked;
+                const btnText = buttonText.value; // Usar a variável do input para garantir o valor atual
+                const btnLink = document.getElementById('button-link').value; // Pegar do input de link
+                const btnColor = buttonColor.value;
+                const btnRadius = buttonRadius.value;
+                const btnTextColor = buttonTextColor.value;
+                const btnTextBold = buttonTextBold.checked;
+                const btnTextItalic = buttonTextItalic.checked;
+                const btnFontSize = buttonFontSize.value;
+                const btnHasBorder = buttonHasBorderCheckbox.checked;
+                const btnBorderColor = buttonBorderColor.value;
+                const btnBorderWidth = buttonBorderWidth.value;
+                const btnHasHover = buttonHasHover.checked;
+                const btnShadowType = buttonShadowType.value; // Novo valor da sombra
 
-                if (buttonText && buttonLink) {
+                if (btnText && btnLink) {
                     const newButtonData = {
-                        text: buttonText,
-                        link: buttonLink,
-                        color: buttonColor,
-                        radius: buttonRadius,
-                        textColor: buttonTextColor,
-                        bold: buttonTextBold,
-                        italic: buttonTextItalic,
-                        fontSize: buttonFontSize,
-                        hasBorder: buttonHasBorder,
-                        borderColor: buttonBorderColor,
-                        borderWidth: buttonBorderWidth,
-                        hasHoverEffect: buttonHasHover
+                        text: btnText,
+                        link: btnLink,
+                        color: btnColor,
+                        radius: btnRadius,
+                        textColor: btnTextColor,
+                        bold: btnTextBold,
+                        italic: btnTextItalic,
+                        fontSize: btnFontSize,
+                        hasBorder: btnHasBorder,
+                        borderColor: btnBorderColor,
+                        borderWidth: btnBorderWidth,
+                        hasHoverEffect: btnHasHover,
+                        shadowType: btnShadowType // Adiciona a propriedade de sombra
                     };
                     
                     renderCustomButton(newButtonData);
