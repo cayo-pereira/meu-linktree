@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,29 +11,32 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
 </head>
 {% if session.logado and session.profile == dados.profile %}
 <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
-    <a href="{{ url_for('admin_panel', username=dados.profile) }}" 
-       style="background: #4361ee; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none; z-index: 999;">
+    <a href="{{ url_for('admin_panel', username=dados.profile) }}"
+        style="background: #4361ee; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none; z-index: 999;">
         <i class="fas fa-edit"></i> Editar Página
     </a>
 </div>
 {% endif %}
-<body {% if dados.background %}style="background-image: url('{{ dados.background if dados.background.startswith('http') else url_for('static', filename=dados.background) }}'); background-size: cover; background-position: center; background-attachment: fixed;"{% endif %}>
+
+<body {% if dados.background
+    %}style="background-image: url('{{ dados.background if dados.background.startswith('http') else url_for('static', filename=dados.background) }}'); background-size: cover; background-position: center; background-attachment: fixed;"
+    {% endif %}>
     <div class="swiper-container">
         <div class="swiper-wrapper">
             <div class="swiper-slide user-page-slide">
                 <div class="container">
                     {% if dados.foto %}
-                    <img src="{{ dados.foto if dados.foto.startswith('http') else url_for('static', filename=dados.foto) }}" 
+                    <img src="{{ dados.foto if dados.foto.startswith('http') else url_for('static', filename=dados.foto) }}"
                         alt="Foto de perfil" class="profile-pic">
                     {% endif %}
-                    
+
                     <h1>{{ dados.nome if dados.nome else 'Usuário' }}</h1>
-                    
+
                     {% if dados.bio %}
                     <p class="bio">{{ dados.bio }}</p>
                     {% endif %}
@@ -46,22 +50,21 @@
                     </div>
 
                     {% if dados.custom_buttons %}
-                        {% for button in dados.custom_buttons %}
-                            <a href="{{ button.link }}" 
-                                class="link-button-custom 
-                                {% if button.hasHoverEffect %}has-hover-effect{% endif %} {# ALTERAÇÃO AQUI: Usando a nova classe#}
+                    {% for button in dados.custom_buttons %}
+                    <a href="{{ button.link }}"
+                        class="link-button-custom 
+                                {% if button.hasHoverEffect %}has-hover-effect{% endif %}
                                 {% if button.shadowType and button.shadowType != 'none' %}shadow-{{ button.shadowType }}{% endif %}"
-                                style="background: {{ button.color }}; 
+                        style="background: {{ button.color }}; 
                                         border-radius: {{ button.radius }}px; 
                                         color: {{ button.textColor }}; 
                                         font-weight: {{ 'bold' if button.bold else 'normal' }}; 
                                         font-style: {{ 'italic' if button.italic else 'normal' }}; 
                                         font-size: {{ button.fontSize }}px;
-                                        {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor }};{% endif %}"
-                                target="_blank">
-                                {{ button.text }}
-                            </a>
-                        {% endfor %}
+                                        {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor }};{% endif %}" target="_blank">
+                        {{ button.text }}
+                    </a>
+                    {% endfor %}
                     {% endif %}
 
                     <footer>
@@ -71,7 +74,8 @@
             </div>
 
             <div class="swiper-slide card-page-slide">
-                <div class="card-container" style="{% if dados.card_background_type == 'color' %}background-color: {{ dados.card_background_value }};{% elif dados.card_background_type == 'image' and dados.card_background_value %}background-image: url('{{ dados.card_background_value }}'); background-size: cover; background-position: center;{% endif %}">
+                <div class="card-container"
+                    style="{% if dados.card_background_type == 'color' %}background-color: {{ dados.card_background_value }};{% elif dados.card_background_type == 'image' and dados.card_background_value %}background-image: url('{{ dados.card_background_value }}'); background-size: cover; background-position: center;{% endif %}">
                     <div class="card-content">
                         <div class="card-header-info">
                             <h2>{{ dados.card_nome if dados.card_nome else dados.nome }}</h2>
@@ -86,7 +90,8 @@
                         <div class="card-links-and-button"> {# NOVO CONTAINER FLEX #}
                             <div class="card-links">
                                 {% for link in dados.card_links %}
-                                <a href="{{ link.url }}" target="_blank" class="card-link-item" title="{{ link.at_text if link.at_text else link.icon }}">
+                                <a href="{{ link.url }}" target="_blank" class="card-link-item"
+                                    title="{{ link.at_text if link.at_text else link.icon }}">
                                     <img src="/static/icons/{{ link.icon }}.png" class="card-icon">
                                     {% if link.at_text %}
                                     <span class="card-link-text">{{ link.at_text }}</span>
@@ -113,261 +118,6 @@
         <div class="swiper-scrollbar"></div>
     </div>
 
-    <style>
-        /* Estilos globais para o Swiper */
-        .swiper-container {
-            width: 100%;
-            height: 100vh;
-            overflow: hidden;
-            /* Garante que não haja scroll extra */
-        }
-
-        .swiper-slide {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: transparent;
-            /* A cor de fundo será definida pelo body ou .card-container */
-        }
-
-        /* Estilos específicos para a página do usuário (existente) */
-        .user-page-slide .container {
-            /* Seu estilo existente para o container da user_page */
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-            padding: 20px;
-            margin: 0 auto;
-            position: relative;
-            /* Para garantir o z-index do conteúdo */
-            z-index: 10;
-        }
-
-        /* Estilos para o novo Cartão de Visitas */
-        .card-page-slide {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-            position: relative;
-            z-index: 5;
-            /* Para o efeito de "aparecer por trás" */
-        }
-
-        .card-container {
-            background-color: #333;
-            /* Cor de fallback */
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            color: #fff;
-            padding: 30px;
-            width: 90%;
-            max-width: 380px;
-            /* Tamanho típico de cartão de visitas */
-            height: 220px;
-            /* Altura fixa para simular cartão retangular */
-            text-align: center;
-            transition: all 0.5s ease-in-out;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: relative;
-            overflow: hidden;
-            /* Para garantir que a imagem de fundo fique dentro */
-        }
-
-        .card-container::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.2);
-            /* Overlay semi-transparente para melhor leitura do texto */
-            z-index: 1;
-        }
-
-        .card-content {
-            position: relative;
-            z-index: 2;
-            /* Garante que o conteúdo fique acima do overlay */
-            width: 100%;
-        }
-
-        .card-container h2 {
-            font-size: 24px;
-            /* Ajuste o tamanho do nome para caber */
-            margin-bottom: 5px;
-            font-weight: 700;
-        }
-
-        .card-title {
-            font-size: 16px;
-            /* Ajuste o tamanho do título */
-            color: #eee;
-            margin-bottom: 5px;
-            /* Reduzir margem */
-            font-weight: 500;
-        }
-
-        .card-registration {
-            font-size: 14px;
-            color: #bbb;
-            margin-bottom: 15px;
-            /* Reduzir margem */
-        }
-
-        .card-links {
-            display: flex;
-            flex-direction: column;
-            /* Manter em coluna, mas ajustar o espaçamento */
-            gap: 5px;
-            /* Espaçamento menor entre os links */
-            margin-top: 10px;
-            /* Margem menor acima dos links */
-            margin-bottom: 10px;
-            /* Margem menor abaixo dos links */
-            align-items: flex-start;
-            /* Alinhar links à esquerda */
-            padding-left: 20px;
-            /* Adicionar padding para afastar da borda */
-            width: 100%;
-            /* Ocupar largura total do conteúdo */
-            box-sizing: border-box;
-            /* Incluir padding na largura */
-        }
-
-        .card-link-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background-color: transparent;
-            /* Fundo transparente para o item */
-            padding: 5px 0;
-            /* Padding reduzido */
-            border-radius: 0;
-            /* Remover border-radius */
-            text-decoration: none;
-            color: white;
-            transition: background-color 0.3s ease;
-            width: auto;
-            /* Largura automática para cada item */
-            justify-content: flex-start;
-            /* Alinhar ícones e texto à esquerda */
-        }
-
-        .card-link-item:hover {
-            background-color: rgba(255, 255, 255, 0.1);
-            /* Um leve hover */
-        }
-
-        .card-icon {
-            width: 24px;
-            /* Ícones menores */
-            height: 24px;
-            object-fit: contain;
-        }
-
-        .card-link-item .card-link-text {
-            /* Nova classe para o texto do link */
-            font-size: 14px;
-            /* Tamanho de fonte do link */
-            font-weight: normal;
-            /* Peso de fonte normal */
-        }
-
-        .add-to-contacts-btn {
-            background-color: #28a745;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            /* Padding reduzido */
-            border-radius: 8px;
-            font-size: 14px;
-            /* Tamanho de fonte reduzido */
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            /* Gap reduzido */
-            margin: 15px auto 0;
-            /* Margem reduzida */
-        }
-
-        .add-to-contacts-btn:hover {
-            background-color: #218838;
-            transform: translateY(-2px);
-        }
-
-        /* Estilos para botões personalizados existentes */
-        .link-button-custom {
-            display: block;
-            width: 100%;
-            max-width: 350px;
-            padding: 14px;
-            margin: 10px auto;
-            text-align: center;
-            text-decoration: none;
-            /* Removido do CSS em style.css, agora é condicional*/
-        }
-
-        /* Estilos para tipos de sombra (replicados do admin.html para user_page.html) */
-        .shadow-none {
-            box-shadow: none;
-        }
-
-        .shadow-soft {
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .shadow-medium {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .shadow-hard {
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .shadow-inset {
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Estilos para setas de navegação Swiper no desktop */
-        .swiper-button-prev,
-        .swiper-button-next {
-            color: rgba(255, 255, 255, 0.7);
-            transition: color 0.3s ease;
-        }
-
-        .swiper-button-prev:hover,
-        .swiper-button-next:hover {
-            color: white;
-        }
-
-        /* Esconder setas em dispositivos móveis */
-        @media (max-width: 768px) {
-
-            .swiper-button-prev,
-            .swiper-button-next {
-                display: none !important;
-            }
-        }
-
-        /* Posicionamento da paginação Swiper */
-        .swiper-pagination-bullet {
-            background: rgba(255, 255, 255, 0.5);
-            opacity: 1;
-        }
-
-        .swiper-pagination-bullet-active {
-            background: white;
-        }
-    </style>
-
     <script>
         // Efeito de carregamento suave
         document.body.style.opacity = 0;
@@ -376,7 +126,67 @@
                 document.body.style.opacity = 1;
             }, 100);
 
-            // Inicializar Swiper.js
+            // --- INÍCIO: NOVA LÓGICA DE ROLAGEM MODIFICADA ---
+            const userPageSlide = document.querySelector('.user-page-slide');
+
+            if (userPageSlide) {
+                userPageSlide.addEventListener('wheel', function (event) {
+                    const el = this;
+                    const scrollHeight = el.scrollHeight;
+                    const clientHeight = el.clientHeight;
+                    const scrollTop = el.scrollTop;
+                    const deltaY = event.deltaY; // deltaY < 0 é para cima, > 0 é para baixo
+
+                    // Se não houver nada para rolar internamente no userPageSlide,
+                    // deixamos o comportamento padrão do Swiper (que pode incluir navegação por wheel,
+                    // dependendo da configuração global do Swiper).
+                    // Se você NÃO QUER que o Swiper reaja ao mousewheel MESMO AQUI,
+                    // você precisaria desabilitar o mousewheel na configuração do Swiper ou
+                    // adicionar um event.preventDefault() aqui também.
+                    // Mas, para o seu pedido focado no conteúdo rolável, manteremos assim:
+                    if (scrollHeight <= clientHeight) {
+                        // Opcional: se quiser bloquear o Swiper via wheel mesmo quando não há scroll interno
+                        // E este userPageSlide é o foco, descomente as duas linhas abaixo:
+                        // event.preventDefault();
+                        // event.stopPropagation();
+                        return; // Deixa o Swiper (ou o navegador) lidar com o evento
+                    }
+
+                    const atTop = scrollTop === 0;
+                    // Verifica se está na base (com uma pequena tolerância)
+                    const atBottom = scrollTop >= (scrollHeight - clientHeight - 1);
+
+                    // Se está rolando para CIMA e JÁ ESTÁ NO TOPO do conteúdo interno
+                    if (deltaY < 0 && atTop) {
+                        // Impedimos o Swiper de mudar de slide via mousewheel.
+                        // O usuário terá que arrastar.
+                        event.preventDefault();
+                        event.stopPropagation();
+                        return; // Não há mais para onde rolar internamente para cima.
+                    }
+
+                    // Se está rolando para BAIXO e JÁ ESTÁ NA BASE do conteúdo interno
+                    if (deltaY > 0 && atBottom) {
+                        // Impedimos o Swiper de mudar de slide via mousewheel.
+                        // O usuário terá que arrastar.
+                        event.preventDefault();
+                        event.stopPropagation();
+                        return; // Não há mais para onde rolar internamente para baixo.
+                    }
+
+                    // Se chegou até aqui, significa que a rolagem DEVE acontecer DENTRO do slide.
+                    // Então, impedimos o comportamento padrão (Swiper e outros)
+                    event.preventDefault();
+                    event.stopPropagation();
+
+                    // E aplicamos a rolagem manualmente
+                    el.scrollTop += deltaY;
+
+                }, { passive: false }); // 'passive: false' é essencial aqui
+            }
+            // --- FIM: NOVA LÓGICA DE ROLAGEM MODIFICADA ---
+
+            // Inicializar Swiper.js (mantém a configuração original)
             const swiper = new Swiper('.swiper-container', {
                 effect: 'creative',
                 creativeEffect: {
@@ -389,7 +199,7 @@
                         translate: ['120%', 0, -500],
                     },
                 },
-                grabCursor: true, // Adiciona o cursor de "mão" para indicar arrastar
+                grabCursor: true,
                 pagination: {
                     el: '.swiper-pagination',
                     clickable: true,
@@ -398,11 +208,11 @@
                     nextEl: '.swiper-button-next',
                     prevEl: '.swiper-button-prev',
                 },
-                loop: false, // Não loop para que não haja rolagem infinita
-                simulateTouch: true, // Permite arrastar com o mouse (além de touch)
+                loop: false,
+                simulateTouch: true,
                 mousewheel: {
-                    enabled: true, // Ativa a rolagem com a roda do mouse
-                    releaseOnEdges: true, // Permite que a rolagem da página continue se chegar ao limite do Swiper
+                    enabled: true,
+                    releaseOnEdges: true,
                 },
             });
         });
@@ -432,6 +242,9 @@ END:VCARD`;
             URL.revokeObjectURL(url);
         }
     </script>
+</body>
+
+</html>
 </body>
 
 </html>
