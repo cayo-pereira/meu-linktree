@@ -47,7 +47,10 @@ body.dark-mode .hero-section h1,
 body.dark-mode .login-header h1,
 body.dark-mode .feature-card h3,
 body.dark-mode .form-section h2,
-body.dark-mode .logo {
+body.dark-mode .logo,
+body.dark-mode .card-container h2, /* Adicionado para o cartão */
+body.dark-mode .card-title, /* Adicionado para o cartão */
+body.dark-mode .card-registration /* Adicionado para o cartão */ {
     color: var(--text-color-light) !important;
 }
 
@@ -56,7 +59,8 @@ body.dark-mode .hero-section,
 body.dark-mode .login-card,
 body.dark-mode .feature-card,
 body.dark-mode .modal-content,
-body.dark-mode .loading-container {
+body.dark-mode .loading-container,
+body.dark-mode .card-container /* Adicionado para o cartão */ {
     background: var(--card-bg-light) !important;
     box-shadow: var(--shadow-light) !important;
 }
@@ -85,7 +89,8 @@ body.dark-mode .file-info,
 body.dark-mode .icon-option p,
 body.dark-mode .page-info,
 body.dark-mode .debug-info,
-body.dark-mode .loading-container p {
+body.dark-mode .loading-container p,
+body.dark-mode .card-link-item span /* Adicionado para o cartão */ {
     color: var(--text-color-light) !important;
 }
 
@@ -155,7 +160,8 @@ body.dark-mode .progress-container {
 
 body.dark-mode .social-item,
 body.dark-mode .custom-button-item,
-body.dark-mode .icon-option {
+body.dark-mode .icon-option,
+body.dark-mode .card-link-item /* Adicionado para o cartão */ {
     background: var(--input-bg-light) !important;
     border-color: var(--border-color-light) !important;
 }
@@ -222,7 +228,8 @@ body,
 .progress-container,
 .social-item,
 .custom-button-item,
-.icon-option {
+.icon-option,
+.card-link-item /* Adicionado para o cartão */ {
     transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
 }
 
@@ -241,7 +248,11 @@ body.dark-mode .file-info,
 body.dark-mode .icon-option p,
 body.dark-mode .page-info,
 body.dark-mode .debug-info,
-body.dark-mode .loading-container p {
+body.dark-mode .loading-container p,
+body.dark-mode .card-container h2, /* Adicionado para o cartão */
+body.dark-mode .card-title, /* Adicionado para o cartão */
+body.dark-mode .card-registration, /* Adicionado para o cartão */
+body.dark-mode .card-link-item span /* Adicionado para o cartão */ {
     transition: color 0.5s ease;
 }
 

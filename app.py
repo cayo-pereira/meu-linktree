@@ -51,7 +51,8 @@ def upload_to_supabase(file, user_id, field_type):
         }
         
         file_ext = os.path.splitext(secure_filename(file.filename))[1].lower()
-        unique_filename = f"{user_id}_{field_type}{file_ext}"
+        # Modifica o nome do arquivo para incluir o tipo de campo para diferenciar fotos de perfil/background de cartão
+        unique_filename = f"{user_id}_{field_type}{file_ext}" 
         
         temp_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_filename)
         file.save(temp_path)
@@ -214,6 +215,17 @@ def user_page(profile):
         else:
             user_data['social_links'] = []
 
+        # Processar card_links (nova funcionalidade)
+        if 'card_links' in user_data and user_data['card_links']:
+            try:
+                if isinstance(user_data['card_links'], str):
+                    user_data['card_links'] = json.loads(user_data['card_links'])
+            except json.JSONDecodeError:
+                logger.warning(f"Erro ao decodificar card_links")
+                user_data['card_links'] = []
+        else:
+            user_data['card_links'] = []
+
         response = make_response(render_template('user_page.html', dados=user_data))
         response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
         response.headers['Pragma'] = 'no-cache'
@@ -270,7 +282,13 @@ def callback():
                 'active': True,
                 'bio': 'Olá! Esta é minha página pessoal.',
                 'social_links': '[]',
-                'custom_buttons': '[]'
+                'custom_buttons': '[]',
+                'card_nome': user.user_metadata.get('full_name', user.email), # Novo campo
+                'card_titulo': '', # Novo campo
+                'card_registro_profissional': '', # Novo campo
+                'card_links': '[]', # Novo campo
+                'card_background_type': 'color', # Novo campo, default para cor
+                'card_background_value': '#4361ee' # Novo campo, default para cor primária
             }
             
             api_url = f"{SUPABASE_URL}/rest/v1/usuarios"
@@ -351,11 +369,27 @@ def admin_panel(username):
         else:
             user_data['social_links'] = []
 
+        # Processar card_links (nova funcionalidade)
+        if 'card_links' in user_data and user_data['card_links']:
+            try:
+                if isinstance(user_data['card_links'], str):
+                    user_data['card_links'] = json.loads(user_data['card_links'])
+            except json.JSONDecodeError:
+                logger.warning(f"Erro ao decodificar card_links")
+                user_data['card_links'] = []
+        else:
+            user_data['card_links'] = []
+
         if request.method == 'POST':
             update_data = {
                 'nome': request.form.get('nome'),
                 'bio': request.form.get('bio'),
-                'profile': request.form.get('profile')
+                'profile': request.form.get('profile'),
+                'card_nome': request.form.get('card_nome'), # Novo campo
+                'card_titulo': request.form.get('card_titulo'), # Novo campo
+                'card_registro_profissional': request.form.get('card_registro_profissional'), # Novo campo
+                'card_background_type': request.form.get('card_background_type'), # Novo campo
+                'card_background_value': request.form.get('card_background_value') # Novo campo
             }
 
             # Processar social_links (AGORA COLETA PELA ORDEM DO DOM)
@@ -425,6 +459,29 @@ def admin_panel(username):
             update_data['custom_buttons'] = json.dumps(custom_buttons)
             logger.info(f"Botões a serem salvos: {update_data['custom_buttons']}")
 
+            # Processar card_links (nova funcionalidade)
+            card_links = []
+            card_icon_names = request.form.getlist('card_icon_name[]')
+            card_icon_urls = request.form.getlist('card_icon_url[]')
+            card_icon_at_texts = request.form.getlist('card_icon_at_text[]')
+
+            for i in range(len(card_icon_names)):
+                icon_name = card_icon_names[i]
+                url = card_icon_urls[i]
+                at_text = card_icon_at_texts[i]
+                if icon_name and (url or at_text): # Pelo menos um dos campos precisa ter valor
+                    card_links.append({
+                        'icon': icon_name,
+                        'url': url,
+                        'at_text': at_text
+                    })
+            if len(card_links) > 3: # Limite de 3 links para o cartão
+                flash("⚠️ Você pode adicionar no máximo 3 links para o cartão de visitas", "warning")
+                card_links = card_links[:3]
+            
+            update_data['card_links'] = json.dumps(card_links)
+            logger.info(f"Links do cartão a serem salvos: {update_data['card_links']}")
+
             # Processar uploads de arquivos
             for field in ['foto', 'background']:
                 file = request.files.get(f'{field}_upload')
@@ -432,6 +489,24 @@ def admin_panel(username):
                     file_url = upload_to_supabase(file, session['user_id'], field)
                     if file_url:
                         update_data[field] = file_url
+            
+            # Processar upload da imagem de background do cartão (novo campo)
+            card_bg_file = request.files.get('card_background_upload')
+            if card_bg_file and arquivo_permitido(card_bg_file.filename):
+                file_url = upload_to_supabase(card_bg_file, session['user_id'], 'card_background')
+                if file_url:
+                    update_data['card_background_type'] = 'image'
+                    update_data['card_background_value'] = file_url
+            elif update_data['card_background_type'] == 'color': # Se o tipo for cor, mas tinha imagem antes, precisamos limpar
+                # Aqui você pode adicionar lógica para deletar a imagem antiga do storage se houver uma transição de imagem para cor
+                # Por simplicidade, estamos apenas sobrescrevendo o tipo e valor no DB
+                pass
+            
+            # Se o background for removido, define para default (cor sólida)
+            if request.form.get('remove_card_background_image') == 'true':
+                update_data['card_background_type'] = 'color'
+                update_data['card_background_value'] = '#4361ee' # Cor padrão
+
 
             # Atualizar no banco de dados
             response = supabase.table('usuarios').update(update_data).eq('id', session['user_id']).execute()
@@ -491,6 +566,17 @@ def admin_panel(username):
                     user_data['social_links'] = []
             else:
                 user_data['social_links'] = []
+
+            # Processar card_links (nova funcionalidade) em caso de erro
+            if 'card_links' in user_data and user_data['card_links']:
+                try:
+                    if isinstance(user_data['card_links'], str):
+                        user_data['card_links'] = json.loads(user_data['card_links'])
+                except json.JSONDecodeError:
+                    logger.warning(f"Erro ao decodificar card_links após erro")
+                    user_data['card_links'] = []
+            else:
+                user_data['card_links'] = []
                 
         except Exception as inner_e:
             logger.error(f"Erro ao recuperar dados após erro inicial: {str(inner_e)}")

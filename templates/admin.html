@@ -133,7 +133,8 @@
 
         /* Adicione estilos para o arrastar e soltar (SortableJS) */
         .social-item,
-        .custom-button-item {
+        .custom-button-item,
+        .card-link-item { /* Adicionada classe para links do cartão */
             cursor: grab; /* Indica que o item pode ser arrastado */
             display: flex; /* Manter display flex para os itens */
             align-items: center;
@@ -149,7 +150,8 @@
         }
 
         .social-item:hover,
-        .custom-button-item:hover {
+        .custom-button-item:hover,
+        .card-link-item:hover { /* Adicionada classe para links do cartão */
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
@@ -211,7 +213,55 @@
         .shadow-medium { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
         .shadow-hard { box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); }
         .shadow-inset { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2); }
-        
+
+        /* Estilos para a nova seção de Cartão de Visitas */
+        .card-link-item .form-input {
+            flex-grow: 1; /* Para o input preencher o espaço */
+        }
+        .card-link-item .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-grow: 1;
+        }
+        .card-link-item .input-group input {
+            flex: 1;
+        }
+        .card-link-item img {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
+        /* Toggle de background do cartão */
+        .card-background-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+        }
+        .card-background-options label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        .card-background-preview {
+            width: 50px;
+            height: 50px;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color-light);
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+        #card_background_image_preview_container {
+            margin-top: 10px;
+        }
+        #card_background_image_preview {
+            max-height: 150px;
+        }
     </style>
 </head>
 
@@ -270,7 +320,7 @@
                 </div>
 
                 <div class="form-section">
-                    <h2><i class="fas fa-images"></i> Imagens</h2>
+                    <h2><i class="fas fa-images"></i> Imagens da Página</h2>
 
                     <div class="form-group">
                         <label for="foto_upload">Foto de Perfil</label>
@@ -291,7 +341,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="background_upload">Imagem de Fundo</label>
+                        <label for="background_upload">Imagem de Fundo da Página</label>
                         <div class="file-upload-wrapper">
                             <div class="file-upload">
                                 <input type="file" id="background_upload" name="background_upload" accept="image/*" class="file-input"
@@ -310,14 +360,100 @@
                 </div>
 
                 <div class="form-section">
-                    <h2><i class="fas fa-link"></i> Links Sociais</h2>
+                    <h2><i class="fas fa-id-card"></i> Cartão de Visitas</h2>
+                    <div class="form-group">
+                        <label for="card_nome">Nome Completo (Cartão)</label>
+                        <input type="text" id="card_nome" name="card_nome" value="{{ dados.card_nome }}" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="card_titulo">Título/Profissão</label>
+                        <input type="text" id="card_titulo" name="card_titulo" value="{{ dados.card_titulo }}" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label for="card_registro_profissional">Registro Profissional (Ex: CREA, OAB)</label>
+                        <input type="text" id="card_registro_profissional" name="card_registro_profissional" value="{{ dados.card_registro_profissional }}" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Background do Cartão:</label>
+                        <div class="card-background-options">
+                            <label>
+                                <input type="radio" name="card_background_type" value="color" {% if dados.card_background_type == 'color' %}checked{% endif %}>
+                                Cor Sólida
+                                <input type="color" id="card_background_color_picker" name="card_background_value_color" value="{{ dados.card_background_value if dados.card_background_type == 'color' else '#4361ee' }}" class="form-input" style="width: 50px;">
+                            </label>
+                            <label>
+                                <input type="radio" name="card_background_type" value="image" {% if dados.card_background_type == 'image' %}checked{% endif %}>
+                                Imagem
+                            </label>
+                        </div>
+                        <div id="card_background_image_upload_section" style="display: {% if dados.card_background_type == 'image' %}block{% else %}none{% endif %};">
+                            <div class="file-upload-wrapper">
+                                <div class="file-upload">
+                                    <input type="file" id="card_background_upload" name="card_background_upload" accept="image/*" class="file-input"
+                                        onchange="previewImage(this, 'card_background_image_preview', 'card_background_info');">
+                                    <label for="card_background_upload" class="file-label">
+                                        <i class="fas fa-cloud-upload-alt"></i> Escolher imagem para o cartão
+                                    </label>
+                                </div>
+                                <div class="file-info" id="card_background_info">
+                                    {% if dados.card_background_type == 'image' %}
+                                        Imagem atual
+                                    {% else %}
+                                        Nenhum arquivo selecionado
+                                    {% endif %}
+                                </div>
+                                <div class="image-preview-container" id="card_background_image_preview_container" style="display: {% if dados.card_background_type == 'image' and dados.card_background_value %}block{% else %}none{% endif %};">
+                                    <img src="{{ dados.card_background_value if dados.card_background_type == 'image' else '' }}" class="image-preview" id="card_background_image_preview"
+                                        onerror="this.style.display='none'">
+                                    {% if dados.card_background_type == 'image' and dados.card_background_value %}
+                                    <button type="button" class="btn btn-delete btn-sm" id="remove_card_background_image_btn" style="margin-top: 10px;">Remover Imagem</button>
+                                    <input type="hidden" name="remove_card_background_image" id="remove_card_background_image" value="false">
+                                    {% endif %}
+                                </div>
+                                <input type="hidden" name="card_background_value" id="card_background_value_hidden" value="{{ dados.card_background_value }}">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Links Customizáveis do Cartão (até 3)</label>
+                        <button type="button" class="btn btn-add" id="add-card-link-btn">
+                            <i class="fas fa-plus"></i> Adicionar Link ao Cartão
+                        </button>
+                        <div id="card-links-container">
+                            {% if dados.card_links %}
+                                {% for link in dados.card_links %}
+                                <div class="card-link-item">
+                                    <i class="fas fa-grip-vertical drag-handle"></i> <img src="/static/icons/{{ link.icon }}.png" alt="{{ link.icon }}" width="24">
+                                    <input type="hidden" name="card_icon_name[]" value="{{ link.icon }}">
+                                    <div class="input-group">
+                                        <input type="text" name="card_icon_url[]"
+                                                    value="{{ link.url }}"
+                                                    placeholder="URL (Opcional)"
+                                                    class="form-input">
+                                        <input type="text" name="card_icon_at_text[]"
+                                                    value="{{ link.at_text }}"
+                                                    placeholder="@texto"
+                                                    class="form-input">
+                                    </div>
+                                    <span class="remove-item"><i class="fas fa-times"></i></span>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2><i class="fas fa-link"></i> Links Sociais e Botões</h2>
 
                     <div class="buttons-container">
                         <button type="button" class="btn btn-add" id="add-icon-btn">
-                            <i class="fas fa-plus"></i> Adicionar Ícone
+                            <i class="fas fa-plus"></i> Adicionar Ícone Social
                         </button>
                         <button type="button" class="btn btn-add" id="add-button-btn">
-                            <i class="fas fa-plus"></i> Adicionar Botão
+                            <i class="fas fa-plus"></i> Adicionar Botão Personalizado
                         </button>
                     </div>
 
@@ -485,10 +621,10 @@
     </div>
     <script>
         // Função para mostrar o preview de imagem
-        function previewImage(input, previewId) {
+        function previewImage(input, previewId, fileInfoId) {
             const previewContainer = document.getElementById(previewId + '_container');
             const previewImage = document.getElementById(previewId);
-            const fileInfo = document.getElementById(previewId.replace('_preview', '_info'));
+            const fileInfo = document.getElementById(fileInfoId);
             const fileWrapper = input.closest('.file-upload-wrapper');
 
             if (input.files && input.files[0]) {
@@ -511,20 +647,43 @@
         }
 
         document.addEventListener('DOMContentLoaded', function () {
-            const fotoPreview = document.getElementById('foto_preview');
-            const backgroundPreview = document.getElementById('background_preview');
+            // Inicialização dos previews de imagem existentes
+            const fotosParaPreview = [
+                { id: 'foto_preview', infoId: 'foto_info', uploadId: 'foto_upload' },
+                { id: 'background_preview', infoId: 'background_info', uploadId: 'background_upload' },
+                { id: 'card_background_image_preview', infoId: 'card_background_info', uploadId: 'card_background_upload' }
+            ];
 
-            if (fotoPreview.src && fotoPreview.src !== window.location.href) {
-                document.getElementById('foto_preview_container').classList.add('preview-active');
-                document.getElementById('foto_info').textContent = 'Imagem atual';
-                document.querySelector('#foto_upload').closest('.file-upload-wrapper').classList.add('has-file');
+            fotosParaPreview.forEach(item => {
+                const previewElement = document.getElementById(item.id);
+                if (previewElement && previewElement.src && previewElement.src !== window.location.href && !previewElement.src.includes('None')) {
+                    document.getElementById(item.id + '_container').classList.add('preview-active');
+                    document.getElementById(item.infoId).textContent = 'Imagem atual';
+                    document.querySelector(`#${item.uploadId}`).closest('.file-upload-wrapper').classList.add('has-file');
+                }
+            });
+
+            // Lógica para remoção da imagem de background do cartão
+            const removeCardBgBtn = document.getElementById('remove_card_background_image_btn');
+            const cardBgUploadInput = document.getElementById('card_background_upload');
+            const cardBgImagePreview = document.getElementById('card_background_image_preview');
+            const cardBgImagePreviewContainer = document.getElementById('card_background_image_preview_container');
+            const removeCardBgHiddenInput = document.getElementById('remove_card_background_image');
+            const cardBgInfo = document.getElementById('card_background_info');
+            const cardBgUploadWrapper = cardBgUploadInput.closest('.file-upload-wrapper');
+
+            if (removeCardBgBtn) {
+                removeCardBgBtn.addEventListener('click', () => {
+                    cardBgUploadInput.value = ''; // Limpa o input de arquivo
+                    cardBgImagePreview.src = '';
+                    cardBgImagePreview.style.display = 'none';
+                    cardBgImagePreviewContainer.classList.remove('preview-active');
+                    cardBgInfo.textContent = 'Nenhum arquivo selecionado';
+                    cardBgUploadWrapper.classList.remove('has-file');
+                    removeCardBgHiddenInput.value = 'true'; // Sinaliza para o backend remover
+                });
             }
 
-            if (backgroundPreview.src && backgroundPreview.src !== window.location.href) {
-                document.getElementById('background_preview_container').classList.add('preview-active');
-                document.getElementById('background_info').textContent = 'Imagem atual';
-                document.querySelector('#background_upload').closest('.file-upload-wrapper').classList.add('has-file');
-            }
 
             // Função auxiliar para escapar HTML (prevenir XSS)
             function escapeHtml(text) {
@@ -625,12 +784,52 @@
                 });
             }
 
+            // Função para renderizar links do cartão existentes
+            function renderExistingCardLinks(cardLinks) {
+                const cardLinksContainer = document.getElementById('card-links-container');
+                cardLinksContainer.innerHTML = '';
+
+                cardLinks.forEach(link => {
+                    const newLinkField = document.createElement('div');
+                    newLinkField.className = 'card-link-item';
+                    const iconPath = `/static/icons/${link.icon}.png`;
+
+                    newLinkField.innerHTML = `
+                        <i class="fas fa-grip-vertical drag-handle"></i> <img src="${iconPath}" alt="${link.icon}" width="24">
+                        <input type="hidden" name="card_icon_name[]" value="${escapeHtml(link.icon)}">
+                        <div class="input-group">
+                            <input type="text" name="card_icon_url[]"
+                                        value="${escapeHtml(link.url)}"
+                                        placeholder="URL (Opcional)"
+                                        class="form-input">
+                            <input type="text" name="card_icon_at_text[]"
+                                        value="${escapeHtml(link.at_text)}"
+                                        placeholder="@texto"
+                                        class="form-input">
+                        </div>
+                        <span class="remove-item"><i class="fas fa-times"></i></span>
+                    `;
+                    cardLinksContainer.appendChild(newLinkField);
+
+                    newLinkField.querySelector('.remove-item').addEventListener('click', function () {
+                        this.closest('.card-link-item').remove();
+                    });
+                });
+            }
+
             // Carregar dados existentes
             try {
                 const socialLinks = {{ dados.social_links | tojson | safe }};
                 renderExistingSocialIcons(socialLinks);
             } catch (e) {
                 console.error('Erro ao carregar ícones sociais:', e);
+            }
+
+            try {
+                const cardLinks = {{ dados.card_links | tojson | safe }};
+                renderExistingCardLinks(cardLinks);
+            } catch (e) {
+                console.error('Erro ao carregar links do cartão:', e);
             }
 
             // Prevenir que cliques dentro do conteúdo do modal fechem o modal (propagação)
@@ -644,13 +843,13 @@
             // INICIALIZAÇÃO DO SORTABLEJS
             const socialIconsContainer = document.getElementById('social-icons-container');
             const customButtonsContainer = document.getElementById('custom-buttons-container');
+            const cardLinksContainer = document.getElementById('card-links-container'); // Novo container para links do cartão
 
             new Sortable(socialIconsContainer, {
                 animation: 150,
                 ghostClass: 'sortable-ghost',
                 chosenClass: 'sortable-chosen',
                 handle: '.drag-handle',
-                // onUpdate: function (evt) { /* Não precisa de lógica aqui, o SortableJS move os próprios elementos */ }
             });
 
             new Sortable(customButtonsContainer, {
@@ -658,7 +857,14 @@
                 ghostClass: 'sortable-ghost',
                 chosenClass: 'sortable-chosen',
                 handle: '.drag-handle',
-                // onUpdate: function (evt) { /* Não precisa de lógica aqui, o SortableJS move os próprios elementos */ }
+            });
+            
+            // Inicializar SortableJS para os links do cartão
+            new Sortable(cardLinksContainer, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                handle: '.drag-handle',
             });
             // FIM DA INICIALIZAÇÃO DO SORTABLEJS
 
@@ -667,6 +873,7 @@
             const buttonModal = document.getElementById('button-modal');
             const addIconBtn = document.getElementById('add-icon-btn');
             const addButtonBtn = document.getElementById('add-button-btn');
+            const addCardLinkBtn = document.getElementById('add-card-link-btn'); // Novo botão para links do cartão
 
             // Selecionar os botões de fechar específicos de cada modal
             const iconModalCloseBtn = document.querySelector('.icon-modal-close');
@@ -677,6 +884,8 @@
             const prevIconPageBtn = document.getElementById('prev-icon-page');
             const nextIconPageBtn = document.getElementById('next-icon-page');
             const currentPageSpan = document.getElementById('current-page');
+
+            let currentModalPurpose = ''; // 'social' ou 'card_link'
 
             // Lista completa de ícones sociais disponíveis
             const allSocialIcons = [
@@ -728,7 +937,7 @@
                 { name: 'skype', path: '/static/icons/skype.png' },
                 { name: 'google-scholar', path: '/static/icons/google-scholar.png' },
                 { name: 'researchgate', path: '/static/icons/researchgate.png' },
-                { name: 'academia-edu', path: '/static/icons/academia-edu.org' } /* Corrigido link para academia-edu.org */
+                { name: 'academia-edu', path: '/static/icons/academia-edu.org' }
             ];
 
             let filteredIcons = [];
@@ -788,6 +997,7 @@
                 iconModal.classList.remove('active', 'show');
                 buttonModal.classList.remove('active', 'show');
                 document.body.classList.remove('modal-open');
+                currentModalPurpose = ''; // Resetar o propósito do modal
             }
 
             // Event Listeners para Paginação e Busca
@@ -808,8 +1018,23 @@
                 }
             });
 
-            // Abrir modal de ícones
+            // Abrir modal de ícones (Social)
             addIconBtn.addEventListener('click', () => {
+                currentModalPurpose = 'social';
+                filterAndRenderIcons();
+                iconModal.classList.add('show');
+                document.body.classList.add('modal-open');
+                setTimeout(() => iconModal.classList.add('active'), 50);
+            });
+
+            // Abrir modal de ícones (Cartão de Visitas)
+            addCardLinkBtn.addEventListener('click', () => {
+                const currentCardLinksCount = document.querySelectorAll('.card-link-item').length;
+                if (currentCardLinksCount >= 3) {
+                    alert('Você pode adicionar no máximo 3 links ao cartão de visitas.');
+                    return;
+                }
+                currentModalPurpose = 'card_link';
                 filterAndRenderIcons();
                 iconModal.classList.add('show');
                 document.body.classList.add('modal-open');
@@ -824,39 +1049,79 @@
                     const iconName = selectedIcon.querySelector('p').textContent.toLowerCase().replace(/ /g, '-');
                     const iconPath = `/static/icons/${iconName}.png`;
 
-                    // Verificar se o ícone já existe pelo input hidden
-                    let iconExists = false;
-                    document.querySelectorAll('input[name="social_icon_name[]"]').forEach(input => {
-                        if (input.value === iconName) {
-                            iconExists = true;
+                    if (currentModalPurpose === 'social') {
+                        // Verificar se o ícone já existe pelo input hidden
+                        let iconExists = false;
+                        document.querySelectorAll('input[name="social_icon_name[]"]').forEach(input => {
+                            if (input.value === iconName) {
+                                iconExists = true;
+                            }
+                        });
+
+                        if (iconExists) {
+                            alert('Este ícone já foi adicionado aos links sociais!');
+                            closeModals();
+                            return;
+                        }
+
+                        const newIconField = document.createElement('div');
+                        newIconField.className = 'social-item';
+                        newIconField.innerHTML = `
+                            <i class="fas fa-grip-vertical drag-handle"></i> <img src="${iconPath}" alt="${iconName}" width="24">
+                            <input type="hidden" name="social_icon_name[]" value="${escapeHtml(iconName)}">
+                            <input type="text" name="social_icon_url[]"
+                                        placeholder="Insira o link para ${iconName.replace(/-/g, ' ')}"
+                                        class="form-input" required>
+                            <span class="remove-item"><i class="fas fa-times"></i></span>
+                        `;
+                        socialIconsContainer.appendChild(newIconField);
+                        newIconField.querySelector('input[name="social_icon_url[]"]').focus();
+
+                    } else if (currentModalPurpose === 'card_link') {
+                         // Verificar se o ícone já existe nos links do cartão
+                        let iconExists = false;
+                        document.querySelectorAll('input[name="card_icon_name[]"]').forEach(input => {
+                            if (input.value === iconName) {
+                                iconExists = true;
+                            }
+                        });
+
+                        if (iconExists) {
+                            alert('Este ícone já foi adicionado aos links do cartão de visitas!');
+                            closeModals();
+                            return;
+                        }
+
+                        const newLinkField = document.createElement('div');
+                        newLinkField.className = 'card-link-item';
+                        newLinkField.innerHTML = `
+                            <i class="fas fa-grip-vertical drag-handle"></i> <img src="${iconPath}" alt="${iconName}" width="24">
+                            <input type="hidden" name="card_icon_name[]" value="${escapeHtml(iconName)}">
+                            <div class="input-group">
+                                <input type="text" name="card_icon_url[]"
+                                            placeholder="URL (Opcional)"
+                                            class="form-input">
+                                <input type="text" name="card_icon_at_text[]"
+                                            placeholder="@texto"
+                                            class="form-input">
+                            </div>
+                            <span class="remove-item"><i class="fas fa-times"></i></span>
+                        `;
+                        cardLinksContainer.appendChild(newLinkField);
+                        newLinkField.querySelector('input[name="card_icon_url[]"]').focus();
+                    }
+
+                    // Adicionar evento de remoção para o item recém-criado
+                    document.querySelectorAll('.remove-item').forEach(item => {
+                        if (!item._hasClickListener) { // Adicionar apenas se não tiver sido adicionado antes
+                            item._hasClickListener = true;
+                            item.addEventListener('click', function () {
+                                this.closest('.social-item, .custom-button-item, .card-link-item').remove();
+                            });
                         }
                     });
 
-                    if (iconExists) {
-                        alert('Este ícone já foi adicionado!');
-                        closeModals();
-                        return;
-                    }
-
-                    const newIconField = document.createElement('div');
-                    newIconField.className = 'social-item';
-                    newIconField.innerHTML = `
-                        <i class="fas fa-grip-vertical drag-handle"></i> <img src="${iconPath}" alt="${iconName}" width="24">
-                        <input type="hidden" name="social_icon_name[]" value="${escapeHtml(iconName)}">
-                        <input type="text" name="social_icon_url[]"
-                                    placeholder="Insira o link para ${iconName.replace(/-/g, ' ')}"
-                                    class="form-input" required>
-                        <span class="remove-item"><i class="fas fa-times"></i></span>
-                    `;
-
-                    socialIconsContainer.appendChild(newIconField);
-
-                    newIconField.querySelector('.remove-item').addEventListener('click', function () {
-                        this.closest('.social-item').remove();
-                    });
-
                     closeModals();
-                    newIconField.querySelector('input[name="social_icon_url[]"]').focus();
                 } else {
                     alert('Por favor, selecione um ícone primeiro!');
                 }
@@ -1018,11 +1283,51 @@
             });
 
             // Adicionar eventos de remoção para os botões existentes
-            document.querySelectorAll('.social-item .remove-item, .custom-button-item .remove-item').forEach(item => {
+            document.querySelectorAll('.social-item .remove-item, .custom-button-item .remove-item, .card-link-item .remove-item').forEach(item => {
                 item.addEventListener('click', function() {
-                    this.closest('.social-item, .custom-button-item').remove();
+                    this.closest('.social-item, .custom-button-item, .card-link-item').remove();
                 });
             });
+
+            // Lógica para o background do cartão (seleção de cor/imagem)
+            const cardBgTypeRadios = document.querySelectorAll('input[name="card_background_type"]');
+            const cardBgColorPicker = document.getElementById('card_background_color_picker');
+            const cardBgImageUploadSection = document.getElementById('card_background_image_upload_section');
+            const cardBgValueHiddenInput = document.getElementById('card_background_value_hidden');
+
+            function updateCardBackgroundVisibility() {
+                const selectedType = document.querySelector('input[name="card_background_type"]:checked').value;
+                if (selectedType === 'color') {
+                    cardBgColorPicker.style.display = 'inline-block';
+                    cardBgImageUploadSection.style.display = 'none';
+                    cardBgValueHiddenInput.value = cardBgColorPicker.value; // Atualiza o hidden input com a cor
+                } else {
+                    cardBgColorPicker.style.display = 'none';
+                    cardBgImageUploadSection.style.display = 'block';
+                    // O valor da imagem será preenchido pelo upload_to_supabase no backend
+                    // Se não houver imagem, o hidden input pode ficar vazio ou ter um valor default de cor para não quebrar
+                    // Para o caso de transição de cor para imagem, se nenhuma imagem for enviada, o backend deve tratar
+                }
+            }
+
+            cardBgTypeRadios.forEach(radio => {
+                radio.addEventListener('change', updateCardBackgroundVisibility);
+            });
+
+            cardBgColorPicker.addEventListener('input', () => {
+                cardBgValueHiddenInput.value = cardBgColorPicker.value; // Atualiza o hidden input ao mudar a cor
+            });
+
+            // Inicializar a visibilidade correta ao carregar a página
+            updateCardBackgroundVisibility();
+
+            // Certifica-se de que o input hidden de background do cartão tem o valor correto ao carregar a página
+            // se o background atual for uma cor. Se for imagem, o valor será o URL
+            {% if dados.card_background_type == 'color' %}
+                cardBgValueHiddenInput.value = "{{ dados.card_background_value }}";
+            {% elif dados.card_background_type == 'image' %}
+                cardBgValueHiddenInput.value = "{{ dados.card_background_value }}";
+            {% endif %}
 
         }); // FIM DO DOMContentLoaded
     </script>

@@ -58,7 +58,7 @@ h1 {
 .social-icons a {
   color: white;
   font-size: 20px;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease; /* Efeito hover para ícones sociais*/
   margin: 0 10px;
 }
 
@@ -116,11 +116,205 @@ footer {
   text-decoration: none;
   font-size: 16px;
   font-weight: 500;
-  transition: all 0.3s ease;
+}
+
+.link-button-custom.has-hover-effect {
+  transition: all 0.3s ease; /* Aplica transição APENAS se o usuário selecionou*/
+}
+
+.link-button-custom.has-hover-effect:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .custom-buttons-container {
     margin-top: 20px;
+}
+
+/* Estilos globais para o Swiper */
+.swiper-container {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden; /* Garante que não haja scroll extra */
+}
+
+.swiper-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: transparent; /* A cor de fundo será definida pelo body ou .card-container */
+}
+
+/* Estilos específicos para a página do usuário (existente) */
+.user-page-slide .container {
+    text-align: center;
+    width: 90%;
+    max-width: 400px;
+    padding: 20px;
+    margin: 0 auto;
+    position: relative; /* Para garantir o z-index do conteúdo */
+    z-index: 10;
+}
+
+/* Estilos para o novo Cartão de Visitas */
+.card-page-slide {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    position: relative;
+    z-index: 5; /* Para o efeito de "aparecer por trás" */
+}
+
+.card-container {
+    background-color: #333; /* Cor de fallback */
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    color: #fff;
+    padding: 20px 30px; /* Padding ajustado para o formato de cartão */
+    width: 90%;
+    max-width: 380px; /* Tamanho típico de cartão de visitas */
+    height: 230px; /* Aumenta a altura para dar mais espaço, de 220px para 230px */
+    text-align: center;
+    transition: all 0.5s ease-in-out;
+    display: flex;
+    flex-direction: column;
+    /* justify-content: space-between; REMOVIDO */
+    align-items: center;
+    position: relative;
+    overflow: hidden; /* Para garantir que a imagem de fundo fique dentro */
+    cursor: pointer;
+}
+
+.card-container:hover {
+    transform: scale(1.02); /* Leve aumento de escala no hover */
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5); /* Sombra mais pronunciada */
+}
+
+.card-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.2); /* Overlay semi-transparente para melhor leitura do texto */
+    z-index: 1;
+}
+.card-content {
+    position: relative;
+    z-index: 2; /* Garante que o conteúdo fique acima do overlay */
+    width: 100%;
+    height: 100%; /* Ajustado para 100% para ocupar toda a altura disponível do container */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Distribui espaço entre o cabeçalho e os links/botão */
+    align-items: center; /* Centraliza itens horizontalmente */
+}
+
+.card-header-info { /* Novo div para agrupar nome, título e registro */
+    margin-top: 10px; /* Margem no topo */
+    margin-bottom: 5px; /* Margem no final */
+    text-align: center;
+    width: 100%;
+}
+
+.card-container h2 {
+    font-size: 24px; /* Ajuste o tamanho do nome para caber */
+    margin-bottom: 0px; /* Remover margem inferior */
+    font-weight: 700;
+}
+
+.card-title {
+    font-size: 16px; /* Ajuste o tamanho do título */
+    color: #eee;
+    margin-bottom: 0px; /* Remover margem inferior */
+    font-weight: 500;
+}
+.card-registration {
+    font-size: 14px;
+    color: #bbb;
+    margin-bottom: 0px; /* Remover margem inferior */
+}
+
+.card-links-and-button { /* NOVO CONTAINER FLEX para links e botão */
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between; /* Distribui o espaço entre links e botão */
+    align-items: flex-end; /* Alinha o botão com a parte de baixo dos links */
+    width: 100%; /* Ocupa a largura total */
+    margin-top: auto; /* Empurra para baixo, se houver espaço */
+    padding: 0 30px 10px; /* Padding ajustado para o alinhamento */
+    box-sizing: border-box;
+}
+
+.card-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0px; /* Espaçamento muito pequeno entre os links */
+    margin-top: 0px; /* Removido margin-top para que ele se ajuste dentro do novo container */
+    margin-bottom: 0px; /* Remove a margem inferior */
+    align-items: flex-start; /* Alinhar links à esquerda */
+    padding-left: 0px; /* Removido padding, será no container pai */
+    width: auto; /* Permite que ocupe apenas o espaço necessário */
+    box-sizing: border-box; /* Incluir padding na largura */
+}
+
+.card-link-item {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espaçamento reduzido entre ícone e texto */
+    background-color: transparent; /* Fundo transparente para o item */
+    padding: 3px 0; /* Padding reduzido */
+    border-radius: 0; /* Remover border-radius */
+    text-decoration: none;
+    color: white;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: auto; /* Largura automática para cada item */
+    justify-content: flex-start; /* Alinhar ícones e texto à esquerda */
+}
+
+.card-link-item:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Um leve hover */
+    transform: translateX(5px); /* Move ligeiramente para a direita */
+}
+
+.card-icon {
+    width: 20px; /* Ícones menores */
+    height: 20px;
+    object-fit: contain;
+}
+.card-link-item .card-link-text { /* Nova classe para o texto do link */
+    font-size: 13px; /* Tamanho de fonte do link */
+    font-weight: normal; /* Peso de fonte normal */
+    white-space: nowrap; /* Impede quebra de linha */
+    overflow: hidden; /* Esconde o excesso de texto */
+    text-overflow: ellipsis; /* Adiciona "..." ao texto excedente */
+    max-width: 100%; /* Garante que o texto não exceda o contêiner */
+}
+
+.add-to-contacts-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 6px 12px; /* Padding reduzido */
+    border-radius: 8px;
+    font-size: 13px; /* Tamanho de fonte reduzido */
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* MANTER: Efeito hover para botão de contato*/
+    display: flex;
+    align-items: center;
+    gap: 6px; /* Gap reduzido */
+    margin: 0; /* Remover margens para que o flexbox as controle */
+    min-width: 100px; /* Define uma largura mínima para o botão */
+    text-align: center; /* Centraliza o texto dentro do botão */
+    justify-content: center; /* Centraliza conteúdo (ícone e texto) */
+}
+
+.add-to-contacts-btn:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
 }
 
 /* Media Queries para responsividade */
@@ -189,3 +383,70 @@ footer {
     margin-top: 30px;
   }
 }
+
+/* Estilos para setas de navegação Swiper no desktop */
+.swiper-button-prev, .swiper-button-next {
+    color: rgba(255, 255, 255, 0.7);
+    transition: color 0.3s ease;
+}
+.swiper-button-prev:hover, .swiper-button-next:hover {
+    color: white;
+}
+/* Esconder setas em dispositivos móveis */
+@media (max-width: 768px) {
+    .swiper-button-prev, .swiper-button-next {
+        display: none !important;
+    }
+}
+/* Posicionamento da paginação Swiper */
+.swiper-pagination-bullet {
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 1;
+}
+.swiper-pagination-bullet-active {
+    background: white;
+}
+
+/* Estilos para botões personalizados existentes */
+.link-button-custom {
+  display: block;
+  width: 100%;
+  max-width: 350px;
+  padding: 14px;
+  margin: 10px auto;
+  text-align: center;
+  text-decoration: none;
+}
+
+/* Estilos para tipos de sombra (replicados do admin.html para user_page.html) */
+.shadow-none { box-shadow: none; }
+.shadow-soft { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+.shadow-medium { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+.shadow-hard { box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); }
+.shadow-inset { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2); }
+
+/* --- INÍCIO: NOVAS REGRAS PARA REMOVER SOMBRA DO SWIPER --- */
+
+/* Anular qualquer sombra que o Swiper possa adicionar aos slides */
+.swiper-slide {
+    box-shadow: none !important;
+    outline: none !important; /* Para garantir que não haja contorno de foco também */
+}
+
+/* Anular sombras geradas pelo creative effect, caso persistam */
+.swiper-slide-shadow-left,
+.swiper-slide-shadow-right,
+.swiper-slide-shadow-top,
+.swiper-slide-shadow-bottom {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    box-shadow: none !important;
+}
+
+/* Garantir que nenhum elemento dentro de um slide tenha uma sombra inesperada por padrão de Swiper */
+.swiper-slide * {
+    box-shadow: none !important;
+}
+
+/* --- FIM: NOVAS REGRAS PARA REMOVER SOMBRA DO SWIPER --- */
