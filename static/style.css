@@ -180,7 +180,6 @@ footer {
     transition: all 0.5s ease-in-out;
     display: flex;
     flex-direction: column;
-    /* justify-content: space-between; REMOVIDO */
     align-items: center;
     position: relative;
     overflow: hidden; /* Para garantir que a imagem de fundo fique dentro */
@@ -211,105 +210,113 @@ footer {
     flex-direction: column;
     justify-content: space-between; /* Distribui espaço entre o cabeçalho e os links/botão */
     align-items: center; /* Centraliza itens horizontalmente */
+    margin-top: -60px;
+    gap: 20px;
 }
 
-.card-header-info { /* Novo div para agrupar nome, título e registro */
-    margin-top: 10px; /* Margem no topo */
-    margin-bottom: 5px; /* Margem no final */
+.card-header-info {
+    margin-top: 10px;
+    margin-bottom: 5px;
     text-align: center;
     width: 100%;
 }
 
 .card-container h2 {
-    font-size: 24px; /* Ajuste o tamanho do nome para caber */
-    margin-bottom: 0px; /* Remover margem inferior */
+    font-size: 24px;
+    margin-bottom: 0px;
     font-weight: 700;
 }
 
 .card-title {
-    font-size: 16px; /* Ajuste o tamanho do título */
+    font-size: 16px;
     color: #eee;
-    margin-bottom: 0px; /* Remover margem inferior */
+    margin-bottom: 0px;
     font-weight: 500;
 }
 .card-registration {
     font-size: 14px;
     color: #bbb;
-    margin-bottom: 0px; /* Remover margem inferior */
+    margin-bottom: 0px;
 }
 
-.card-links-and-button { /* NOVO CONTAINER FLEX para links e botão */
+.card-links-and-button {
     display: flex;
     flex-direction: row;
-    justify-content: space-between; /* Distribui o espaço entre links e botão */
-    align-items: flex-end; /* Alinha o botão com a parte de baixo dos links */
-    width: 100%; /* Ocupa a largura total */
-    margin-top: auto; /* Empurra para baixo, se houver espaço */
-    padding: 0 30px 10px; /* Padding ajustado para o alinhamento */
+    justify-content: space-between;
+    align-items: center; /* Alterado para center para tentar alinhar o meio */
+    width: 100%;
+    margin-top: -20px;
+    padding: 0 30px 10px;
     box-sizing: border-box;
+    gap: 190px; 
 }
 
 .card-links {
     display: flex;
     flex-direction: column;
-    gap: 0px; /* Espaçamento muito pequeno entre os links */
-    margin-top: 0px; /* Removido margin-top para que ele se ajuste dentro do novo container */
-    margin-bottom: 0px; /* Remove a margem inferior */
-    align-items: flex-start; /* Alinhar links à esquerda */
-    padding-left: 0px; /* Removido padding, será no container pai */
-    width: auto; /* Permite que ocupe apenas o espaço necessário */
-    box-sizing: border-box; /* Incluir padding na largura */
+    gap: 0px;
+    margin-top: 0px;
+    margin-bottom: 0px;
+    align-items: flex-start;
+    padding-left: 0px;
+    width: auto;
+    box-sizing: border-box;
+    margin-left: -70px;
 }
 
 .card-link-item {
     display: flex;
     align-items: center;
-    gap: 8px; /* Espaçamento reduzido entre ícone e texto */
-    background-color: transparent; /* Fundo transparente para o item */
-    padding: 3px 0; /* Padding reduzido */
-    border-radius: 0; /* Remover border-radius */
+    gap: 8px;
+    background-color: transparent;
+    padding: 3px 0;
+    border-radius: 0;
     text-decoration: none;
     color: white;
     transition: background-color 0.3s ease, transform 0.2s ease;
-    width: auto; /* Largura automática para cada item */
-    justify-content: flex-start; /* Alinhar ícones e texto à esquerda */
+    width: auto;
+    justify-content: flex-start;
 }
 
 .card-link-item:hover {
-    background-color: rgba(255, 255, 255, 0.1); /* Um leve hover */
-    transform: translateX(5px); /* Move ligeiramente para a direita */
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
 }
 
 .card-icon {
-    width: 20px; /* Ícones menores */
+    width: 20px;
     height: 20px;
     object-fit: contain;
 }
-.card-link-item .card-link-text { /* Nova classe para o texto do link */
-    font-size: 13px; /* Tamanho de fonte do link */
-    font-weight: normal; /* Peso de fonte normal */
-    white-space: nowrap; /* Impede quebra de linha */
-    overflow: hidden; /* Esconde o excesso de texto */
-    text-overflow: ellipsis; /* Adiciona "..." ao texto excedente */
-    max-width: 100%; /* Garante que o texto não exceda o contêiner */
+.card-link-item .card-link-text {
+    font-size: 13px;
+    font-weight: normal;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
 }
 
 .add-to-contacts-btn {
     background-color: #28a745;
     color: white;
     border: none;
-    padding: 6px 12px; /* Padding reduzido */
+    padding: 6px 12px;
     border-radius: 8px;
-    font-size: 13px; /* Tamanho de fonte reduzido */
+    font-size: 13px;
     cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* MANTER: Efeito hover para botão de contato*/
+    transition: background-color 0.3s ease, transform 0.2s ease;
     display: flex;
     align-items: center;
-    gap: 6px; /* Gap reduzido */
-    margin: 0; /* Remover margens para que o flexbox as controle */
-    min-width: 100px; /* Define uma largura mínima para o botão */
-    text-align: center; /* Centraliza o texto dentro do botão */
-    justify-content: center; /* Centraliza conteúdo (ícone e texto) */
+    gap: 6px;
+    margin: 0;
+    min-width: 100px;
+    text-align: center;
+    justify-content: center;
+    /* Novas propriedades para posicionamento */
+    position: relative; /* Permite o uso de top/bottom */
+    top: -15px; /* Ajuste este valor para mover o botão para cima ou para baixo */
+    /* align-self: center; */ /* Removi este porque pode conflitar com o top */
 }
 
 .add-to-contacts-btn:hover {
@@ -323,26 +330,26 @@ footer {
     width: 95%;
     padding: 15px;
   }
-  
+
   .profile-pic {
     width: 120px;
     height: 120px;
   }
-  
+
   h1 {
     font-size: 22px;
   }
-  
+
   .social-icons {
     gap: 12px;
     margin-bottom: 25px;
   }
-  
+
   .social-icons a img.icon {
     width: 28px;
     height: 28px;
   }
-  
+
   .link-button {
     padding: 12px;
     font-size: 15px;
@@ -353,32 +360,32 @@ footer {
   .container {
     padding: 10px;
   }
-  
+
   .profile-pic {
     width: 100px;
     height: 100px;
   }
-  
+
   h1 {
     font-size: 20px;
     margin-bottom: 15px;
   }
-  
+
   .social-icons {
     gap: 10px;
     margin-bottom: 20px;
   }
-  
+
   .social-icons a img.icon {
     width: 25px;
     height: 25px;
   }
-  
+
   .link-button {
     padding: 10px;
     font-size: 14px;
   }
-  
+
   footer {
     margin-top: 30px;
   }
@@ -448,5 +455,3 @@ footer {
 .swiper-slide * {
     box-shadow: none !important;
 }
-
-/* --- FIM: NOVAS REGRAS PARA REMOVER SOMBRA DO SWIPER --- */
