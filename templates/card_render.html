@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Renderização do Cartão</title>
+    {# Incluindo as fontes usadas no seu user_page.html e admin.html #}
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 380px; /* Largura da imagem final */
+            height: 220px; /* Altura da imagem final */
+            font-family: '{{ dados.card_nome_font | default(DEFAULT_FONT, true) | style_safe }}', sans-serif;
+            box-sizing: border-box;
+            background-color: transparent; /* Importante para screenshot com transparência, se desejado para PNG */
+        }
+        .card-container {
+            border-radius: 15px;
+            color: #fff; /* Cor de texto padrão, será sobrescrita */
+            padding: 15px 20px;
+            width: 380px; 
+            height: 220px; 
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            box-sizing: border-box;
+            {% if dados.card_background_type == 'color' %}
+                background-color: {{ dados.card_background_value | default('#4361ee', true) }};
+            {% elif dados.card_background_type == 'image' and dados.card_background_value %}
+                background-image: url('{{ dados.card_background_value }}'); /* A URL deve ser absoluta e acessível */
+                background-size: cover;
+                background-position: center;
+            {% else %}
+                background-color: #4361ee; /* Fallback */
+            {% endif %}
+        }
+        /* Opcional: Sobreposição escura para melhor legibilidade do texto sobre imagens de fundo */
+        .card-container::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.25); /* Ajuste a opacidade conforme necessário */
+            z-index: 1;
+            border-radius: 15px; /* Para coincidir com o border-radius do container */
+        }
+        .card-content {
+            position: relative; 
+            z-index: 2; /* Para ficar acima da sobreposição ::before */
+            width: 100%; 
+            height: 100%;
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between;
+            align-items: center; 
+            padding-top: 5px; 
+            padding-bottom: 5px; 
+            box-sizing: border-box;
+        }
+        .card-header-info {
+            flex-grow: 1; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+            align-items: center; 
+            text-align: center; 
+            width: 100%; 
+            margin-bottom: 5px; 
+            overflow: hidden;
+        }
+        .card-name { /* Nome no cartão */
+            font-family: '{{ dados.card_nome_font | default(DEFAULT_FONT, true) | style_safe }}';
+            color: {{ dados.card_nome_color | default(DEFAULT_TEXT_COLOR_CARD, true) }};
+            font-size: 20px; /* Ajuste conforme o visual do user_page.html */
+            margin-bottom: 1px; 
+            font-weight: 700; 
+            word-break: break-word;
+        }
+        .card-title { /* Título/Profissão */
+            font-family: '{{ dados.card_titulo_font | default(DEFAULT_FONT, true) | style_safe }}';
+            color: {{ dados.card_titulo_color | default(DEFAULT_TITLE_COLOR_CARD, true) }};
+            font-size: 14px; 
+            margin-bottom: 1px; 
+            font-weight: 500; 
+            word-break: break-word;
+        }
+        .card-registration { /* Registro Profissional */
+            font-family: '{{ dados.card_registro_font | default(DEFAULT_FONT, true) | style_safe }}';
+            color: {{ dados.card_registro_color | default(DEFAULT_REG_COLOR_CARD, true) }};
+            font-size: 12px; 
+            margin-bottom: 0; 
+            word-break: break-word;
+        }
+        .card-links-section { /* Renomeado de .card-links-and-button para clareza */
+            display: flex; 
+            flex-direction: row; 
+            justify-content: space-between; /* Ou center, ou flex-start dependendo do design */
+            align-items: center; 
+            width: 100%; 
+            padding: 0; 
+            box-sizing: border-box;
+            gap: 5px; 
+            margin-top: auto; /* Empurra para baixo */
+        }
+        .card-links {
+            display: flex; 
+            flex-direction: column; 
+            gap: 2px; /* Espaçamento entre os links */
+            align-items: flex-start; /* Alinha os itens de link à esquerda */
+            flex-grow: 1; 
+            overflow: hidden;
+            /* Se você tiver apenas links e não o botão de contato, pode centralizar:
+            align-items: center; 
+            justify-content: center;
+            text-align: center; */
+        }
+        .card-link-item {
+            display: flex; 
+            align-items: center; 
+            gap: 5px; 
+            padding: 1px 0; /* Pequeno padding vertical */
+            text-decoration: none; 
+            color: white; /* Cor padrão, será sobrescrita pelo estilo individual */
+            width: 100%; /* Para que o text-overflow funcione bem */
+        }
+        .card-icon {
+            width: 16px; 
+            height: 16px; 
+            object-fit: contain; 
+            flex-shrink: 0; /* Para não encolher */
+        }
+        .card-link-text {
+            /* Estilos de fonte e cor são aplicados inline abaixo */
+            font-size: 12px; 
+            white-space: nowrap;     
+            overflow: hidden;        
+            text-overflow: ellipsis; 
+            flex-grow: 1;            
+            min-width: 0; /* Importante para text-overflow em flex containers */
+            text-align: left;
+        }
+        /* O botão "Salvar Contato" não é incluído na imagem OG */
+    </style>
+</head>
+<body>
+    <div class="card-container">
+        <div class="card-content">
+            <div class="card-header-info">
+                <div class="card-name">{{ dados.card_nome if dados.card_nome else dados.nome }}</div>
+                {% if dados.card_titulo %}<div class="card-title">{{ dados.card_titulo }}</div>{% endif %}
+                {% if dados.card_registro_profissional %}<div class="card-registration">{{ dados.card_registro_profissional }}</div>{% endif %}
+            </div>
+            <div class="card-links-section">
+                <div class="card-links">
+                    {% for link in dados.card_links %}
+                    <div class="card-link-item">
+                        {# Certifique-se que esta URL para o ícone é absoluta e acessível pelo Playwright #}
+                        <img src="{{ url_for('static', filename='icons/' + link.icon + '.png', _external=True) }}" class="card-icon" alt="{{ link.icon }}">
+                        {% if link.at_text %}
+                        <span class="card-link-text" style="font-family: '{{ link.font | default(DEFAULT_FONT, true) | style_safe }}'; color: {{ link.color | default(dados.card_link_text_color, true) | default(DEFAULT_TEXT_COLOR_CARD, true) }};">
+                            {{ link.at_text }}
+                        </span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {# Botão de salvar contato foi removido para a imagem OG #}
+            </div>
+        </div>
+    </div>
+</body>
+</html>
