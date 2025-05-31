@@ -702,3 +702,389 @@ body.modal-open {
 .card-section-full-width {
   grid-column: 1 / -1; /* Faz este item ocupar todas as colunas da grade */
 }
+
+/* Estilos para o preview de imagem */
+.image-preview-container {
+    margin-top: 15px;
+    display: none;
+}
+
+.image-preview {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: var(--border-radius);
+    border: 1px dashed var(--primary-color);
+    padding: 5px;
+    background-color: rgba(67, 97, 238, 0.05);
+    margin-top: 10px;
+}
+
+.preview-active {
+    display: block;
+}
+
+.file-upload-wrapper {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.file-info {
+    display: none;
+    padding: 8px;
+    background-color: var(--input-bg-light);
+    border-radius: var(--border-radius);
+    margin-top: 5px;
+    color: var(--text-color-light);
+}
+
+.has-file .file-info {
+    display: block;
+}
+
+.has-file .file-label {
+    background-color: var(--success-color);
+    color: white;
+}
+
+.btn-delete {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-delete:hover {
+    background-color: #d32f2f;
+    transform: translateY(-2px);
+}
+
+.profile-url {
+    display: flex;
+    align-items: center;
+}
+
+.url-prefix {
+    padding: 0.8rem 1rem; /* Mesmo padding do form-input */
+    background: var(--input-bg-light);
+    border: 1px solid var(--border-color-light);
+    border-right: none;
+    border-radius: var(--border-radius) 0 0 var(--border-radius); /* Ajuste no border-radius */
+    color: var(--text-color-light);
+    font-size: 1rem; /* Mesmo font-size do form-input */
+    line-height: 1.6; /* Mesmo line-height do body */
+}
+/* Ajuste para que o input da URL ocupe o espaço restante e alinhe corretamente */
+.profile-url .form-input {
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+}
+
+
+.form-group-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap; 
+}
+
+.form-group-inline label {
+    margin-bottom: 0;
+    font-weight: normal;
+    white-space: nowrap;
+}
+
+.form-group-inline input[type="checkbox"] {
+    width: auto;
+    margin-right: 5px;
+}
+
+.form-group-inline input[type="color"],
+.form-group input[type="color"] /* Para o novo campo de cor de link do cartão */
+ {
+    padding: 0; 
+    min-width: 35px; 
+    height: 35px;
+    border: 1px solid var(--border-color-light); 
+    border-radius: 4px;
+    cursor: pointer;
+    background: none; 
+}
+.form-group-inline select.form-input {
+    flex-grow: 1; 
+    min-width: 120px; 
+}
+
+
+.custom-button-item .button-preview {
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.custom-button-item .button-preview.has-border-preview {
+    border-style: solid;
+}
+
+.custom-button-item .button-preview.hover-effect-preview:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.border-options-group {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.border-options-group .form-group-inline {
+    margin-bottom: 0;
+}
+
+.social-item,
+.custom-button-item,
+.card-link-item { 
+    cursor: grab; 
+    display: flex; 
+    align-items: center;
+    gap: 1rem;
+    background: var(--input-bg-light);
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    border: 1px solid var(--border-color-light); 
+}
+
+.social-item:hover,
+.custom-button-item:hover,
+.card-link-item:hover { 
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.sortable-ghost {
+    opacity: 0.4;
+    background-color: #e0e0e0;
+    border: 1px dashed var(--primary-color);
+}
+
+.sortable-chosen {
+    cursor: grabbing;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+}
+
+.drag-handle {
+    cursor: grab;
+    font-size: 1.2rem;
+    color: #888;
+    margin-right: 0.5rem;
+}
+
+#button-preview-area {
+    margin: 20px 0;
+    padding: 15px;
+    background-color: var(--input-bg-light);
+    border: 1px dashed var(--border-color-light);
+    border-radius: var(--border-radius);
+    text-align: center;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#live-button-preview {
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #4CAF50;
+    color: white;
+    font-size: 16px;
+    font-weight: normal;
+    font-style: normal;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.1s ease-out; 
+    white-space: nowrap; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90%; 
+}
+
+.shadow-none { box-shadow: none; }
+.shadow-soft { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+.shadow-medium { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+.shadow-hard { box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); }
+.shadow-inset { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2); }
+
+.card-link-item .form-input {
+    flex-grow: 1; 
+}
+.card-link-item .input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-grow: 1;
+}
+.card-link-item .input-group input {
+    flex: 1;
+}
+.card-link-item img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.card-background-options {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+}
+.card-background-options label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: normal;
+    cursor: pointer;
+}
+.card-background-preview {
+    width: 50px;
+    height: 50px;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color-light);
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 10px;
+}
+#card_background_image_preview_container {
+    margin-top: 10px;
+}
+#card_background_image_preview {
+    max-height: 150px;
+}
+
+/* Estilos para preview de texto */
+.text-preview {
+    padding: 10px;
+    border: 1px dashed #ccc; /* Cor da borda do preview */
+    margin-top: 10px;
+    border-radius: var(--border-radius);
+    background-color: var(--input-bg-light); /* Adapta ao tema */
+    color: var(--text-color-light); /* Adapta ao tema */
+    min-height: 40px; /* Altura mínima para visualização */
+    transition: all 0.2s ease; /* Transição suave para mudanças */
+    white-space: pre-line; /* Para respeitar quebras de linha na bio */
+    word-wrap: break-word; /* Garante que palavras longas quebrem */
+    font-size: 0.9em; /* Tamanho um pouco menor para preview */
+}
+
+/* NOVOS ESTILOS PARA ALINHAMENTO DE INPUTS E CONTROLES DO CARTÃO */
+/*.input-and-controls-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+
+.input-and-controls-container > .form-input { 
+    flex-grow: 1;
+    min-width: 180px;
+}
+
+.controls-bundle {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.controls-bundle .form-input {
+    min-width: 130px;
+    flex-grow: 0;
+    flex-shrink: 0; 
+}*/
+
+/*
+.input-group-card-text-style {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+}
+
+.input-group-card-text-style .form-input[type="text"] {
+    flex-grow: 1;
+    /* min-width: 150px;
+}*/
+
+.input-group-card-text-style {
+    display: flex;
+    align-items: center; /* Alinha verticalmente os itens (importante para alturas diferentes) */
+    gap: 8px; /* Espaçamento consistente entre os elementos */
+    width: 100%; /* Faz o grupo ocupar a largura disponível no seu contêiner pai (form-group) */
+}
+
+.input-group-card-text-style > .form-input[type="text"] { /* Campo de texto principal */
+    width: auto; /* Anula o width: 100% que pode vir da classe .form-input */
+    flex-basis: 0; /* Define a largura base como 0, para que flex-grow funcione a partir do espaço restante */
+    flex-grow: 1; /* Permite que este campo cresça para ocupar o espaço disponível */
+    min-width: 100px; /* Garante uma largura mínima para que não desapareça */
+}
+
+.input-group-card-text-style > select.form-input {
+    width: auto;
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: 160px;
+}
+
+.input-group-card-text-style > input[type="color"] {
+    flex-grow: 0;
+    flex-shrink: 0;
+}
+
+.form-group .text-preview {
+    margin-top: 10px;
+}
+
+
+/* O seletor de cor (input[type="color"]) já tem estilos globais em 
+   .form-group-inline input[type="color"] e .form-group input[type="color"]
+   que devem ser suficientes. Esses estilos são:
+    padding: 0; 
+    min-width: 35px; 
+    height: 35px;
+    border: 1px solid var(--border-color-light); 
+    border-radius: 4px;
+    cursor: pointer;
+    background: none; 
+   Eles serão aplicados automaticamente ao input de cor dentro do .controls-bundle.
+*/
+
+/* Ajuste para o preview de texto ficar abaixo dos novos containers */
+.form-group .text-preview {
+    margin-top: 10px; /* Garante um espaçamento consistente */
+}
+
+/* Para o campo de cor do texto dos links do cartão, 
+   a classe .form-group-inline (já existente no seu CSS) fará o trabalho.
+   Ela já possui:
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap; 
+   E para o label:
+    margin-bottom: 0;
+    font-weight: normal; (no seu caso, o label do form-group é mais específico e pode ser usado)
+*/
+/* Certifique-se que o label dentro do form-group-inline para o seletor de cor
+   não tenha margem inferior desnecessária, o que já é tratado por:
+.form-group-inline label {
+    margin-bottom: 0;
+}
+*/
