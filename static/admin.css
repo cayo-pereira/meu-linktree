@@ -690,3 +690,15 @@ body.modal-open {
 #card_background_image_preview {
     max-height: 150px;
 }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* NOVA REGRA para a seção do cartão ocupar a largura total */
+.card-section-full-width {
+  grid-column: 1 / -1; /* Faz este item ocupar todas as colunas da grade */
+}

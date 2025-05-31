@@ -8,6 +8,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <style>
@@ -40,7 +44,6 @@
         .file-info {
             display: none;
             padding: 8px;
-            /* Usar variável para o background e cor do texto */
             background-color: var(--input-bg-light);
             border-radius: var(--border-radius);
             margin-top: 5px;
@@ -81,32 +84,56 @@
         }
 
         .url-prefix {
-            padding: 8px;
-            /* Usar variáveis para o prefixo da URL */
+            padding: 0.8rem 1rem; /* Mesmo padding do form-input */
             background: var(--input-bg-light);
             border: 1px solid var(--border-color-light);
             border-right: none;
-            border-radius: 4px 0 0 4px;
+            border-radius: var(--border-radius) 0 0 var(--border-radius); /* Ajuste no border-radius */
             color: var(--text-color-light);
+            font-size: 1rem; /* Mesmo font-size do form-input */
+            line-height: 1.6; /* Mesmo line-height do body */
+        }
+        /* Ajuste para que o input da URL ocupe o espaço restante e alinhe corretamente */
+        .profile-url .form-input {
+            border-radius: 0 var(--border-radius) var(--border-radius) 0;
         }
 
-        /* Estilos adicionais para os novos campos de botão */
+
         .form-group-inline {
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 15px;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap; 
         }
 
         .form-group-inline label {
             margin-bottom: 0;
             font-weight: normal;
+            white-space: nowrap;
         }
 
         .form-group-inline input[type="checkbox"] {
             width: auto;
             margin-right: 5px;
         }
+
+        .form-group-inline input[type="color"],
+        .form-group input[type="color"] /* Para o novo campo de cor de link do cartão */
+         {
+            padding: 0; 
+            min-width: 35px; 
+            height: 35px;
+            border: 1px solid var(--border-color-light); 
+            border-radius: 4px;
+            cursor: pointer;
+            background: none; 
+        }
+        .form-group-inline select.form-input {
+            flex-grow: 1; 
+            min-width: 120px; 
+        }
+
 
         .custom-button-item .button-preview {
             border: 1px solid transparent;
@@ -131,44 +158,39 @@
             margin-bottom: 0;
         }
 
-        /* Adicione estilos para o arrastar e soltar (SortableJS) */
         .social-item,
         .custom-button-item,
-        .card-link-item { /* Adicionada classe para links do cartão */
-            cursor: grab; /* Indica que o item pode ser arrastado */
-            display: flex; /* Manter display flex para os itens */
+        .card-link-item { 
+            cursor: grab; 
+            display: flex; 
             align-items: center;
             gap: 1rem;
-            /* Usar variáveis para itens sociais e de botões */
             background: var(--input-bg-light);
             padding: 1rem;
             border-radius: var(--border-radius);
             margin-bottom: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Um pouco de sombra para destacar */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
             transition: box-shadow 0.2s ease, transform 0.2s ease;
-            border: 1px solid var(--border-color-light); /* Adicionado borda para melhor visualização no Dark Mode */
+            border: 1px solid var(--border-color-light); 
         }
 
         .social-item:hover,
         .custom-button-item:hover,
-        .card-link-item:hover { /* Adicionada classe para links do cartão */
+        .card-link-item:hover { 
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
 
-        /* Estilo para o item sendo arrastado */
         .sortable-ghost {
             opacity: 0.4;
             background-color: #e0e0e0;
             border: 1px dashed var(--primary-color);
         }
 
-        /* Estilo para o item selecionado para arrastar (quando o cursor está sobre ele e está sendo arrastado) */
         .sortable-chosen {
             cursor: grabbing;
             box-shadow: 0 6px 12px rgba(0,0,0,0.15);
         }
         
-        /* Adicione um ícone de "handle" para arrastar */
         .drag-handle {
             cursor: grab;
             font-size: 1.2rem;
@@ -176,7 +198,6 @@
             margin-right: 0.5rem;
         }
 
-        /* Estilos para o Preview do Botão no Modal */
         #button-preview-area {
             margin: 20px 0;
             padding: 15px;
@@ -200,23 +221,21 @@
             font-style: normal;
             text-decoration: none;
             display: inline-block;
-            transition: all 0.1s ease-out; /* Transição para o preview */
-            white-space: nowrap; /* Evita quebra de linha no preview */
+            transition: all 0.1s ease-out; 
+            white-space: nowrap; 
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 90%; /* Para não ultrapassar o container */
+            max-width: 90%; 
         }
 
-        /* Estilos para tipos de sombra */
         .shadow-none { box-shadow: none; }
         .shadow-soft { box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
         .shadow-medium { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
         .shadow-hard { box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); }
         .shadow-inset { box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2); }
 
-        /* Estilos para a nova seção de Cartão de Visitas */
         .card-link-item .form-input {
-            flex-grow: 1; /* Para o input preencher o espaço */
+            flex-grow: 1; 
         }
         .card-link-item .input-group {
             display: flex;
@@ -233,7 +252,6 @@
             object-fit: contain;
         }
 
-        /* Toggle de background do cartão */
         .card-background-options {
             display: flex;
             gap: 15px;
@@ -261,6 +279,21 @@
         }
         #card_background_image_preview {
             max-height: 150px;
+        }
+
+        /* Estilos para preview de texto */
+        .text-preview {
+            padding: 10px;
+            border: 1px dashed #ccc; /* Cor da borda do preview */
+            margin-top: 10px;
+            border-radius: var(--border-radius);
+            background-color: var(--input-bg-light); /* Adapta ao tema */
+            color: var(--text-color-light); /* Adapta ao tema */
+            min-height: 40px; /* Altura mínima para visualização */
+            transition: all 0.2s ease; /* Transição suave para mudanças */
+            white-space: pre-line; /* Para respeitar quebras de linha na bio */
+            word-wrap: break-word; /* Garante que palavras longas quebrem */
+            font-size: 0.9em; /* Tamanho um pouco menor para preview */
         }
     </style>
 </head>
@@ -301,19 +334,54 @@
 
                     <div class="form-group">
                         <label for="nome">Nome Completo</label>
-                        <input type="text" id="nome" name="nome" value="{{ dados.nome }}" class="form-input">
+                        <input type="text" id="nome" name="nome" value="{{ dados.nome }}" class="form-input" oninput="updateTextPreview('nome_preview', this.value, getValue('nome_font'), getValue('nome_color'))">
+                        <div class="form-group-inline" style="margin-top: 8px;">
+                            <label for="nome_font">Fonte:</label>
+                            <select id="nome_font" name="nome_font" class="form-input" onchange="updateTextPreview('nome_preview', getValue('nome'), this.value, getValue('nome_color'))">
+                                <option value="Inter, sans-serif" {% if dados.nome_font == 'Inter, sans-serif' %}selected{% endif %}>Padrão (Inter)</option>
+                                <option value="Arial, sans-serif" {% if dados.nome_font == 'Arial, sans-serif' %}selected{% endif %}>Arial</option>
+                                <option value="Verdana, sans-serif" {% if dados.nome_font == 'Verdana, sans-serif' %}selected{% endif %}>Verdana</option>
+                                <option value="Georgia, serif" {% if dados.nome_font == 'Georgia, serif' %}selected{% endif %}>Georgia</option>
+                                <option value="'Times New Roman', Times, serif" {% if dados.nome_font == "'Times New Roman', Times, serif" %}selected{% endif %}>Times New Roman</option>
+                                <option value="'Courier New', Courier, monospace" {% if dados.nome_font == "'Courier New', Courier, monospace" %}selected{% endif %}>Courier New</option>
+                                <option value="Roboto, sans-serif" {% if dados.nome_font == 'Roboto, sans-serif' %}selected{% endif %}>Roboto</option>
+                                <option value="'Open Sans', sans-serif" {% if dados.nome_font == "'Open Sans', sans-serif" %}selected{% endif %}>Open Sans</option>
+                                <option value="Lato, sans-serif" {% if dados.nome_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
+                                <option value="Montserrat, sans-serif" {% if dados.nome_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
+                            </select>
+                            <label for="nome_color">Cor:</label>
+                            <input type="color" id="nome_color" name="nome_color" value="{{ dados.nome_color | default('#333333', true) }}" oninput="updateTextPreview('nome_preview', getValue('nome'), getValue('nome_font'), this.value)">
+                        </div>
+                        <div class="text-preview" id="nome_preview">Prévia do Nome</div>
                     </div>
 
                     <div class="form-group">
                         <label for="bio">Biografia</label>
-                        <textarea id="bio" name="bio" class="form-textarea">{{ dados.bio }}</textarea>
+                        <textarea id="bio" name="bio" class="form-textarea" oninput="updateTextPreview('bio_preview', this.value, getValue('bio_font'), getValue('bio_color'))">{{ dados.bio }}</textarea>
+                        <div class="form-group-inline" style="margin-top: 8px;">
+                            <label for="bio_font">Fonte:</label>
+                            <select id="bio_font" name="bio_font" class="form-input" onchange="updateTextPreview('bio_preview', getValue('bio'), this.value, getValue('bio_color'))">
+                                <option value="Inter, sans-serif" {% if dados.bio_font == 'Inter, sans-serif' %}selected{% endif %}>Padrão (Inter)</option>
+                                <option value="Arial, sans-serif" {% if dados.bio_font == 'Arial, sans-serif' %}selected{% endif %}>Arial</option>
+                                <option value="Verdana, sans-serif" {% if dados.bio_font == 'Verdana, sans-serif' %}selected{% endif %}>Verdana</option>
+                                <option value="Georgia, serif" {% if dados.bio_font == 'Georgia, serif' %}selected{% endif %}>Georgia</option>
+                                <option value="'Times New Roman', Times, serif" {% if dados.bio_font == "'Times New Roman', Times, serif" %}selected{% endif %}>Times New Roman</option>
+                                <option value="'Courier New', Courier, monospace" {% if dados.bio_font == "'Courier New', Courier, monospace" %}selected{% endif %}>Courier New</option>
+                                <option value="Roboto, sans-serif" {% if dados.bio_font == 'Roboto, sans-serif' %}selected{% endif %}>Roboto</option>
+                                <option value="'Open Sans', sans-serif" {% if dados.bio_font == "'Open Sans', sans-serif" %}selected{% endif %}>Open Sans</option>
+                                <option value="Lato, sans-serif" {% if dados.bio_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
+                                <option value="Montserrat, sans-serif" {% if dados.bio_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
+                            </select>
+                            <label for="bio_color">Cor:</label>
+                            <input type="color" id="bio_color" name="bio_color" value="{{ dados.bio_color | default('#555555', true) }}" oninput="updateTextPreview('bio_preview', getValue('bio'), getValue('bio_font'), this.value)">
+                        </div>
+                        <div class="text-preview" id="bio_preview">Prévia da Biografia</div>
                     </div>
 
                     <div class="form-group">
                         <label for="profile">URL da sua página</label>
                         <div class="profile-url">
-                            <span class="url-prefix">cpages.onrender.com/</span>
-                            <input type="text" id="profile" name="profile" value="{{ dados.profile }}" class="form-input"
+                            <span class="url-prefix">cpages.onrender.com/</span> <input type="text" id="profile" name="profile" value="{{ dados.profile }}" class="form-input"
                                 pattern="[a-z0-9-]+" title="Apenas letras minúsculas, números e hífens">
                         </div>
                     </div>
@@ -327,7 +395,7 @@
                         <div class="file-upload-wrapper">
                             <div class="file-upload">
                                 <input type="file" id="foto_upload" name="foto_upload" accept="image/*" class="file-input"
-                                    onchange="previewImage(this, 'foto_preview')">
+                                    onchange="previewImage(this, 'foto_preview', 'foto_info')">
                                 <label for="foto_upload" class="file-label">
                                     <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
                                 </label>
@@ -345,7 +413,7 @@
                         <div class="file-upload-wrapper">
                             <div class="file-upload">
                                 <input type="file" id="background_upload" name="background_upload" accept="image/*" class="file-input"
-                                    onchange="previewImage(this, 'background_preview')">
+                                    onchange="previewImage(this, 'background_preview', 'background_info')">
                                 <label for="background_upload" class="file-label">
                                     <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
                                 </label>
@@ -358,93 +426,7 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="form-section">
-                    <h2><i class="fas fa-id-card"></i> Cartão de Visitas</h2>
-                    <div class="form-group">
-                        <label for="card_nome">Nome Completo (Cartão)</label>
-                        <input type="text" id="card_nome" name="card_nome" value="{{ dados.card_nome }}" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="card_titulo">Título/Profissão</label>
-                        <input type="text" id="card_titulo" name="card_titulo" value="{{ dados.card_titulo }}" class="form-input">
-                    </div>
-                    <div class="form-group">
-                        <label for="card_registro_profissional">Registro Profissional (Ex: CREA, OAB)</label>
-                        <input type="text" id="card_registro_profissional" name="card_registro_profissional" value="{{ dados.card_registro_profissional }}" class="form-input">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Background do Cartão:</label>
-                        <div class="card-background-options">
-                            <label>
-                                <input type="radio" name="card_background_type" value="color" {% if dados.card_background_type == 'color' %}checked{% endif %}>
-                                Cor Sólida
-                                <input type="color" id="card_background_color_picker" name="card_background_value_color" value="{{ dados.card_background_value if dados.card_background_type == 'color' else '#4361ee' }}" class="form-input" style="width: 50px;">
-                            </label>
-                            <label>
-                                <input type="radio" name="card_background_type" value="image" {% if dados.card_background_type == 'image' %}checked{% endif %}>
-                                Imagem
-                            </label>
-                        </div>
-                        <div id="card_background_image_upload_section" style="display: {% if dados.card_background_type == 'image' %}block{% else %}none{% endif %};">
-                            <div class="file-upload-wrapper">
-                                <div class="file-upload">
-                                    <input type="file" id="card_background_upload" name="card_background_upload" accept="image/*" class="file-input"
-                                        onchange="previewImage(this, 'card_background_image_preview', 'card_background_info');">
-                                    <label for="card_background_upload" class="file-label">
-                                        <i class="fas fa-cloud-upload-alt"></i> Escolher imagem para o cartão
-                                    </label>
-                                </div>
-                                <div class="file-info" id="card_background_info">
-                                    {% if dados.card_background_type == 'image' %}
-                                        Imagem atual
-                                    {% else %}
-                                        Nenhum arquivo selecionado
-                                    {% endif %}
-                                </div>
-                                <div class="image-preview-container" id="card_background_image_preview_container" style="display: {% if dados.card_background_type == 'image' and dados.card_background_value %}block{% else %}none{% endif %};">
-                                    <img src="{{ dados.card_background_value if dados.card_background_type == 'image' else '' }}" class="image-preview" id="card_background_image_preview"
-                                        onerror="this.style.display='none'">
-                                    {% if dados.card_background_type == 'image' and dados.card_background_value %}
-                                    <button type="button" class="btn btn-delete btn-sm" id="remove_card_background_image_btn" style="margin-top: 10px;">Remover Imagem</button>
-                                    <input type="hidden" name="remove_card_background_image" id="remove_card_background_image" value="false">
-                                    {% endif %}
-                                </div>
-                                <input type="hidden" name="card_background_value" id="card_background_value_hidden" value="{{ dados.card_background_value }}">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Links Customizáveis do Cartão (até 3)</label>
-                        <button type="button" class="btn btn-add" id="add-card-link-btn">
-                            <i class="fas fa-plus"></i> Adicionar Link ao Cartão
-                        </button>
-                        <div id="card-links-container">
-                            {% if dados.card_links %}
-                                {% for link in dados.card_links %}
-                                <div class="card-link-item">
-                                    <i class="fas fa-grip-vertical drag-handle"></i> <img src="/static/icons/{{ link.icon }}.png" alt="{{ link.icon }}" width="24">
-                                    <input type="hidden" name="card_icon_name[]" value="{{ link.icon }}">
-                                    <div class="input-group">
-                                        <input type="text" name="card_icon_url[]"
-                                                    value="{{ link.url }}"
-                                                    placeholder="URL (Opcional)"
-                                                    class="form-input">
-                                        <input type="text" name="card_icon_at_text[]"
-                                                    value="{{ link.at_text }}"
-                                                    placeholder="@texto"
-                                                    class="form-input">
-                                    </div>
-                                    <span class="remove-item"><i class="fas fa-times"></i></span>
-                                </div>
-                                {% endfor %}
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-
+                
                 <div class="form-section">
                     <h2><i class="fas fa-link"></i> Links Sociais e Botões</h2>
 
@@ -488,7 +470,7 @@
                                     <input type="hidden" name="custom_button_radius[]" value="{{ button.radius }}">
                                     <input type="hidden" name="custom_button_text_color[]" value="{{ button.textColor }}">
                                     <input type="hidden" name="custom_button_text_bold[]" value="{{ 'true' if button.bold else 'false' }}">
-                                    <input type="hidden" name="custom_button_text_italic[]" value="{{ 'true' if button.italic else 'normal' }}">
+                                    <input type="hidden" name="custom_button_text_italic[]" value="{{ 'true' if button.italic else 'false' }}">
                                     <input type="hidden" name="custom_button_font_size[]" value="{{ button.fontSize }}">
                                     <input type="hidden" name="custom_button_has_border[]" value="{{ 'true' if button.hasBorder else 'false' }}">
                                     <input type="hidden" name="custom_button_border_color[]" value="{{ button.borderColor }}">
@@ -506,22 +488,15 @@
                         <div class="modal-content">
                             <span class="close icon-modal-close">&times;</span>
                             <h3>Selecione um ícone</h3>
-
                             <div class="form-group">
                                 <input type="text" id="icon-search" class="form-input" placeholder="Buscar ícones...">
                             </div>
-
                             <div class="pagination-container">
-                                <button type="button" class="pagination-btn" id="prev-icon-page"><i
-                                            class="fas fa-chevron-left"></i></button>
-                                <div class="icons-grid">
-                                </div>
-                                <button type="button" class="pagination-btn" id="next-icon-page"><i
-                                            class="fas fa-chevron-right"></i></button>
+                                <button type="button" class="pagination-btn" id="prev-icon-page"><i class="fas fa-chevron-left"></i></button>
+                                <div class="icons-grid"></div>
+                                <button type="button" class="pagination-btn" id="next-icon-page"><i class="fas fa-chevron-right"></i></button>
                             </div>
-                            <div class="page-info" style="text-align: center; margin-top: 10px; font-size: 0.9rem;">
-                                Página <span id="current-page">1</span></div>
-
+                            <div class="page-info" style="text-align: center; margin-top: 10px; font-size: 0.9rem;">Página <span id="current-page">1</span></div>
                             <button type="button" id="save-icon" class="btn-save">Salvar Ícone</button>
                         </div>
                     </div>
@@ -530,83 +505,172 @@
                         <div class="modal-content">
                             <span class="close button-modal-close">&times;</span>
                             <h3>Criar Novo Botão</h3>
-
                             <div id="button-preview-area">
                                 <a href="#" id="live-button-preview">Texto do Botão</a>
                             </div>
-
-                            <div class="form-group">
-                                <label for="button-text">Texto do Botão</label>
-                                <input type="text" id="button-text" class="form-input" placeholder="Ex: Currículo">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="button-link">Link</label>
-                                <input type="text" id="button-link" class="form-input" placeholder="https://">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="button-color">Cor do Botão</label>
-                                <input type="color" id="button-color" value="#4CAF50">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="button-radius">Arredondamento (px)</label>
-                                <input type="range" id="button-radius" min="0" max="20" value="10">
-                                <span id="radius-value">10px</span>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="button-text-color">Cor do Texto</label>
-                                <input type="color" id="button-text-color" value="#FFFFFF">
-                            </div>
-                            <div class="form-group-inline">
-                                <label>Estilo do Texto:</label>
-                                <input type="checkbox" id="button-text-bold" name="button-text-bold">
-                                <label for="button-text-bold">Negrito</label>
-                                <input type="checkbox" id="button-text-italic" name="button-text-italic">
-                                <label for="button-text-italic">Itálico</label>
-                            </div>
-                            <div class="form-group">
-                                <label for="button-font-size">Tamanho da Fonte (px)</label>
-                                <input type="number" id="button-font-size" min="12" max="30" value="16" class="form-input">
-                            </div>
-
-                            <div class="form-group-inline">
-                                <input type="checkbox" id="button-has-border">
-                                <label for="button-has-border">Adicionar Borda</label>
-                                <div id="border-options-group" style="display: none;" class="border-options-group">
-                                    <div class="form-group-inline">
-                                        <label for="button-border-color">Cor</label>
-                                        <input type="color" id="button-border-color" value="#000000">
-                                    </div>
-                                    <div class="form-group-inline">
-                                        <label for="button-border-width">Tamanho (px)</label>
-                                        <input type="number" id="button-border-width" min="1" max="10" value="2" class="form-input" style="width: 60px;">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="form-group-inline">
-                                <input type="checkbox" id="button-has-hover">
-                                <label for="button-has-hover">Efeito Hover</label>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="button-shadow-type">Tipo de Sombra</label>
-                                <select id="button-shadow-type" class="form-input">
-                                    <option value="none">Nenhuma</option>
-                                    <option value="soft">Suave</option>
-                                    <option value="medium">Média</option>
-                                    <option value="hard">Forte</option>
-                                    <option value="inset">Interna (Inset)</option>
-                                </select>
-                            </div>
-
+                            <div class="form-group"><label for="button-text">Texto do Botão</label><input type="text" id="button-text" class="form-input" placeholder="Ex: Currículo"></div>
+                            <div class="form-group"><label for="button-link">Link</label><input type="text" id="button-link" class="form-input" placeholder="https://"></div>
+                            <div class="form-group"><label for="button-color">Cor do Botão</label><input type="color" id="button-color" value="#4CAF50"></div>
+                            <div class="form-group"><label for="button-radius">Arredondamento (px)</label><input type="range" id="button-radius" min="0" max="20" value="10"><span id="radius-value">10px</span></div>
+                            <div class="form-group"><label for="button-text-color">Cor do Texto</label><input type="color" id="button-text-color" value="#FFFFFF"></div>
+                            <div class="form-group-inline"><label>Estilo do Texto:</label><input type="checkbox" id="button-text-bold" name="button-text-bold"><label for="button-text-bold">Negrito</label><input type="checkbox" id="button-text-italic" name="button-text-italic"><label for="button-text-italic">Itálico</label></div>
+                            <div class="form-group"><label for="button-font-size">Tamanho da Fonte (px)</label><input type="number" id="button-font-size" min="12" max="30" value="16" class="form-input"></div>
+                            <div class="form-group-inline"><input type="checkbox" id="button-has-border"><label for="button-has-border">Adicionar Borda</label><div id="border-options-group" style="display: none;" class="border-options-group"><div class="form-group-inline"><label for="button-border-color">Cor</label><input type="color" id="button-border-color" value="#000000"></div><div class="form-group-inline"><label for="button-border-width">Tamanho (px)</label><input type="number" id="button-border-width" min="1" max="10" value="2" class="form-input" style="width: 60px;"></div></div></div>
+                            <div class="form-group-inline"><input type="checkbox" id="button-has-hover"><label for="button-has-hover">Efeito Hover</label></div>
+                            <div class="form-group"><label for="button-shadow-type">Tipo de Sombra</label><select id="button-shadow-type" class="form-input"><option value="none">Nenhuma</option><option value="soft">Suave</option><option value="medium">Média</option><option value="hard">Forte</option><option value="inset">Interna (Inset)</option></select></div>
                             <button type="button" id="save-button" class="btn-save">Salvar Botão</button>
                         </div>
                     </div>
                 </div>
+
+                <div class="form-section card-section-full-width"> 
+                    <h2><i class="fas fa-id-card"></i> Cartão de Visitas</h2>
+                    
+                    <div class="form-group">
+                        <label for="card_nome">Nome Completo (Cartão)</label>
+                        <input type="text" id="card_nome" name="card_nome" value="{{ dados.card_nome }}" class="form-input" oninput="updateTextPreview('card_nome_preview', this.value, getValue('card_nome_font'), getValue('card_nome_color'))">
+                        <div class="form-group-inline" style="margin-top: 8px;">
+                            <label for="card_nome_font">Fonte:</label>
+                            <select id="card_nome_font" name="card_nome_font" class="form-input" onchange="updateTextPreview('card_nome_preview', getValue('card_nome'), this.value, getValue('card_nome_color'))">
+                                <option value="Inter, sans-serif" {% if dados.card_nome_font == 'Inter, sans-serif' %}selected{% endif %}>Padrão (Inter)</option>
+                                <option value="Arial, sans-serif" {% if dados.card_nome_font == 'Arial, sans-serif' %}selected{% endif %}>Arial</option>
+                                <option value="Verdana, sans-serif" {% if dados.card_nome_font == 'Verdana, sans-serif' %}selected{% endif %}>Verdana</option>
+                                <option value="Georgia, serif" {% if dados.card_nome_font == 'Georgia, serif' %}selected{% endif %}>Georgia</option>
+                                <option value="'Times New Roman', Times, serif" {% if dados.card_nome_font == "'Times New Roman', Times, serif" %}selected{% endif %}>Times New Roman</option>
+                                <option value="'Courier New', Courier, monospace" {% if dados.card_nome_font == "'Courier New', Courier, monospace" %}selected{% endif %}>Courier New</option>
+                                <option value="Roboto, sans-serif" {% if dados.card_nome_font == 'Roboto, sans-serif' %}selected{% endif %}>Roboto</option>
+                                <option value="'Open Sans', sans-serif" {% if dados.card_nome_font == "'Open Sans', sans-serif" %}selected{% endif %}>Open Sans</option>
+                                <option value="Lato, sans-serif" {% if dados.card_nome_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
+                                <option value="Montserrat, sans-serif" {% if dados.card_nome_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
+                            </select>
+                            <label for="card_nome_color">Cor:</label>
+                            <input type="color" id="card_nome_color" name="card_nome_color" value="{{ dados.card_nome_color | default('#FFFFFF', true) }}" oninput="updateTextPreview('card_nome_preview', getValue('card_nome'), getValue('card_nome_font'), this.value)">
+                        </div>
+                        <div class="text-preview" id="card_nome_preview">Prévia do Nome (Cartão)</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card_titulo">Título/Profissão</label>
+                        <input type="text" id="card_titulo" name="card_titulo" value="{{ dados.card_titulo }}" class="form-input" oninput="updateTextPreview('card_titulo_preview', this.value, getValue('card_titulo_font'), getValue('card_titulo_color'))">
+                        <div class="form-group-inline" style="margin-top: 8px;">
+                            <label for="card_titulo_font">Fonte:</label>
+                            <select id="card_titulo_font" name="card_titulo_font" class="form-input" onchange="updateTextPreview('card_titulo_preview', getValue('card_titulo'), this.value, getValue('card_titulo_color'))">
+                               <option value="Inter, sans-serif" {% if dados.card_titulo_font == 'Inter, sans-serif' %}selected{% endif %}>Padrão (Inter)</option>
+                                <option value="Arial, sans-serif" {% if dados.card_titulo_font == 'Arial, sans-serif' %}selected{% endif %}>Arial</option>
+                                <option value="Verdana, sans-serif" {% if dados.card_titulo_font == 'Verdana, sans-serif' %}selected{% endif %}>Verdana</option>
+                                <option value="Georgia, serif" {% if dados.card_titulo_font == 'Georgia, serif' %}selected{% endif %}>Georgia</option>
+                                <option value="'Times New Roman', Times, serif" {% if dados.card_titulo_font == "'Times New Roman', Times, serif" %}selected{% endif %}>Times New Roman</option>
+                                <option value="'Courier New', Courier, monospace" {% if dados.card_titulo_font == "'Courier New', Courier, monospace" %}selected{% endif %}>Courier New</option>
+                                <option value="Roboto, sans-serif" {% if dados.card_titulo_font == 'Roboto, sans-serif' %}selected{% endif %}>Roboto</option>
+                                <option value="'Open Sans', sans-serif" {% if dados.card_titulo_font == "'Open Sans', sans-serif" %}selected{% endif %}>Open Sans</option>
+                                <option value="Lato, sans-serif" {% if dados.card_titulo_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
+                                <option value="Montserrat, sans-serif" {% if dados.card_titulo_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
+                            </select>
+                            <label for="card_titulo_color">Cor:</label>
+                            <input type="color" id="card_titulo_color" name="card_titulo_color" value="{{ dados.card_titulo_color | default('#EEEEEE', true) }}" oninput="updateTextPreview('card_titulo_preview', getValue('card_titulo'), getValue('card_titulo_font'), this.value)">
+                        </div>
+                         <div class="text-preview" id="card_titulo_preview">Prévia do Título</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card_registro_profissional">Registro Profissional (Ex: CREA, OAB)</label>
+                        <input type="text" id="card_registro_profissional" name="card_registro_profissional" value="{{ dados.card_registro_profissional }}" class="form-input" oninput="updateTextPreview('card_registro_preview', this.value, getValue('card_registro_font'), getValue('card_registro_color'))">
+                        <div class="form-group-inline" style="margin-top: 8px;">
+                            <label for="card_registro_font">Fonte:</label>
+                            <select id="card_registro_font" name="card_registro_font" class="form-input" onchange="updateTextPreview('card_registro_preview', getValue('card_registro_profissional'), this.value, getValue('card_registro_color'))">
+                                <option value="Inter, sans-serif" {% if dados.card_registro_font == 'Inter, sans-serif' %}selected{% endif %}>Padrão (Inter)</option>
+                                <option value="Arial, sans-serif" {% if dados.card_registro_font == 'Arial, sans-serif' %}selected{% endif %}>Arial</option>
+                                <option value="Verdana, sans-serif" {% if dados.card_registro_font == 'Verdana, sans-serif' %}selected{% endif %}>Verdana</option>
+                                <option value="Georgia, serif" {% if dados.card_registro_font == 'Georgia, serif' %}selected{% endif %}>Georgia</option>
+                                <option value="'Times New Roman', Times, serif" {% if dados.card_registro_font == "'Times New Roman', Times, serif" %}selected{% endif %}>Times New Roman</option>
+                                <option value="'Courier New', Courier, monospace" {% if dados.card_registro_font == "'Courier New', Courier, monospace" %}selected{% endif %}>Courier New</option>
+                                <option value="Roboto, sans-serif" {% if dados.card_registro_font == 'Roboto, sans-serif' %}selected{% endif %}>Roboto</option>
+                                <option value="'Open Sans', sans-serif" {% if dados.card_registro_font == "'Open Sans', sans-serif" %}selected{% endif %}>Open Sans</option>
+                                <option value="Lato, sans-serif" {% if dados.card_registro_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
+                                <option value="Montserrat, sans-serif" {% if dados.card_registro_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
+                            </select>
+                            <label for="card_registro_color">Cor:</label>
+                            <input type="color" id="card_registro_color" name="card_registro_color" value="{{ dados.card_registro_color | default('#BBBBBB', true) }}" oninput="updateTextPreview('card_registro_preview', getValue('card_registro_profissional'), getValue('card_registro_font'), this.value)">
+                        </div>
+                        <div class="text-preview" id="card_registro_preview">Prévia do Registro</div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>Background do Cartão:</label>
+                        <div class="card-background-options">
+                            <label>
+                                <input type="radio" name="card_background_type" value="color" {% if dados.card_background_type == 'color' or dados.card_background_type is none %}checked{% endif %}>
+                                Cor Sólida
+                                <input type="color" id="card_background_color_picker" name="card_background_value_color" value="{{ dados.card_background_value if dados.card_background_type == 'color' else '#4361ee' }}" class="form-input" style="width: 50px; height: 30px; padding:0; border: none;">
+                            </label>
+                            <label>
+                                <input type="radio" name="card_background_type" value="image" {% if dados.card_background_type == 'image' %}checked{% endif %}>
+                                Imagem
+                            </label>
+                        </div>
+                        <div id="card_background_image_upload_section" style="display: {% if dados.card_background_type == 'image' %}block{% else %}none{% endif %};">
+                            <div class="file-upload-wrapper">
+                                <div class="file-upload">
+                                    <input type="file" id="card_background_upload" name="card_background_upload" accept="image/*" class="file-input"
+                                        onchange="previewImage(this, 'card_background_image_preview', 'card_background_info');">
+                                    <label for="card_background_upload" class="file-label">
+                                        <i class="fas fa-cloud-upload-alt"></i> Escolher imagem para o cartão
+                                    </label>
+                                </div>
+                                <div class="file-info" id="card_background_info">
+                                    {% if dados.card_background_type == 'image' and dados.card_background_value %}
+                                        {% else %}
+                                        Nenhum arquivo selecionado
+                                    {% endif %}
+                                </div>
+                                <div class="image-preview-container" id="card_background_image_preview_container" style="display: {% if dados.card_background_type == 'image' and dados.card_background_value %}block{% else %}none{% endif %};">
+                                    <img src="{{ dados.card_background_value if dados.card_background_type == 'image' else '' }}" class="image-preview" id="card_background_image_preview"
+                                        onerror="this.style.display='none'">
+                                    {% if dados.card_background_type == 'image' and dados.card_background_value %}
+                                    <button type="button" class="btn-delete btn-sm" id="remove_card_background_image_btn" style="margin-top: 10px; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-times-circle"></i>Remover Imagem</button>
+                                    {% else %}
+                                    <button type="button" class="btn-delete btn-sm" id="remove_card_background_image_btn" style="margin-top: 10px; display: none; align-items: center; gap: 5px;"><i class="fas fa-times-circle"></i>Remover Imagem</button>
+                                    {% endif %}
+                                    <input type="hidden" name="remove_card_background_image" id="remove_card_background_image" value="false">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card_link_text_color">Cor do Texto dos Links do Cartão</label>
+                        <input type="color" id="card_link_text_color" name="card_link_text_color" value="{{ dados.card_link_text_color | default(DEFAULT_CARD_LINK_TEXT_COLOR, true) }}">
+                    </div>
+                    <div class="form-group">
+                        <label>Links Customizáveis do Cartão (até 3)</label>
+                        <button type="button" class="btn btn-add" id="add-card-link-btn">
+                            <i class="fas fa-plus"></i> Adicionar Link ao Cartão
+                        </button>
+                        <div id="card-links-container">
+                            {% if dados.card_links %}
+                                {% for link in dados.card_links %}
+                                <div class="card-link-item">
+                                    <i class="fas fa-grip-vertical drag-handle"></i> <img src="/static/icons/{{ link.icon }}.png" alt="{{ link.icon }}" width="24">
+                                    <input type="hidden" name="card_icon_name[]" value="{{ link.icon }}">
+                                    <div class="input-group">
+                                        <input type="text" name="card_icon_url[]"
+                                                    value="{{ link.url }}"
+                                                    placeholder="URL (Opcional)"
+                                                    class="form-input">
+                                        <input type="text" name="card_icon_at_text[]"
+                                                    value="{{ link.at_text }}"
+                                                    placeholder="@texto"
+                                                    class="form-input">
+                                    </div>
+                                    <span class="remove-item"><i class="fas fa-times"></i></span>
+                                </div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <div class="form-actions">
@@ -620,34 +684,62 @@
         </form>
     </div>
     <script>
-        // Função para mostrar o preview de imagem
+        // Função para obter valor de um elemento
+        function getValue(elementId) {
+            const el = document.getElementById(elementId);
+            return el ? el.value : '';
+        }
+
+        // Função para atualizar preview de texto
+        function updateTextPreview(previewElementId, text, font, color) {
+            const previewEl = document.getElementById(previewElementId);
+            if (previewEl) {
+                previewEl.textContent = text || 'Prévia...'; 
+                previewEl.style.fontFamily = font || 'Inter, sans-serif'; 
+                
+                if (previewElementId.includes('card_')) { 
+                    previewEl.style.backgroundColor = '#444'; 
+                    previewEl.style.color = color || '#FFFFFF'; 
+                } else { 
+                    previewEl.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--input-bg-light').trim();
+                    previewEl.style.color = color || getComputedStyle(document.documentElement).getPropertyValue('--text-color-light').trim();
+                }
+            }
+        }
+
         function previewImage(input, previewId, fileInfoId) {
             const previewContainer = document.getElementById(previewId + '_container');
-            const previewImage = document.getElementById(previewId);
-            const fileInfo = document.getElementById(fileInfoId);
+            const previewImageEl = document.getElementById(previewId);
+            const fileInfoEl = document.getElementById(fileInfoId); 
             const fileWrapper = input.closest('.file-upload-wrapper');
+            const removeBtn = document.getElementById('remove_card_background_image_btn'); 
 
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function (e) {
-                    previewImage.src = e.target.result;
-                    previewImage.style.display = 'block';
-                    previewContainer.classList.add('preview-active');
-                    fileInfo.textContent = input.files[0].name;
-                    fileWrapper.classList.add('has-file');
+                    previewImageEl.src = e.target.result;
+                    previewImageEl.style.display = 'block';
+                    if (previewContainer) previewContainer.style.display = 'block'; 
+                    if (previewContainer) previewContainer.classList.add('preview-active');
+                    if (fileInfoEl) fileInfoEl.textContent = input.files[0].name;
+                    if (fileWrapper) fileWrapper.classList.add('has-file');
+                    if (previewId === 'card_background_image_preview' && removeBtn) {
+                        removeBtn.style.display = 'inline-flex'; 
+                        document.getElementById('remove_card_background_image').value = 'false'; 
+                    }
                 };
                 reader.readAsDataURL(input.files[0]);
-            } else {
-                previewImage.src = '';
-                previewImage.style.display = 'none';
-                previewContainer.classList.remove('preview-active');
-                fileInfo.textContent = 'Nenhum arquivo selecionado';
-                fileWrapper.classList.remove('has-file');
             }
         }
+        
 
         document.addEventListener('DOMContentLoaded', function () {
-            // Inicialização dos previews de imagem existentes
+            updateTextPreview('nome_preview', getValue('nome'), getValue('nome_font'), getValue('nome_color'));
+            updateTextPreview('bio_preview', getValue('bio'), getValue('bio_font'), getValue('bio_color'));
+            updateTextPreview('card_nome_preview', getValue('card_nome'), getValue('card_nome_font'), getValue('card_nome_color'));
+            updateTextPreview('card_titulo_preview', getValue('card_titulo'), getValue('card_titulo_font'), getValue('card_titulo_color'));
+            updateTextPreview('card_registro_preview', getValue('card_registro_profissional'), getValue('card_registro_font'), getValue('card_registro_color'));
+
             const fotosParaPreview = [
                 { id: 'foto_preview', infoId: 'foto_info', uploadId: 'foto_upload' },
                 { id: 'background_preview', infoId: 'background_info', uploadId: 'background_upload' },
@@ -656,37 +748,66 @@
 
             fotosParaPreview.forEach(item => {
                 const previewElement = document.getElementById(item.id);
-                if (previewElement && previewElement.src && previewElement.src !== window.location.href && !previewElement.src.includes('None')) {
-                    document.getElementById(item.id + '_container').classList.add('preview-active');
-                    document.getElementById(item.infoId).textContent = 'Imagem atual';
-                    document.querySelector(`#${item.uploadId}`).closest('.file-upload-wrapper').classList.add('has-file');
+                const infoElement = document.getElementById(item.infoId);
+                const containerElement = document.getElementById(item.id + '_container');
+                const uploadInput = document.getElementById(item.uploadId);
+                const fileWrapper = uploadInput ? uploadInput.closest('.file-upload-wrapper') : null;
+
+                if (previewElement && previewElement.src && previewElement.src !== window.location.href && !previewElement.src.includes('blob:') && previewElement.src.trim() !== '') {
+                    if(containerElement) containerElement.style.display = 'block'; 
+                    if(containerElement) containerElement.classList.add('preview-active');
+                    if (infoElement) {
+                         try {
+                            const urlParts = previewElement.src.split('/');
+                            const fileNameWithQuery = urlParts[urlParts.length - 1];
+                            const fileName = fileNameWithQuery.split('?')[0]; 
+                            infoElement.textContent = `Atual: ${decodeURIComponent(fileName)}`;
+                        } catch (e) {
+                            infoElement.textContent = 'Imagem atual';
+                        }
+                    }
+                    if (fileWrapper) fileWrapper.classList.add('has-file');
+                    if (item.id === 'card_background_image_preview') {
+                        const removeBtn = document.getElementById('remove_card_background_image_btn');
+                        if (removeBtn) removeBtn.style.display = 'inline-flex';
+                    }
+                } else {
+                    if (infoElement) infoElement.textContent = 'Nenhum arquivo selecionado';
+                    if (containerElement) containerElement.style.display = 'none'; 
+                    if (item.id === 'card_background_image_preview') {
+                        const removeBtn = document.getElementById('remove_card_background_image_btn');
+                        if (removeBtn) removeBtn.style.display = 'none';
+                    }
                 }
             });
 
-            // Lógica para remoção da imagem de background do cartão
             const removeCardBgBtn = document.getElementById('remove_card_background_image_btn');
             const cardBgUploadInput = document.getElementById('card_background_upload');
             const cardBgImagePreview = document.getElementById('card_background_image_preview');
             const cardBgImagePreviewContainer = document.getElementById('card_background_image_preview_container');
             const removeCardBgHiddenInput = document.getElementById('remove_card_background_image');
             const cardBgInfo = document.getElementById('card_background_info');
-            const cardBgUploadWrapper = cardBgUploadInput.closest('.file-upload-wrapper');
-
+            
             if (removeCardBgBtn) {
                 removeCardBgBtn.addEventListener('click', () => {
-                    cardBgUploadInput.value = ''; // Limpa o input de arquivo
-                    cardBgImagePreview.src = '';
-                    cardBgImagePreview.style.display = 'none';
-                    cardBgImagePreviewContainer.classList.remove('preview-active');
-                    cardBgInfo.textContent = 'Nenhum arquivo selecionado';
-                    cardBgUploadWrapper.classList.remove('has-file');
-                    removeCardBgHiddenInput.value = 'true'; // Sinaliza para o backend remover
+                    if(cardBgUploadInput) cardBgUploadInput.value = ''; 
+                    if(cardBgImagePreview) cardBgImagePreview.src = '';
+                    if(cardBgImagePreview) cardBgImagePreview.style.display = 'none';
+                    if(cardBgImagePreviewContainer) cardBgImagePreviewContainer.classList.remove('preview-active');
+                    if(cardBgImagePreviewContainer) cardBgImagePreviewContainer.style.display = 'none'; 
+                    if(cardBgInfo) cardBgInfo.textContent = 'Nenhum arquivo selecionado';
+                    const cardBgUploadWrapper = cardBgUploadInput ? cardBgUploadInput.closest('.file-upload-wrapper') : null;
+                    if(cardBgUploadWrapper) cardBgUploadWrapper.classList.remove('has-file');
+                    if(removeCardBgHiddenInput) removeCardBgHiddenInput.value = 'true'; 
+                    removeCardBgBtn.style.display = 'none'; 
                 });
             }
 
 
-            // Função auxiliar para escapar HTML (prevenir XSS)
             function escapeHtml(text) {
+                if (typeof text !== 'string') {
+                    return ''; 
+                }
                 const map = {
                     '&': '&amp;',
                     '<': '&lt;',
@@ -697,12 +818,11 @@
                 return text.replace(/[&<>"']/g, function (m) { return map[m]; });
             }
 
-            // Função para renderizar botões personalizados
             function renderCustomButton(buttonData) {
                 const customButtonsContainer = document.getElementById('custom-buttons-container');
                 
                 const buttonField = document.createElement('div');
-                buttonField.className = 'custom-button-item'; // Classe para o SortableJS
+                buttonField.className = 'custom-button-item';
 
                 const textColor = buttonData.textColor || '#FFFFFF';
                 const bold = buttonData.bold || false;
@@ -712,7 +832,7 @@
                 const borderColor = buttonData.borderColor || '#000000';
                 const borderWidth = buttonData.borderWidth || 2;
                 const hasHoverEffect = buttonData.hasHoverEffect || false;
-                const shadowType = buttonData.shadowType || 'none'; // Nova propriedade de sombra
+                const shadowType = buttonData.shadowType || 'none';
 
                 let borderStyle = '';
                 let buttonPreviewClasses = ['button-preview'];
@@ -723,7 +843,7 @@
                 if (hasHoverEffect) {
                     buttonPreviewClasses.push('hover-effect-preview');
                 }
-                if (shadowType && shadowType !== 'none') { // Adiciona a classe de sombra
+                if (shadowType && shadowType !== 'none') { 
                     buttonPreviewClasses.push(`shadow-${shadowType}`);
                 }
 
@@ -736,30 +856,29 @@
                         <input type="hidden" name="custom_button_text[]" value="${escapeHtml(buttonData.text)}">
                         <input type="hidden" name="custom_button_link[]" value="${escapeHtml(buttonData.link)}">
                         <input type="hidden" name="custom_button_color[]" value="${escapeHtml(buttonData.color)}">
-                        <input type="hidden" name="custom_button_radius[]" value="${escapeHtml(buttonData.radius)}">
+                        <input type="hidden" name="custom_button_radius[]" value="${escapeHtml(String(buttonData.radius))}">
                         <input type="hidden" name="custom_button_text_color[]" value="${escapeHtml(textColor)}">
                         <input type="hidden" name="custom_button_text_bold[]" value="${bold}">
                         <input type="hidden" name="custom_button_text_italic[]" value="${italic}">
                         <input type="hidden" name="custom_button_font_size[]" value="${fontSize}">
                         <input type="hidden" name="custom_button_has_border[]" value="${hasBorder}">
                         <input type="hidden" name="custom_button_border_color[]" value="${escapeHtml(borderColor)}">
-                        <input type="hidden" name="custom_button_border_width[]" value="${escapeHtml(borderWidth)}">
+                        <input type="hidden" name="custom_button_border_width[]" value="${escapeHtml(String(borderWidth))}">
                         <input type="hidden" name="custom_button_has_hover[]" value="${hasHoverEffect}">
                         <input type="hidden" name="custom_button_shadow_type[]" value="${escapeHtml(shadowType)}">
                     </div>
                     <span class="remove-item"><i class="fas fa-times"></i></span>
                 `;
-                customButtonsContainer.appendChild(buttonField);
+                if (customButtonsContainer) customButtonsContainer.appendChild(buttonField);
 
-                // Adicionar evento de remoção para o botão recém-criado
                 buttonField.querySelector('.remove-item').addEventListener('click', function () {
                     this.closest('.custom-button-item').remove();
                 });
             }
 
-            // Função para renderizar ícones sociais existentes
             function renderExistingSocialIcons(socialLinks) {
                 const socialIconsContainer = document.getElementById('social-icons-container');
+                if (!socialIconsContainer) return;
                 socialIconsContainer.innerHTML = '';
 
                 socialLinks.forEach(link => {
@@ -784,9 +903,9 @@
                 });
             }
 
-            // Função para renderizar links do cartão existentes
             function renderExistingCardLinks(cardLinks) {
                 const cardLinksContainer = document.getElementById('card-links-container');
+                if (!cardLinksContainer) return;
                 cardLinksContainer.innerHTML = '';
 
                 cardLinks.forEach(link => {
@@ -816,23 +935,37 @@
                     });
                 });
             }
-
-            // Carregar dados existentes
+            
+            /*
             try {
                 const socialLinks = {{ dados.social_links | tojson | safe }};
-                renderExistingSocialIcons(socialLinks);
+                if (Array.isArray(socialLinks)) { 
+                    renderExistingSocialIcons(socialLinks);
+                }
             } catch (e) {
                 console.error('Erro ao carregar ícones sociais:', e);
             }
 
             try {
                 const cardLinks = {{ dados.card_links | tojson | safe }};
-                renderExistingCardLinks(cardLinks);
+                 if (Array.isArray(cardLinks)) { 
+                    renderExistingCardLinks(cardLinks);
+                }
             } catch (e) {
                 console.error('Erro ao carregar links do cartão:', e);
             }
+            
+            try {
+                const customButtons = {{ dados.custom_buttons | tojson | safe }};
+                if (Array.isArray(customButtons)) { 
+                    customButtons.forEach(button => renderCustomButton(button));
+                }
+            } catch (e) {
+                console.error('Erro ao carregar botões personalizados:', e);
+            }
+            */
 
-            // Prevenir que cliques dentro do conteúdo do modal fechem o modal (propagação)
+
             document.querySelector('#icon-modal .modal-content').addEventListener('click', (e) => {
                 e.stopPropagation();
             });
@@ -840,42 +973,20 @@
                 e.stopPropagation();
             });
 
-            // INICIALIZAÇÃO DO SORTABLEJS
             const socialIconsContainer = document.getElementById('social-icons-container');
             const customButtonsContainer = document.getElementById('custom-buttons-container');
-            const cardLinksContainer = document.getElementById('card-links-container'); // Novo container para links do cartão
+            const cardLinksContainer = document.getElementById('card-links-container'); 
 
-            new Sortable(socialIconsContainer, {
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
-                handle: '.drag-handle',
-            });
-
-            new Sortable(customButtonsContainer, {
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
-                handle: '.drag-handle',
-            });
+            if (socialIconsContainer) new Sortable(socialIconsContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle', });
+            if (customButtonsContainer) new Sortable(customButtonsContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle', });
+            if (cardLinksContainer) new Sortable(cardLinksContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle', });
             
-            // Inicializar SortableJS para os links do cartão
-            new Sortable(cardLinksContainer, {
-                animation: 150,
-                ghostClass: 'sortable-ghost',
-                chosenClass: 'sortable-chosen',
-                handle: '.drag-handle',
-            });
-            // FIM DA INICIALIZAÇÃO DO SORTABLEJS
-
-            // INÍCIO DAS LÓGICAS DE PAGINAÇÃO E BUSCA DE ÍCONES
             const iconModal = document.getElementById('icon-modal');
             const buttonModal = document.getElementById('button-modal');
             const addIconBtn = document.getElementById('add-icon-btn');
             const addButtonBtn = document.getElementById('add-button-btn');
-            const addCardLinkBtn = document.getElementById('add-card-link-btn'); // Novo botão para links do cartão
+            const addCardLinkBtn = document.getElementById('add-card-link-btn'); 
 
-            // Selecionar os botões de fechar específicos de cada modal
             const iconModalCloseBtn = document.querySelector('.icon-modal-close');
             const buttonModalCloseBtn = document.querySelector('.button-modal-close');
 
@@ -885,66 +996,15 @@
             const nextIconPageBtn = document.getElementById('next-icon-page');
             const currentPageSpan = document.getElementById('current-page');
 
-            let currentModalPurpose = ''; // 'social' ou 'card_link'
+            let currentModalPurpose = ''; 
 
-            // Lista completa de ícones sociais disponíveis
-            const allSocialIcons = [
-                { name: 'instagram', path: '/static/icons/instagram.png' },
-                { name: 'linkedin', path: '/static/icons/linkedin.png' },
-                { name: 'github', path: '/static/icons/github.png' },
-                { name: 'email', path: '/static/icons/email.png' },
-                { name: 'whatsapp', path: '/static/icons/whatsapp.png' },
-                { name: 'twitter', path: '/static/icons/twitter.png' },
-                { name: 'facebook', path: '/static/icons/facebook.png' },
-                { name: 'youtube', path: '/static/icons/youtube.png' },
-                { name: 'telegram', path: '/static/icons/telegram.png' },
-                { name: 'tiktok', path: '/static/icons/tiktok.png' },
-                { name: 'pinterest', path: '/static/icons/pinterest.png' },
-                { name: 'twitch', path: '/static/icons/twitch.png' },
-                { name: 'discord', path: '/static/icons/discord.png' },
-                { name: 'snapchat', path: '/static/icons/snapchat.png' },
-                { name: 'reddit', path: '/static/icons/reddit.png' },
-                { name: 'vimeo', path: '/static/icons/vimeo.png' },
-                { name: 'medium', path: '/static/icons/medium.png' },
-                { name: 'spotify', path: '/static/icons/spotify.png' },
-                { name: 'soundcloud', path: '/static/icons/soundcloud.png' },
-                { name: 'behance', path: '/static/icons/behance.png' },
-                { name: 'dribbble', path: '/static/icons/dribbble.png' },
-                { name: 'flickr', path: '/static/icons/flickr.png' },
-                { name: 'etsy', path: '/static/icons/etsy.png' },
-                { name: 'paypal', path: '/static/icons/paypal.png' },
-                { name: 'google-drive', path: '/static/icons/google-drive.png' },
-                { name: 'dropbox', path: '/static/icons/dropbox.png' },
-                { name: 'link', path: '/static/icons/link.png' },
-                { name: 'phone', path: '/static/icons/phone.png' },
-                { name: 'website', path: '/static/icons/website.png' },
-                { name: 'xing', path: '/static/icons/xing.png' },
-                { name: 'mastodon', path: '/static/icons/mastodon.png' },
-                { name: 'stack-overflow', path: '/static/icons/stack-overflow.png' },
-                { name: 'gitlab', path: '/static/icons/gitlab.png' },
-                { name: 'bitbucket', path: '/static/icons/bitbucket.png' },
-                { name: 'codepen', path: '/static/icons/codepen.png' },
-                { name: 'dev-to', path: '/static/icons/dev-to.png' },
-                { name: 'freecodecamp', path: '/static/icons/freecodecamp.png' },
-                { name: 'hashnode', path: '/static/icons/hashnode.png' },
-                { name: 'product-hunt', path: '/static/icons/product-hunt.png' },
-                { name: 'unsplash', path: '/static/icons/unsplash.png' },
-                { name: 'patreon', path: '/static/icons/patreon.png' },
-                { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' },
-                { name: 'ko-fi', path: '/static/icons/ko-fi.png' },
-                { name: 'slack', path: '/static/icons/slack.png' },
-                { name: 'teams', path: '/static/icons/teams.png' },
-                { name: 'skype', path: '/static/icons/skype.png' },
-                { name: 'google-scholar', path: '/static/icons/google-scholar.png' },
-                { name: 'researchgate', path: '/static/icons/researchgate.png' },
-                { name: 'academia-edu', path: '/static/icons/academia-edu.org' }
-            ];
-
+            const allSocialIcons = [ { name: 'instagram', path: '/static/icons/instagram.png' }, { name: 'linkedin', path: '/static/icons/linkedin.png' }, { name: 'github', path: '/static/icons/github.png' }, { name: 'email', path: '/static/icons/email.png' }, { name: 'whatsapp', path: '/static/icons/whatsapp.png' }, { name: 'twitter', path: '/static/icons/twitter.png' }, { name: 'facebook', path: '/static/icons/facebook.png' }, { name: 'youtube', path: '/static/icons/youtube.png' }, { name: 'telegram', path: '/static/icons/telegram.png' }, { name: 'tiktok', path: '/static/icons/tiktok.png' }, { name: 'pinterest', path: '/static/icons/pinterest.png' }, { name: 'twitch', path: '/static/icons/twitch.png' }, { name: 'discord', path: '/static/icons/discord.png' }, { name: 'snapchat', path: '/static/icons/snapchat.png' }, { name: 'reddit', path: '/static/icons/reddit.png' }, { name: 'vimeo', path: '/static/icons/vimeo.png' }, { name: 'medium', path: '/static/icons/medium.png' }, { name: 'spotify', path: '/static/icons/spotify.png' }, { name: 'soundcloud', path: '/static/icons/soundcloud.png' }, { name: 'behance', path: '/static/icons/behance.png' }, { name: 'dribbble', path: '/static/icons/dribbble.png' }, { name: 'flickr', path: '/static/icons/flickr.png' }, { name: 'etsy', path: '/static/icons/etsy.png' }, { name: 'paypal', path: '/static/icons/paypal.png' }, { name: 'google-drive', path: '/static/icons/google-drive.png' }, { name: 'dropbox', path: '/static/icons/dropbox.png' }, { name: 'link', path: '/static/icons/link.png' }, { name: 'phone', path: '/static/icons/phone.png' }, { name: 'website', path: '/static/icons/website.png' }, { name: 'xing', path: '/static/icons/xing.png' }, { name: 'mastodon', path: '/static/icons/mastodon.png' }, { name: 'stack-overflow', path: '/static/icons/stack-overflow.png' }, { name: 'gitlab', path: '/static/icons/gitlab.png' }, { name: 'bitbucket', path: '/static/icons/bitbucket.png' }, { name: 'codepen', path: '/static/icons/codepen.png' }, { name: 'dev-to', path: '/static/icons/dev-to.png' }, { name: 'freecodecamp', path: '/static/icons/freecodecamp.png' }, { name: 'hashnode', path: '/static/icons/hashnode.png' }, { name: 'product-hunt', path: '/static/icons/product-hunt.png' }, { name: 'unsplash', path: '/static/icons/unsplash.png' }, { name: 'patreon', path: '/static/icons/patreon.png' }, { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' }, { name: 'ko-fi', path: '/static/icons/ko-fi.png' }, { name: 'slack', path: '/static/icons/slack.png' }, { name: 'teams', path: '/static/icons/teams.png' }, { name: 'skype', path: '/static/icons/skype.png' }, { name: 'google-scholar', path: '/static/icons/google-scholar.png' }, { name: 'researchgate', path: '/static/icons/researchgate.png' }, { name: 'academia-edu', path: '/static/icons/academia-edu.png' } ];
             let filteredIcons = [];
             let currentPage = 1;
             const iconsPerPage = 8;
 
             function renderIcons() {
+                if (!iconsGrid) return;
                 iconsGrid.innerHTML = '';
                 const start = (currentPage - 1) * iconsPerPage;
                 const end = start + iconsPerPage;
@@ -968,11 +1028,11 @@
                     });
                     iconsGrid.appendChild(iconElement);
                 });
-
                 updatePaginationControls();
             }
 
             function updatePaginationControls() {
+                if (!currentPageSpan || !prevIconPageBtn || !nextIconPageBtn) return;
                 const totalPages = Math.ceil(filteredIcons.length / iconsPerPage);
                 currentPageSpan.textContent = currentPage;
                 prevIconPageBtn.disabled = currentPage === 1;
@@ -980,6 +1040,7 @@
             }
 
             function filterAndRenderIcons() {
+                if (!iconSearchInput) return;
                 const searchTerm = iconSearchInput.value.toLowerCase().trim();
                 if (searchTerm === '') {
                     filteredIcons = [...allSocialIcons];
@@ -992,34 +1053,18 @@
                 renderIcons();
             }
 
-            // Função para fechar qualquer modal
             function closeModals() {
-                iconModal.classList.remove('active', 'show');
-                buttonModal.classList.remove('active', 'show');
+                if(iconModal) iconModal.classList.remove('active', 'show');
+                if(buttonModal) buttonModal.classList.remove('active', 'show');
                 document.body.classList.remove('modal-open');
-                currentModalPurpose = ''; // Resetar o propósito do modal
+                currentModalPurpose = '';
             }
 
-            // Event Listeners para Paginação e Busca
-            iconSearchInput.addEventListener('input', filterAndRenderIcons);
+            if(iconSearchInput) iconSearchInput.addEventListener('input', filterAndRenderIcons);
+            if(prevIconPageBtn) prevIconPageBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderIcons(); } });
+            if(nextIconPageBtn) nextIconPageBtn.addEventListener('click', () => { const totalPages = Math.ceil(filteredIcons.length / iconsPerPage); if (currentPage < totalPages) { currentPage++; renderIcons(); } });
 
-            prevIconPageBtn.addEventListener('click', () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderIcons();
-                }
-            });
-
-            nextIconPageBtn.addEventListener('click', () => {
-                const totalPages = Math.ceil(filteredIcons.length / iconsPerPage);
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    renderIcons();
-                }
-            });
-
-            // Abrir modal de ícones (Social)
-            addIconBtn.addEventListener('click', () => {
+            if(addIconBtn) addIconBtn.addEventListener('click', () => {
                 currentModalPurpose = 'social';
                 filterAndRenderIcons();
                 iconModal.classList.add('show');
@@ -1027,9 +1072,8 @@
                 setTimeout(() => iconModal.classList.add('active'), 50);
             });
 
-            // Abrir modal de ícones (Cartão de Visitas)
-            addCardLinkBtn.addEventListener('click', () => {
-                const currentCardLinksCount = document.querySelectorAll('.card-link-item').length;
+            if(addCardLinkBtn) addCardLinkBtn.addEventListener('click', () => {
+                const currentCardLinksCount = document.querySelectorAll('#card-links-container .card-link-item').length;
                 if (currentCardLinksCount >= 3) {
                     alert('Você pode adicionar no máximo 3 links ao cartão de visitas.');
                     return;
@@ -1041,60 +1085,31 @@
                 setTimeout(() => iconModal.classList.add('active'), 50);
             });
 
-            // Salvar ícone selecionado
-            document.getElementById('save-icon').addEventListener('click', function (event) {
+            const saveIconBtn = document.getElementById('save-icon');
+            if(saveIconBtn) saveIconBtn.addEventListener('click', function (event) {
                 event.preventDefault();
                 const selectedIcon = document.querySelector('.icon-option.selected');
                 if (selectedIcon) {
                     const iconName = selectedIcon.querySelector('p').textContent.toLowerCase().replace(/ /g, '-');
-                    const iconPath = `/static/icons/${iconName}.png`;
+                    const iconPath = `/static/icons/${iconName}.png`; 
 
+                    let targetContainer, itemClass, inputNameForCheck, itemHTML;
                     if (currentModalPurpose === 'social') {
-                        // Verificar se o ícone já existe pelo input hidden
-                        let iconExists = false;
-                        document.querySelectorAll('input[name="social_icon_name[]"]').forEach(input => {
-                            if (input.value === iconName) {
-                                iconExists = true;
-                            }
-                        });
-
-                        if (iconExists) {
-                            alert('Este ícone já foi adicionado aos links sociais!');
-                            closeModals();
-                            return;
-                        }
-
-                        const newIconField = document.createElement('div');
-                        newIconField.className = 'social-item';
-                        newIconField.innerHTML = `
+                        targetContainer = socialIconsContainer;
+                        itemClass = 'social-item';
+                        inputNameForCheck = 'social_icon_name[]';
+                        itemHTML = `
                             <i class="fas fa-grip-vertical drag-handle"></i> <img src="${iconPath}" alt="${iconName}" width="24">
                             <input type="hidden" name="social_icon_name[]" value="${escapeHtml(iconName)}">
                             <input type="text" name="social_icon_url[]"
                                         placeholder="Insira o link para ${iconName.replace(/-/g, ' ')}"
                                         class="form-input" required>
-                            <span class="remove-item"><i class="fas fa-times"></i></span>
-                        `;
-                        socialIconsContainer.appendChild(newIconField);
-                        newIconField.querySelector('input[name="social_icon_url[]"]').focus();
-
+                            <span class="remove-item"><i class="fas fa-times"></i></span>`;
                     } else if (currentModalPurpose === 'card_link') {
-                         // Verificar se o ícone já existe nos links do cartão
-                        let iconExists = false;
-                        document.querySelectorAll('input[name="card_icon_name[]"]').forEach(input => {
-                            if (input.value === iconName) {
-                                iconExists = true;
-                            }
-                        });
-
-                        if (iconExists) {
-                            alert('Este ícone já foi adicionado aos links do cartão de visitas!');
-                            closeModals();
-                            return;
-                        }
-
-                        const newLinkField = document.createElement('div');
-                        newLinkField.className = 'card-link-item';
-                        newLinkField.innerHTML = `
+                        targetContainer = cardLinksContainer;
+                        itemClass = 'card-link-item';
+                        inputNameForCheck = 'card_icon_name[]';
+                        itemHTML = `
                             <i class="fas fa-grip-vertical drag-handle"></i> <img src="${iconPath}" alt="${iconName}" width="24">
                             <input type="hidden" name="card_icon_name[]" value="${escapeHtml(iconName)}">
                             <div class="input-group">
@@ -1105,163 +1120,135 @@
                                             placeholder="@texto"
                                             class="form-input">
                             </div>
-                            <span class="remove-item"><i class="fas fa-times"></i></span>
-                        `;
-                        cardLinksContainer.appendChild(newLinkField);
-                        newLinkField.querySelector('input[name="card_icon_url[]"]').focus();
+                            <span class="remove-item"><i class="fas fa-times"></i></span>`;
+                    } else { return; }
+
+                    let iconExists = false;
+                    if(targetContainer) {
+                        targetContainer.querySelectorAll(`input[name="${inputNameForCheck}"]`).forEach(input => {
+                            if (input.value === iconName) iconExists = true;
+                        });
                     }
 
-                    // Adicionar evento de remoção para o item recém-criado
-                    document.querySelectorAll('.remove-item').forEach(item => {
-                        if (!item._hasClickListener) { // Adicionar apenas se não tiver sido adicionado antes
-                            item._hasClickListener = true;
-                            item.addEventListener('click', function () {
-                                this.closest('.social-item, .custom-button-item, .card-link-item').remove();
-                            });
-                        }
-                    });
 
+                    if (iconExists) { alert('Este ícone já foi adicionado!'); closeModals(); return; }
+
+                    const newItemField = document.createElement('div');
+                    newItemField.className = itemClass;
+                    newItemField.innerHTML = itemHTML;
+                    if(targetContainer) targetContainer.appendChild(newItemField);
+                    
+                    const firstInput = newItemField.querySelector('input[type="text"]');
+                    if (firstInput) firstInput.focus();
+
+                    newItemField.querySelector('.remove-item').addEventListener('click', function () {
+                        this.closest(`.${itemClass}`).remove();
+                    });
                     closeModals();
                 } else {
                     alert('Por favor, selecione um ícone primeiro!');
                 }
             });
 
-            // Lógica para mostrar/esconder os campos de cor e tamanho da borda
             const buttonHasBorderCheckbox = document.getElementById('button-has-border');
             const borderOptionsGroup = document.getElementById('border-options-group');
 
-            buttonHasBorderCheckbox.addEventListener('change', function() {
-                if (this.checked) {
-                    borderOptionsGroup.style.display = 'flex';
-                } else {
-                    borderOptionsGroup.style.display = 'none';
-                }
-                updateButtonPreview(); // Atualiza o preview ao mudar a borda
+            if(buttonHasBorderCheckbox) buttonHasBorderCheckbox.addEventListener('change', function() {
+                if(borderOptionsGroup) borderOptionsGroup.style.display = this.checked ? 'flex' : 'none';
+                updateButtonPreview(); 
             });
 
-            // Selecionar elementos do modal de botão para o preview
             const liveButtonPreview = document.getElementById('live-button-preview');
-            const buttonText = document.getElementById('button-text');
-            const buttonColor = document.getElementById('button-color');
-            const buttonRadius = document.getElementById('button-radius');
+            const buttonTextInput = document.getElementById('button-text'); 
+            const buttonColorInput = document.getElementById('button-color');
+            const buttonRadiusInput = document.getElementById('button-radius');
             const radiusValueSpan = document.getElementById('radius-value');
-            const buttonTextColor = document.getElementById('button-text-color');
-            const buttonTextBold = document.getElementById('button-text-bold');
-            const buttonTextItalic = document.getElementById('button-text-italic');
-            const buttonFontSize = document.getElementById('button-font-size');
-            const buttonBorderColor = document.getElementById('button-border-color');
-            const buttonBorderWidth = document.getElementById('button-border-width');
-            const buttonHasHover = document.getElementById('button-has-hover');
-            const buttonShadowType = document.getElementById('button-shadow-type'); // Novo campo de sombra
+            const buttonTextColorInput = document.getElementById('button-text-color');
+            const buttonTextBoldCheckbox = document.getElementById('button-text-bold');
+            const buttonTextItalicCheckbox = document.getElementById('button-text-italic');
+            const buttonFontSizeInput = document.getElementById('button-font-size');
+            const buttonBorderColorInput = document.getElementById('button-border-color');
+            const buttonBorderWidthInput = document.getElementById('button-border-width');
+            const buttonHasHoverCheckbox = document.getElementById('button-has-hover');
+            const buttonShadowTypeSelect = document.getElementById('button-shadow-type'); 
 
-            // Função para atualizar o preview do botão
             function updateButtonPreview() {
-                liveButtonPreview.textContent = buttonText.value || 'Texto do Botão';
-                liveButtonPreview.style.backgroundColor = buttonColor.value;
-                liveButtonPreview.style.borderRadius = `${buttonRadius.value}px`;
-                radiusValueSpan.textContent = `${buttonRadius.value}px`;
-                liveButtonPreview.style.color = buttonTextColor.value;
-                liveButtonPreview.style.fontWeight = buttonTextBold.checked ? 'bold' : 'normal';
-                liveButtonPreview.style.fontStyle = buttonTextItalic.checked ? 'italic' : 'normal';
-                liveButtonPreview.style.fontSize = `${buttonFontSize.value}px`;
+                if (!liveButtonPreview || !buttonTextInput || !buttonColorInput || !buttonRadiusInput || !radiusValueSpan || !buttonTextColorInput || !buttonTextBoldCheckbox || !buttonTextItalicCheckbox || !buttonFontSizeInput || !buttonHasBorderCheckbox || !buttonBorderColorInput || !buttonBorderWidthInput || !buttonHasHoverCheckbox || !buttonShadowTypeSelect) return;
 
-                // Lógica da Borda
+                liveButtonPreview.textContent = buttonTextInput.value || 'Texto do Botão';
+                liveButtonPreview.style.backgroundColor = buttonColorInput.value;
+                liveButtonPreview.style.borderRadius = `${buttonRadiusInput.value}px`;
+                radiusValueSpan.textContent = `${buttonRadiusInput.value}px`;
+                liveButtonPreview.style.color = buttonTextColorInput.value;
+                liveButtonPreview.style.fontWeight = buttonTextBoldCheckbox.checked ? 'bold' : 'normal';
+                liveButtonPreview.style.fontStyle = buttonTextItalicCheckbox.checked ? 'italic' : 'normal';
+                liveButtonPreview.style.fontSize = `${buttonFontSizeInput.value}px`;
+
                 if (buttonHasBorderCheckbox.checked) {
-                    liveButtonPreview.style.border = `${buttonBorderWidth.value}px solid ${buttonBorderColor.value}`;
+                    liveButtonPreview.style.border = `${buttonBorderWidthInput.value}px solid ${buttonBorderColorInput.value}`;
                 } else {
                     liveButtonPreview.style.border = 'none';
                 }
 
-                // Lógica da Sombra
-                // Remove todas as classes de sombra existentes
-                ['shadow-soft', 'shadow-medium', 'shadow-hard', 'shadow-inset'].forEach(cls => {
-                    liveButtonPreview.classList.remove(cls);
-                });
-                // Adiciona a classe de sombra selecionada
-                if (buttonShadowType.value !== 'none') {
-                    liveButtonPreview.classList.add(`shadow-${buttonShadowType.value}`);
+                ['shadow-soft', 'shadow-medium', 'shadow-hard', 'shadow-inset'].forEach(cls => liveButtonPreview.classList.remove(cls));
+                if (buttonShadowTypeSelect.value !== 'none') {
+                    liveButtonPreview.classList.add(`shadow-${buttonShadowTypeSelect.value}`);
                 }
-
-                // Lógica do Hover (adiciona uma classe para o CSS)
-                if (buttonHasHover.checked) {
-                    liveButtonPreview.classList.add('hover-effect-preview'); // Esta classe já existe e aplica o efeito no CSS
-                } else {
-                    liveButtonPreview.classList.remove('hover-effect-preview');
-                }
+                liveButtonPreview.classList.toggle('hover-effect-preview', buttonHasHoverCheckbox.checked);
             }
-
-            // Adicionar event listeners para atualizar o preview
-            buttonText.addEventListener('input', updateButtonPreview);
-            buttonColor.addEventListener('input', updateButtonPreview);
-            buttonRadius.addEventListener('input', updateButtonPreview);
-            buttonTextColor.addEventListener('input', updateButtonPreview);
-            buttonTextBold.addEventListener('change', updateButtonPreview);
-            buttonTextItalic.addEventListener('change', updateButtonPreview);
-            buttonFontSize.addEventListener('input', updateButtonPreview);
-            buttonBorderColor.addEventListener('input', updateButtonPreview);
-            buttonBorderWidth.addEventListener('input', updateButtonPreview);
-            buttonHasHover.addEventListener('change', updateButtonPreview);
-            buttonShadowType.addEventListener('change', updateButtonPreview); // Event listener para o novo campo de sombra
-
-            // Abrir modal de botões
-            addButtonBtn.addEventListener('click', () => {
-                // Resetar valores do modal ao abrir para um novo botão
-                buttonText.value = '';
-                document.getElementById('button-link').value = '';
-                buttonColor.value = '#4CAF50';
-                buttonRadius.value = '10';
-                radiusValueSpan.textContent = '10px';
-                buttonTextColor.value = '#FFFFFF';
-                buttonTextBold.checked = false;
-                buttonTextItalic.checked = false;
-                buttonFontSize.value = '16';
-                buttonHasBorderCheckbox.checked = false;
-                borderOptionsGroup.style.display = 'none';
-                buttonBorderColor.value = '#000000';
-                buttonBorderWidth.value = '2';
-                buttonHasHover.checked = false;
-                buttonShadowType.value = 'none'; // Reseta o tipo de sombra
-
-                updateButtonPreview(); // Atualiza o preview com os valores resetados
-
-                buttonModal.classList.add('show');
-                document.body.classList.add('modal-open');
-                setTimeout(() => buttonModal.classList.add('active'), 50);
+            
+            [buttonTextInput, buttonColorInput, buttonRadiusInput, buttonTextColorInput, buttonTextBoldCheckbox, buttonTextItalicCheckbox, buttonFontSizeInput, buttonBorderColorInput, buttonBorderWidthInput, buttonHasHoverCheckbox, buttonShadowTypeSelect].forEach(el => {
+                if (el) el.addEventListener(el.type === 'checkbox' || el.type === 'select-one' ? 'change' : 'input', updateButtonPreview);
             });
 
-            // Salvar botão personalizado
-            document.getElementById('save-button').addEventListener('click', function (event) {
-                event.preventDefault();
-                const btnText = buttonText.value; // Usar a variável do input para garantir o valor atual
-                const btnLink = document.getElementById('button-link').value; // Pegar do input de link
-                const btnColor = buttonColor.value;
-                const btnRadius = buttonRadius.value;
-                const btnTextColor = buttonTextColor.value;
-                const btnTextBold = buttonTextBold.checked;
-                const btnTextItalic = buttonTextItalic.checked;
-                const btnFontSize = buttonFontSize.value;
-                const btnHasBorder = buttonHasBorderCheckbox.checked;
-                const btnBorderColor = buttonBorderColor.value;
-                const btnBorderWidth = buttonBorderWidth.value;
-                const btnHasHover = buttonHasHover.checked;
-                const btnShadowType = buttonShadowType.value; // Novo valor da sombra
 
+            if(addButtonBtn) addButtonBtn.addEventListener('click', () => {
+                if(buttonTextInput) buttonTextInput.value = '';
+                const buttonLinkInput = document.getElementById('button-link');
+                if(buttonLinkInput) buttonLinkInput.value = '';
+                if(buttonColorInput) buttonColorInput.value = '#4CAF50';
+                if(buttonRadiusInput) buttonRadiusInput.value = '10';
+                if(radiusValueSpan) radiusValueSpan.textContent = '10px';
+                if(buttonTextColorInput) buttonTextColorInput.value = '#FFFFFF';
+                if(buttonTextBoldCheckbox) buttonTextBoldCheckbox.checked = false;
+                if(buttonTextItalicCheckbox) buttonTextItalicCheckbox.checked = false;
+                if(buttonFontSizeInput) buttonFontSizeInput.value = '16';
+                if(buttonHasBorderCheckbox) buttonHasBorderCheckbox.checked = false;
+                if(borderOptionsGroup) borderOptionsGroup.style.display = 'none';
+                if(buttonBorderColorInput) buttonBorderColorInput.value = '#000000';
+                if(buttonBorderWidthInput) buttonBorderWidthInput.value = '2';
+                if(buttonHasHoverCheckbox) buttonHasHoverCheckbox.checked = false;
+                if(buttonShadowTypeSelect) buttonShadowTypeSelect.value = 'none'; 
+                updateButtonPreview(); 
+
+                if(buttonModal) {
+                    buttonModal.classList.add('show');
+                    document.body.classList.add('modal-open');
+                    setTimeout(() => buttonModal.classList.add('active'), 50);
+                }
+            });
+            
+            const saveButtonBtn = document.getElementById('save-button');
+            if(saveButtonBtn) saveButtonBtn.addEventListener('click', function (event) {
+                event.preventDefault();
+                const btnText = buttonTextInput.value; 
+                const btnLink = document.getElementById('button-link').value; 
+                
                 if (btnText && btnLink) {
                     const newButtonData = {
                         text: btnText,
                         link: btnLink,
-                        color: btnColor,
-                        radius: btnRadius,
-                        textColor: btnTextColor,
-                        bold: btnTextBold,
-                        italic: btnTextItalic,
-                        fontSize: btnFontSize,
-                        hasBorder: btnHasBorder,
-                        borderColor: btnBorderColor,
-                        borderWidth: btnBorderWidth,
-                        hasHoverEffect: btnHasHover,
-                        shadowType: btnShadowType // Adiciona a propriedade de sombra
+                        color: buttonColorInput.value,
+                        radius: buttonRadiusInput.value,
+                        textColor: buttonTextColorInput.value,
+                        bold: buttonTextBoldCheckbox.checked,
+                        italic: buttonTextItalicCheckbox.checked,
+                        fontSize: buttonFontSizeInput.value,
+                        hasBorder: buttonHasBorderCheckbox.checked,
+                        borderColor: buttonBorderColorInput.value,
+                        borderWidth: buttonBorderWidthInput.value,
+                        hasHoverEffect: buttonHasHoverCheckbox.checked,
+                        shadowType: buttonShadowTypeSelect.value 
                     };
                     
                     renderCustomButton(newButtonData);
@@ -1271,65 +1258,41 @@
                 }
             });
 
-            // Fechar modal ao clicar nos botões de fechar (x)
-            iconModalCloseBtn.addEventListener('click', closeModals);
-            buttonModalCloseBtn.addEventListener('click', closeModals);
+            if(iconModalCloseBtn) iconModalCloseBtn.addEventListener('click', closeModals);
+            if(buttonModalCloseBtn) buttonModalCloseBtn.addEventListener('click', closeModals);
 
-            // Fechar modal ao clicar fora da área do conteúdo do modal
             window.addEventListener('click', function (event) {
                 if (event.target === iconModal || event.target === buttonModal) {
                     closeModals();
                 }
             });
 
-            // Adicionar eventos de remoção para os botões existentes
             document.querySelectorAll('.social-item .remove-item, .custom-button-item .remove-item, .card-link-item .remove-item').forEach(item => {
                 item.addEventListener('click', function() {
                     this.closest('.social-item, .custom-button-item, .card-link-item').remove();
                 });
             });
 
-            // Lógica para o background do cartão (seleção de cor/imagem)
             const cardBgTypeRadios = document.querySelectorAll('input[name="card_background_type"]');
             const cardBgColorPicker = document.getElementById('card_background_color_picker');
             const cardBgImageUploadSection = document.getElementById('card_background_image_upload_section');
-            const cardBgValueHiddenInput = document.getElementById('card_background_value_hidden');
 
             function updateCardBackgroundVisibility() {
-                const selectedType = document.querySelector('input[name="card_background_type"]:checked').value;
-                if (selectedType === 'color') {
-                    cardBgColorPicker.style.display = 'inline-block';
-                    cardBgImageUploadSection.style.display = 'none';
-                    cardBgValueHiddenInput.value = cardBgColorPicker.value; // Atualiza o hidden input com a cor
-                } else {
-                    cardBgColorPicker.style.display = 'none';
-                    cardBgImageUploadSection.style.display = 'block';
-                    // O valor da imagem será preenchido pelo upload_to_supabase no backend
-                    // Se não houver imagem, o hidden input pode ficar vazio ou ter um valor default de cor para não quebrar
-                    // Para o caso de transição de cor para imagem, se nenhuma imagem for enviada, o backend deve tratar
-                }
+                if (!cardBgColorPicker || !cardBgImageUploadSection) return;
+                const selectedTypeRadio = document.querySelector('input[name="card_background_type"]:checked');
+                if (!selectedTypeRadio) return; 
+                const selectedType = selectedTypeRadio.value;
+
+                cardBgColorPicker.style.display = selectedType === 'color' ? 'inline-block' : 'none';
+                cardBgImageUploadSection.style.display = selectedType === 'image' ? 'block' : 'none';
             }
 
             cardBgTypeRadios.forEach(radio => {
                 radio.addEventListener('change', updateCardBackgroundVisibility);
             });
+            updateCardBackgroundVisibility(); 
 
-            cardBgColorPicker.addEventListener('input', () => {
-                cardBgValueHiddenInput.value = cardBgColorPicker.value; // Atualiza o hidden input ao mudar a cor
-            });
-
-            // Inicializar a visibilidade correta ao carregar a página
-            updateCardBackgroundVisibility();
-
-            // Certifica-se de que o input hidden de background do cartão tem o valor correto ao carregar a página
-            // se o background atual for uma cor. Se for imagem, o valor será o URL
-            {% if dados.card_background_type == 'color' %}
-                cardBgValueHiddenInput.value = "{{ dados.card_background_value }}";
-            {% elif dados.card_background_type == 'image' %}
-                cardBgValueHiddenInput.value = "{{ dados.card_background_value }}";
-            {% endif %}
-
-        }); // FIM DO DOMContentLoaded
+        }); 
     </script>
     <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
     <a href="/{{ dados.profile }}" target="_blank" class="preview-float-btn">

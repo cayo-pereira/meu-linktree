@@ -9,10 +9,51 @@
     <meta http-equiv="Expires" content="0">
     <title>{{ dados.nome if dados.nome else 'Perfil' }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <style>
+        /* Estilos dinâmicos podem ser injetados aqui pelo Flask se necessário,
+           mas tentaremos aplicar inline para os elementos específicos. */
 
+        /* NOVAS ANIMAÇÕES PARA AS SETAS DO SWIPER */
+        @keyframes subtle-bounce-right {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(4px); } /* Movimento sutil para a direita */
+        }
+
+        @keyframes subtle-bounce-left {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-4px); } /* Movimento sutil para a esquerda */
+        }
+
+        /* Aplica a animação ao pseudo-elemento ::after que contém o ícone da seta */
+        .swiper-button-next.swiper-arrow-animated::after {
+            animation: subtle-bounce-right 0.8s ease-in-out infinite;
+        }
+
+        .swiper-button-prev.swiper-arrow-animated::after {
+            animation: subtle-bounce-left 0.8s ease-in-out infinite;
+        }
+
+        /* Garante que a animação não rode se a seta estiver explicitamente desabilitada pelo Swiper */
+        .swiper-button-disabled.swiper-arrow-animated::after {
+            animation: none !important;
+        }
+
+        /* Estilo opcional para as setas se quiser customizar além do padrão do Swiper */
+        /* .swiper-button-prev::after, 
+        .swiper-button-next::after {
+            font-size: 24px; // Exemplo de tamanho
+            color: white;    // Exemplo de cor
+        }
+        */
+    </style>
 </head>
 {% if session.logado and session.profile == dados.profile %}
 <div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
@@ -35,16 +76,20 @@
                         alt="Foto de perfil" class="profile-pic">
                     {% endif %}
 
-                    <h1>{{ dados.nome if dados.nome else 'Usuário' }}</h1>
+                    <h1 style="font-family: {{ dados.nome_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.nome_color | default('#333333', true) }};">
+                        {{ dados.nome if dados.nome else 'Usuário' }}
+                    </h1>
 
                     {% if dados.bio %}
-                    <p class="bio">{{ dados.bio }}</p>
+                    <p class="bio" style="font-family: {{ dados.bio_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.bio_color | default('#555555', true) }};">
+                        {{ dados.bio }}
+                    </p>
                     {% endif %}
 
                     <div class="social-icons">
                         {% for link in dados.social_links %}
-                        <a href="{{ link.url }}" target="_blank" title="{{ link.icon }}">
-                            <img src="/static/icons/{{ link.icon }}.png" class="icon">
+                        <a href="{{ link.url }}" target="_blank" title="{{ link.icon | replace('-', ' ') | title }}">
+                            <img src="/static/icons/{{ link.icon }}.png" class="icon" alt="{{ link.icon | replace('-', ' ') | title }}">
                         </a>
                         {% endfor %}
                     </div>
@@ -75,26 +120,32 @@
 
             <div class="swiper-slide card-page-slide">
                 <div class="card-container"
-                    style="{% if dados.card_background_type == 'color' %}background-color: {{ dados.card_background_value }};{% elif dados.card_background_type == 'image' and dados.card_background_value %}background-image: url('{{ dados.card_background_value }}'); background-size: cover; background-position: center;{% endif %}">
+                    style="{% if dados.card_background_type == 'color' %}background-color: {{ dados.card_background_value }};{% elif dados.card_background_type == 'image' and dados.card_background_value %}background-image: url('{{ dados.card_background_value if dados.card_background_value.startswith('http') else url_for('static', filename=dados.card_background_value) }}'); background-size: cover; background-position: center;{% else %}background-color: #4361ee;{% endif %}">
                     <div class="card-content">
                         <div class="card-header-info">
-                            <h2>{{ dados.card_nome if dados.card_nome else dados.nome }}</h2>
+                            <h2 style="font-family: {{ dados.card_nome_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.card_nome_color | default('#FFFFFF', true) }};">
+                                {{ dados.card_nome if dados.card_nome else dados.nome }}
+                            </h2>
                             {% if dados.card_titulo %}
-                            <p class="card-title">{{ dados.card_titulo }}</p>
+                            <p class="card-title" style="font-family: {{ dados.card_titulo_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.card_titulo_color | default('#EEEEEE', true) }};">
+                                {{ dados.card_titulo }}
+                            </p>
                             {% endif %}
                             {% if dados.card_registro_profissional %}
-                            <p class="card-registration">{{ dados.card_registro_profissional }}</p>
+                            <p class="card-registration" style="font-family: {{ dados.card_registro_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.card_registro_color | default('#BBBBBB', true) }};">
+                                {{ dados.card_registro_profissional }}
+                            </p>
                             {% endif %}
                         </div>
 
-                        <div class="card-links-and-button"> {# NOVO CONTAINER FLEX #}
+                        <div class="card-links-and-button"> 
                             <div class="card-links">
                                 {% for link in dados.card_links %}
-                                <a href="{{ link.url }}" target="_blank" class="card-link-item"
-                                    title="{{ link.at_text if link.at_text else link.icon }}">
-                                    <img src="/static/icons/{{ link.icon }}.png" class="card-icon">
+                                <a href="{{ link.url if link.url else '#' }}" target="_blank" class="card-link-item"
+                                    title="{{ link.at_text if link.at_text else (link.icon | replace('-', ' ') | title) }}">
+                                    <img src="/static/icons/{{ link.icon }}.png" class="card-icon" alt="{{ link.icon | replace('-', ' ') | title }}">
                                     {% if link.at_text %}
-                                    <span class="card-link-text">{{ link.at_text }}</span>
+                                    <span class="card-link-text" style="color: {{ dados.card_link_text_color | default('#FFFFFF', true) }};">{{ link.at_text }}</span>
                                     {% endif %}
                                 </a>
                                 {% endfor %}
@@ -103,7 +154,7 @@
                             <button class="add-to-contacts-btn" onclick="addToContacts()">
                                 <i class="fas fa-address-book"></i> Salvar Contato
                             </button>
-                        </div> {# FECHA NOVO CONTAINER FLEX #}
+                        </div> 
 
                     </div>
                 </div>
@@ -115,18 +166,15 @@
         <div class="swiper-button-prev"></div>
         <div class="swiper-button-next"></div>
 
-        <div class="swiper-scrollbar"></div>
     </div>
 
     <script>
-        // Efeito de carregamento suave
         document.body.style.opacity = 0;
         window.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
                 document.body.style.opacity = 1;
             }, 100);
 
-            // --- INÍCIO: NOVA LÓGICA DE ROLAGEM MODIFICADA ---
             const userPageSlide = document.querySelector('.user-page-slide');
 
             if (userPageSlide) {
@@ -135,67 +183,57 @@
                     const scrollHeight = el.scrollHeight;
                     const clientHeight = el.clientHeight;
                     const scrollTop = el.scrollTop;
-                    const deltaY = event.deltaY; // deltaY < 0 é para cima, > 0 é para baixo
+                    const deltaY = event.deltaY; 
 
-                    // Se não houver nada para rolar internamente no userPageSlide,
-                    // deixamos o comportamento padrão do Swiper (que pode incluir navegação por wheel,
-                    // dependendo da configuração global do Swiper).
-                    // Se você NÃO QUER que o Swiper reaja ao mousewheel MESMO AQUI,
-                    // você precisaria desabilitar o mousewheel na configuração do Swiper ou
-                    // adicionar um event.preventDefault() aqui também.
-                    // Mas, para o seu pedido focado no conteúdo rolável, manteremos assim:
                     if (scrollHeight <= clientHeight) {
-                        // Opcional: se quiser bloquear o Swiper via wheel mesmo quando não há scroll interno
-                        // E este userPageSlide é o foco, descomente as duas linhas abaixo:
-                        // event.preventDefault();
-                        // event.stopPropagation();
-                        return; // Deixa o Swiper (ou o navegador) lidar com o evento
+                        return; 
                     }
 
                     const atTop = scrollTop === 0;
-                    // Verifica se está na base (com uma pequena tolerância)
-                    const atBottom = scrollTop >= (scrollHeight - clientHeight - 1);
+                    const atBottom = scrollTop >= (scrollHeight - clientHeight - 1); 
 
-                    // Se está rolando para CIMA e JÁ ESTÁ NO TOPO do conteúdo interno
-                    if (deltaY < 0 && atTop) {
-                        // Impedimos o Swiper de mudar de slide via mousewheel.
-                        // O usuário terá que arrastar.
+                    if ((deltaY < 0 && atTop) || (deltaY > 0 && atBottom)) {
+                        return;
+                    } else {
                         event.preventDefault();
-                        event.stopPropagation();
-                        return; // Não há mais para onde rolar internamente para cima.
+                        el.scrollTop += deltaY; 
                     }
-
-                    // Se está rolando para BAIXO e JÁ ESTÁ NA BASE do conteúdo interno
-                    if (deltaY > 0 && atBottom) {
-                        // Impedimos o Swiper de mudar de slide via mousewheel.
-                        // O usuário terá que arrastar.
-                        event.preventDefault();
-                        event.stopPropagation();
-                        return; // Não há mais para onde rolar internamente para baixo.
-                    }
-
-                    // Se chegou até aqui, significa que a rolagem DEVE acontecer DENTRO do slide.
-                    // Então, impedimos o comportamento padrão (Swiper e outros)
-                    event.preventDefault();
-                    event.stopPropagation();
-
-                    // E aplicamos a rolagem manualmente
-                    el.scrollTop += deltaY;
-
-                }, { passive: false }); // 'passive: false' é essencial aqui
+                }, { passive: false }); 
             }
-            // --- FIM: NOVA LÓGICA DE ROLAGEM MODIFICADA ---
+            
+            // Função para aplicar/remover classes de animação das setas
+            function applyArrowAnimation(swiperInstance) {
+                const prevEl = swiperInstance.navigation.prevEl;
+                const nextEl = swiperInstance.navigation.nextEl;
 
-            // Inicializar Swiper.js (mantém a configuração original)
+                if (!prevEl || !nextEl) {
+                    return; // Sai se os elementos das setas não estiverem prontos/configurados
+                }
+
+                // Limpa animações anteriores de ambas as setas
+                prevEl.classList.remove('swiper-arrow-animated');
+                nextEl.classList.remove('swiper-arrow-animated');
+
+                // Anima a seta 'next' se não estivermos no último slide
+                if (!swiperInstance.isEnd) {
+                    nextEl.classList.add('swiper-arrow-animated');
+                }
+
+                // Anima a seta 'prev' se não estivermos no primeiro slide
+                if (!swiperInstance.isBeginning) {
+                    prevEl.classList.add('swiper-arrow-animated');
+                }
+            }
+
             const swiper = new Swiper('.swiper-container', {
                 effect: 'creative',
                 creativeEffect: {
                     prev: {
-                        shadow: true,
+                        shadow: false, 
                         translate: ['-120%', 0, -500],
                     },
                     next: {
-                        shadow: true,
+                        shadow: false, 
                         translate: ['120%', 0, -500],
                     },
                 },
@@ -210,41 +248,72 @@
                 },
                 loop: false,
                 simulateTouch: true,
-                mousewheel: {
-                    enabled: true,
-                    releaseOnEdges: true,
-                },
+                mousewheel: false, 
+                observer: true, 
+                observeParents: true,
+                // NOVO: Eventos para controlar a animação das setas
+                on: {
+                    init: function () {
+                        applyArrowAnimation(this);
+                    },
+                    slideChangeTransitionEnd: function () {
+                        applyArrowAnimation(this);
+                    }
+                    // As classes swiper-button-disabled que o Swiper adiciona
+                    // automaticamente quando loop:false já ajudarão a parar a animação
+                    // visualmente (por causa do CSS .swiper-button-disabled.swiper-arrow-animated::after)
+                }
             });
         });
 
         function addToContacts() {
-            const vCardData = `BEGIN:VCARD
+            const sanitizeVCardString = (str) => {
+                if (typeof str !== 'string') return '';
+                return str.replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+            };
+
+            const cardNome = sanitizeVCardString("{{ dados.card_nome if dados.card_nome else dados.nome }}");
+            const cardTitulo = sanitizeVCardString("{{ dados.card_titulo }}");
+            const cardRegistro = sanitizeVCardString("{{ dados.card_registro_profissional }}");
+            const email = sanitizeVCardString("{{ dados.email }}");
+            
+            let vCardData = `BEGIN:VCARD
 VERSION:3.0
-N:{{ dados.card_nome if dados.card_nome else dados.nome }};;;;
-FN:{{ dados.card_nome if dados.card_nome else dados.nome }}
-{% if dados.card_titulo %}TITLE:{{ dados.card_titulo }}{% endif %}
-{% if dados.card_registro_profissional %}ORG:{{ dados.card_registro_profissional }}{% endif %}
-{% if dados.email %}EMAIL;TYPE=internet,pref:{{ dados.email }}{% endif %}
-{% for link in dados.card_links %}
-{% if link.url %}URL;TYPE={{ link.icon }}:{{ link.url }}{% endif %}
-{% endfor %}
-END:VCARD`;
+N:${cardNome};;;;
+FN:${cardNome}`;
+            if (cardTitulo) vCardData += `\nTITLE:${cardTitulo}`;
+            if (cardRegistro) vCardData += `\nORG:${cardRegistro}`; 
+            if (email) vCardData += `\nEMAIL;TYPE=INTERNET,PREF:${email}`;
+            
+            {% for link in dados.card_links %}
+                {% if link.url and link.url.startswith('tel:') %}
+            vCardData += `\nTEL;TYPE=CELL:${sanitizeVCardString(link.url.replace('tel:', ''))}`;
+                {% elif link.url and link.url.startswith('mailto:') %}
+            vCardData += `\nEMAIL;TYPE=INTERNET:${sanitizeVCardString(link.url.replace('mailto:', ''))}`;
+                {% elif link.url %}
+            vCardData += `\nURL;TYPE={{ link.icon | replace('-', ' ') | title | replace(' ', '') }}:${sanitizeVCardString(link.url)}`; 
+                {% endif %}
+                {% if link.at_text and not link.url %} 
+            vCardData += `\nNOTE:{{ link.icon | replace('-', ' ') | title }}: ${sanitizeVCardString(link.at_text)}`;
+                {% elif link.at_text and link.url %} 
+            vCardData += `\nNOTE:{{ link.icon | replace('-', ' ') | title }} Handle: ${sanitizeVCardString(link.at_text)}`;
+                {% endif %}
+            {% endfor %}
 
-            const blob = new Blob([vCardData], { type: 'text/vcard' });
+            vCardData += `\nEND:VCARD`;
+
+            const blob = new Blob([vCardData], { type: 'text/vcard;charset=utf-8' });
             const url = URL.createObjectURL(blob);
-
             const a = document.createElement('a');
             a.href = url;
-            a.download = 'contato_{{ dados.profile }}.vcf';
+            const profileName = "{{ dados.profile | default('contato', true) }}".replace(/[^a-z0-9_\-]/ig, '_');
+            a.download = `contato_${profileName}.vcf`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         }
     </script>
-</body>
-
-</html>
 </body>
 
 </html>

@@ -9,10 +9,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
     <style>
-        /* Estilos específicos para o callback.html para garantir consistência com o tema branco e azul */
         body {
             font-family: 'Inter', sans-serif;
-            /* Usar variáveis para background e cor do texto */
             background-color: var(--bg-color-light); 
             color: var(--text-color-light); 
             display: flex;
@@ -23,9 +21,7 @@
             padding: 20px;
             text-align: center;
         }
-        
         .loading-container {
-            /* Usar variáveis para background e sombra */
             background: var(--card-bg-light); 
             border-radius: var(--border-radius); 
             border: 1px solid var(--border-color-light); 
@@ -35,93 +31,19 @@
             box-shadow: var(--shadow-light); 
             transition: all 0.3s ease; 
         }
-        
-        .logo {
-            font-size: 1.8rem;
-            font-weight: 600;
-            /* Usar variável para a cor do logo */
-            color: var(--text-color-light); 
-            margin-bottom: 10px;
-        }
-        
-        .logo span {
-            color: var(--primary-color); 
-        }
-        
-        .loading-icon {
-            font-size: 2.5rem;
-            color: var(--primary-color); 
-            margin: 20px 0;
-            animation: spin 1.5s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        h1 {
-            /* Usar variável para a cor do título */
-            color: var(--text-color-light); 
-            margin-bottom: 15px;
-            font-weight: 500;
-            font-size: 1.5rem;
-        }
-        
-        p {
-            /* Usar variável para a cor do parágrafo */
-            color: var(--text-color-light); 
-            margin-bottom: 25px;
-            line-height: 1.6;
-        }
-        
-        .progress-container {
-            width: 100%;
-            height: 6px;
-            /* Usar variável para o background da barra de progresso */
-            background-color: var(--input-bg-light); 
-            border-radius: 3px;
-            margin: 25px 0;
-            overflow: hidden;
-        }
-        
-        .progress-bar {
-            height: 100%;
-            width: 0%;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); 
-            animation: progress 2.5s ease-in-out infinite;
-            border-radius: 3px;
-        }
-        
-        @keyframes progress {
-            0% { width: 0%; margin-left: 0%; }
-            50% { width: 100%; margin-left: 0%; }
-            100% { width: 0%; margin-left: 100%; }
-        }
-        
-        .btn {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 20px;
-            background-color: var(--primary-color); 
-            color: white;
-            text-decoration: none;
-            border-radius: var(--border-radius); 
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .btn:hover {
-            background-color: var(--secondary-color); 
-            transform: translateY(-2px);
-        }
-        
-        .debug-info {
-            font-size: 0.8rem;
-            /* Usar variável para a cor do texto de debug */
-            color: var(--text-color-light); 
-            margin-top: 30px;
-        }
+        .logo { font-size: 1.8rem; font-weight: 600; color: var(--text-color-light); margin-bottom: 10px; }
+        .logo span { color: var(--primary-color); }
+        .loading-icon { font-size: 2.5rem; color: var(--primary-color); margin: 20px 0; animation: spin 1.5s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        h1 { color: var(--text-color-light); margin-bottom: 15px; font-weight: 500; font-size: 1.5rem; }
+        p { color: var(--text-color-light); margin-bottom: 25px; line-height: 1.6; }
+        .progress-container { width: 100%; height: 6px; background-color: var(--input-bg-light); border-radius: 3px; margin: 25px 0; overflow: hidden; }
+        .progress-bar { height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); animation: progress 2.5s ease-in-out infinite; border-radius: 3px; }
+        @keyframes progress { 0% { width: 0%; margin-left: 0%; } 50% { width: 100%; margin-left: 0%; } 100% { width: 0%; margin-left: 100%; } }
+        .btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: var(--border-radius); font-weight: 500; transition: all 0.3s ease; }
+        .btn:hover { background-color: var(--secondary-color); transform: translateY(-2px); }
+        .debug-info { font-size: 0.8rem; color: var(--text-color-light); margin-top: 30px; }
+        #debug-log { margin-top: 15px; font-size: 0.7rem; text-align: left; max-height: 100px; overflow-y: auto; background: #eee; padding: 5px; border-radius: 3px; color: #333;}
     </style>
 </head>
 <body>
@@ -132,71 +54,144 @@
         </div>
         <h1>Quase lá!</h1>
         <p>Estamos preparando seu painel administrativo</p>
-        
         <div class="progress-container">
             <div class="progress-bar"></div>
         </div>
-        
-        <a href="/" class="btn">
+        <a href="{{ url_for('index') }}" class="btn">
             <i class="fas fa-home"></i> Voltar ao início
         </a>
-        
         <div class="debug-info">
-            Se o redirecionamento não funcionar automaticamente, clique no botão acima
+            Se o redirecionamento não funcionar automaticamente, clique no botão acima.
+            <div id="debug-log" style="background-color: var(--input-bg-light); color: var(--text-color-light); border: 1px solid var(--border-color-light);"></div>
         </div>
     </div>
 
     <script>
-        // Função para extrair e processar o token
-        function extractToken() {
-            const hash = window.location.hash.substring(1);
-            const params = new URLSearchParams(hash);
-            const token = params.get('access_token');
-            
-            console.log("Iniciando processamento do login...");
-            
-            if (token) {
-                fetch('/callback', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ access_token: token }),
-                    credentials: 'include'
-                })
-                .then(response => {
-                    if (!response.ok) throw new Error('Erro na resposta do servidor');
-                    return response.json();
-                })
-                .then(data => {
-                    if (data.redirect) {
-                        console.log("Redirecionando para:", data.redirect);
-                        window.location.href = data.redirect;
-                    } else {
-                        throw new Error("Resposta inesperada do servidor");
-                    }
-                })
-                .catch(error => {
-                    console.error("Erro:", error);
-                    window.location.href = '/?error=auth_failed';
-                });
-            } else {
-                console.error("Token não encontrado na URL");
-                window.location.href = '/?error=no_token';
+        const debugLogEl = document.getElementById('debug-log');
+        function logToPage(message) {
+            if(debugLogEl) {
+                const p = document.createElement('p');
+                p.textContent = message;
+                p.style.margin = '2px 0';
+                p.style.borderBottom = '1px solid var(--border-color-light)';
+                p.style.paddingBottom = '2px';
+                debugLogEl.appendChild(p);
             }
+            console.log(message); // Log to console as well
         }
-        
-        // Inicia o processo quando a página carrega
+
+        function getHashParams() {
+            const hashParams = {};
+            const r = /([^&;=]+)=?([^&;]*)/g; 
+            const q = window.location.hash.substring(1); 
+            let e;
+            while (e = r.exec(q)) {
+                hashParams[e[1]] = decodeURIComponent(e[2]);
+            }
+            return hashParams;
+        }
+
+        function getQueryParams() {
+            const queryParams = {};
+            const r = /[?&]+([^=&]+)=([^&]*)/g;
+            const q = window.location.search;
+            let e;
+            while (e = r.exec(q)) {
+                queryParams[decodeURIComponent(e[1])] = decodeURIComponent(e[2]);
+            }
+            return queryParams;
+        }
+
         window.onload = function() {
-            console.log("Hash da URL:", window.location.hash);
-            extractToken();
-            
-            // Fallback caso algo dê errado
-            setTimeout(() => {
-                if (!window.location.href.includes('/admin')) {
-                    window.location.href = '/?error=timeout';
+            logToPage("Página callback.html carregada.");
+            logToPage("URL Completa: " + window.location.href);
+            logToPage("Hash da URL: " + window.location.hash);
+            logToPage("Query String: " + window.location.search);
+
+            const hashData = getHashParams();
+            const queryData = getQueryParams();
+
+            const accessToken = hashData.access_token;
+            const refreshToken = hashData.refresh_token;
+            const authCode = queryData.code; // Get 'code' from query string
+            const errorFromHash = hashData.error;
+            const errorDescriptionFromHash = hashData.error_description;
+            const errorFromQuery = queryData.error;
+            const errorDescriptionFromQuery = queryData.error_description;
+
+            logToPage("Dados do Hash: " + JSON.stringify(hashData));
+            logToPage("Dados da Query String: " + JSON.stringify(queryData));
+
+            if (errorFromHash) {
+                logToPage("Erro no hash: " + errorFromHash + (errorDescriptionFromHash ? " - " + errorDescriptionFromHash : ""));
+                window.location.href = "{{ url_for('index') }}?error=" + encodeURIComponent(errorFromHash) + (errorDescriptionFromHash ? "&error_description=" + encodeURIComponent(errorDescriptionFromHash) : "");
+                return;
+            }
+            if (errorFromQuery) {
+                logToPage("Erro na query string: " + errorFromQuery + (errorDescriptionFromQuery ? " - " + errorDescriptionFromQuery : ""));
+                window.location.href = "{{ url_for('index') }}?error=" + encodeURIComponent(errorFromQuery) + (errorDescriptionFromQuery ? "&error_description=" + encodeURIComponent(errorDescriptionFromQuery) : "");
+                return;
+            }
+
+            let payload = {};
+            let authMethod = "";
+
+            if (accessToken) {
+                authMethod = "tokens";
+                payload = {
+                    access_token: accessToken,
+                    refresh_token: refreshToken 
+                };
+                logToPage("Access Token encontrado no hash. Usando método de tokens.");
+            } else if (authCode) {
+                authMethod = "code";
+                payload = {
+                    auth_code: authCode
+                };
+                logToPage("Código de autorização ('code') encontrado na query string. Usando método de código.");
+            } else {
+                logToPage("Nenhum token no hash nem código na query string encontrados.");
+                window.location.href = "{{ url_for('index') }}?error=no_token_or_code";
+                return;
+            }
+
+            fetch("{{ url_for('callback') }}", { 
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload),
+            })
+            .then(response => {
+                logToPage(`Resposta do fetch (/callback) com método '${authMethod}' - Status: ` + response.status);
+                if (!response.ok) {
+                    return response.json().then(errData => {
+                        logToPage("Fetch NÃO OK, JSON: " + JSON.stringify(errData));
+                        throw new Error(errData.error || `Erro do servidor: ${response.status}`);
+                    }).catch((jsonError) => {
+                        logToPage("Fetch NÃO OK, não JSON ou erro ao parsear: " + jsonError.message + " Status Text: " + response.statusText);
+                        throw new Error(`Erro do servidor: ${response.status} ${response.statusText}`);
+                    });
                 }
-            }, 8000);
+                return response.json();
+            })
+            .then(data => {
+                logToPage("Dados do backend (/callback): " + JSON.stringify(data));
+                if (data.redirect) {
+                    logToPage("Redirecionando para: " + data.redirect);
+                    window.location.href = data.redirect;
+                } else if (data.error) { 
+                    logToPage("Erro do backend: " + data.error);
+                    window.location.href = "{{ url_for('index') }}?error=" + encodeURIComponent(data.error);
+                } else {
+                    logToPage("Resposta inesperada do servidor (sem redirect ou error).");
+                    window.location.href = "{{ url_for('index') }}?error=unexpected_backend_response";
+                }
+            })
+            .catch(error => {
+                logToPage("Erro no fetch ou processamento: " + error.message);
+                window.location.href = "{{ url_for('index') }}?error=callback_processing_error&details=" + encodeURIComponent(error.message);
+            });
         };
     </script>
     <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
