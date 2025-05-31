@@ -8,33 +8,28 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     
-    {# --- META TAGS OG MODIFICADAS --- #}
     <title>{{ og_title | default(dados.nome if dados.nome else 'Perfil Pessoal', true) | e }}</title>
     <meta property="og:title" content="{{ og_title | default(dados.nome if dados.nome else 'Perfil Pessoal', true) | e }}">
     <meta property="og:description" content="{{ og_description | default((dados.bio | striptags | truncate(150)) if dados.bio else 'Confira esta página!', true) | e }}">
-    {# A URL canônica para OG, adiciona ?view=card se for a visualização do cartão para OG #}
     <meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ url_for('user_page', profile=dados.profile) }}{% if card_og_image_url %}?view=card{% endif %}">
 
-    {% if card_og_image_url %} {# Prioriza a imagem OG do cartão se ela foi passada #}
+    {% if card_og_image_url %}
     <meta property="og:image" content="{{ card_og_image_url | e }}">
-    <meta property="og:image:width" content="380"> {# Largura da imagem gerada do cartão #}
-    <meta property="og:image:height" content="220"> {# Altura da imagem gerada do cartão #}
-    {% elif dados.foto %} {# Senão, usa a foto de perfil #}
+    <meta property="og:image:width" content="380"> 
+    <meta property="og:image:height" content="220"> 
+    {% elif dados.foto %}
     <meta property="og:image" content="{{ (dados.foto if dados.foto.startswith('http') else url_for('static', filename=dados.foto, _external=True)) | e }}">
     {% else %}
-    {# Opcional: <meta property="og:image" content="{{ url_for('static', filename='default_og_image.png', _external=True) | e }}"> #}
+    {# <meta property="og:image" content="{{ url_for('static', filename='default_og_image.png', _external=True) | e }}"> #}
     {% endif %}
     <meta property="og:type" content="profile">
-    {# --- FIM DAS META TAGS OG MODIFICADAS --- #}
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    {# Fontes adicionais do seu admin.html, caso sejam usadas na user_page e não cobertas por Inter #}
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
@@ -60,6 +55,60 @@
         .share-fallback-btn-whatsapp:hover { background-color: #1DAE52; transform: translateY(-1px); }
         .share-fallback-btn-secondary { background-color: #6c757d; color: white; }
         .share-fallback-btn-secondary:hover { background-color: #5a6268; }
+
+        /* NOVO: Estilos para o container dos botões movidos */
+        .moved-card-actions-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px; /* Espaço entre os botões */
+            margin-top: 15px; /* Espaço abaixo do cartão */
+            width: 100%;
+        }
+        /* Ajustes nos botões se necessário, mas eles já têm estilos globais */
+        .moved-card-actions-container .add-to-contacts-btn,
+        .moved-card-actions-container .download-card-btn {
+            width: auto; /* Para não ocupar 100% se o texto for pequeno */
+            min-width: 180px; /* Largura mínima para boa aparência */
+            max-width: 90%;   /* Para não estourar em telas pequenas */
+            box-sizing: border-box;
+        }
+
+        /* NOVO: Estilos para a seção de endereço dentro do cartão */
+        .card-bottom-section {
+            display: flex;
+            justify-content: space-between; /* Links à esquerda, endereço à direita */
+            align-items: flex-end; /* Alinha na base */
+            width: 100%;
+            margin-top: auto; /* Empurra para o fundo do card-content */
+            gap: 8px; /* Espaço entre área de links e área de endereço */
+            min-height: 40px; /* Altura mínima para acomodar 3 links ou endereço */
+        }
+
+        .card-links { /* Confirmar se precisa de ajuste */
+            flex-grow: 1; /* Ocupa espaço à esquerda */
+            display: flex;
+            flex-direction: column;
+            gap: 2px !important;
+            align-items: flex-start !important;
+            overflow: hidden;
+        }
+
+        .card-address-area {
+            flex-shrink: 0; /* Não encolhe */
+            text-align: right;
+            max-width: 45%; /* Evitar que o endereço comprima demais os links se houver muitos links */
+            /* Se não houver links, o endereço pode ocupar mais espaço, mas isso é gerenciado pelo flex-grow do card-links */
+        }
+
+        .card-address-text {
+            font-size: clamp(10px, 2.5vw, 12px); 
+            /* Cor e fonte serão aplicadas inline */
+            margin: 0;
+            word-break: break-word;
+            line-height: 1.3; /* Melhor legibilidade para múltiplas linhas */
+            padding-bottom: 2px; /* Pequeno ajuste para alinhar melhor com os links se eles tiverem ícones */
+        }
     </style>
 </head>
 
@@ -96,6 +145,7 @@
 <body {% if dados.background %}style="background-image: url('{{ (dados.background if dados.background.startswith('http') else url_for('static', filename=dados.background)) | e }}'); background-size: cover; background-position: center; background-attachment: fixed;" {% else %} style="background-color: #000;" {% endif %}>
     <div class="swiper-container">
         <div class="swiper-wrapper">
+            {# Slide 0: Perfil #}
             <div class="swiper-slide user-page-slide">
                 <div class="container">
                     {% if dados.foto %}
@@ -141,6 +191,7 @@
                 </div>
             </div>
 
+            {# Slide 1: Cartão de Visitas #}
             <div class="swiper-slide card-page-slide">
                 <div class="card-container"
                     style="{% if dados.card_background_type == 'color' %}background-color: {{ dados.card_background_value | default('#4361ee', true) | style_safe }};{% elif dados.card_background_type == 'image' and dados.card_background_value %}background-image: url('{{ (dados.card_background_value if dados.card_background_value.startswith('http') else url_for('static', filename=dados.card_background_value)) | e }}'); background-size: cover; background-position: center;{% else %}background-color: #4361ee;{% endif %}">
@@ -161,7 +212,8 @@
                             {% endif %}
                         </div>
 
-                        <div class="card-links-and-button">
+                        {# NOVO: Seção inferior do cartão para links e endereço #}
+                        <div class="card-bottom-section">
                             <div class="card-links">
                                 {% for link in dados.card_links %}
                                 <a href="{{ (link.url if link.url else '#') | e }}" target="_blank" class="card-link-item"
@@ -178,12 +230,32 @@
                                 </a>
                                 {% endfor %}
                             </div>
-                            <button class="add-to-contacts-btn" onclick="addToContacts()">
-                                <i class="fas fa-address-book"></i> Salvar Contato
-                            </button>
+                            
+                            {% if dados.card_endereco %}
+                            <div class="card-address-area">
+                                <p class="card-address-text" 
+                                   style="font-family: {{ dados.card_endereco_font | style_safe | default(DEFAULT_FONT, true) }}; color: {{ dados.card_endereco_color | default(DEFAULT_CARD_ENDERECO_COLOR, true) }};">
+                                    {{ dados.card_endereco }}
+                                </p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
+
+                {# NOVO: Container para os botões movidos para FORA e ABAIXO do cartão #}
+                <div class="moved-card-actions-container">
+                    <button class="add-to-contacts-btn" onclick="addToContacts()">
+                        <i class="fas fa-address-book"></i> Salvar Contato
+                    </button>
+                    <a href="{{ url_for('download_card_image', profile=dados.profile) }}"
+                       class="download-card-btn"
+                       download="cartao_{{ dados.profile | e }}.png" 
+                       title="Baixar imagem do cartão">
+                        <i class="fas fa-download"></i> Baixar Cartão
+                    </a>
+                </div>
+
             </div>
         </div>
 
@@ -194,18 +266,17 @@
 
 <script>
     console.log("DEBUG: Script principal iniciado.");
-    document.body.style.opacity = 0; // Esconde antes de tudo
+    document.body.style.opacity = 0; 
 
     window.addEventListener('DOMContentLoaded', () => {
         console.log("DEBUG: DOMContentLoaded acionado.");
         setTimeout(() => {
-            document.body.style.opacity = 1; // Mostra após carregar
+            document.body.style.opacity = 1; 
             console.log("DEBUG: Opacidade do body definida para 1.");
-        }, 100); // Pequeno delay para garantir que o CSS seja aplicado
+        }, 100); 
 
         const userPageSlide = document.querySelector('.user-page-slide');
         if (userPageSlide) {
-            // ... (sua lógica de wheel para userPageSlide existente)
             userPageSlide.addEventListener('wheel', function (event) {
                 const el = this; const scrollHeight = el.scrollHeight; const clientHeight = el.clientHeight;
                 const scrollTop = el.scrollTop; const deltaY = event.deltaY;
@@ -220,7 +291,6 @@
 
         let swiperInstance = null; 
         try {
-            // ... (sua função applyArrowAnimation existente)
             function applyArrowAnimation(currentSwiper) {
                 if (!currentSwiper || !currentSwiper.navigation) { console.warn("DEBUG_WARN: Instância Swiper ou navegação indefinida."); return; }
                 const prevEl = currentSwiper.navigation.prevEl; const nextEl = currentSwiper.navigation.nextEl;
@@ -231,7 +301,6 @@
             }
 
             swiperInstance = new Swiper('.swiper-container', {
-                // ... (suas configurações do Swiper existentes)
                 effect: 'creative',
                 creativeEffect: { prev: { shadow: false, translate: ['-120%', 0, -500], }, next: { shadow: false, translate: ['120%', 0, -500], }, },
                 grabCursor: true,
@@ -240,103 +309,85 @@
                 loop: false, simulateTouch: true,
                 mousewheel: { enabled: true, releaseOnEdges: true, },
                 observer: true, observeParents: true,
-                on: { init: function () { applyArrowAnimation(this); }, slideChangeTransitionEnd: function () { applyArrowAnimation(this); } }
+                on: { 
+                    init: function () { 
+                        applyArrowAnimation(this); 
+                        const currentUrlParams = new URLSearchParams(window.location.search);
+                        if (currentUrlParams.has('view') && currentUrlParams.get('view') === 'card') {
+                            this.slideTo(1, 0, false); 
+                            console.log("DEBUG: Swiper direcionado para o slide do cartão (índice 1) na inicialização.");
+                        }
+                    }, 
+                    slideChangeTransitionEnd: function () { applyArrowAnimation(this); } 
+                }
             });
             console.log("DEBUG: Swiper inicializado. Instância:", swiperInstance);
         } catch (e) {
             console.error("DEBUG_ERROR: ERRO CRÍTICO AO INICIALIZAR O SWIPER:", e);
         }
 
-        // --- LÓGICA DE COMPARTILHAMENTO MODIFICADA ---
         try {
-            console.log("DEBUG: Configurando lógica de partilha...");
             const shareButton = document.getElementById('share-button-container');
             if (shareButton) {
-                console.log("DEBUG: Botão de partilha encontrado.");
                 shareButton.addEventListener('click', async () => {
-                    console.log("DEBUG: Botão de partilha CLICADO.");
                     if (!swiperInstance) {
-                        console.error("DEBUG_ERROR: Instância do Swiper não disponível para partilha.");
-                        alert("Erro: Funcionalidade de swipe não está pronta.");
-                        return;
+                        alert("Erro: Funcionalidade de swipe não está pronta."); return;
                     }
-                    console.log("DEBUG: Instância Swiper disponível. Index atual:", swiperInstance.activeIndex);
-
                     const currentSlideIndex = swiperInstance.activeIndex;
-                    // URL base da página (sem ?view=card)
                     const pageUrlForSharing = {{ (request.url_root.rstrip('/') + url_for('user_page', profile=dados.profile)) | tojson | safe }};
-                    let shareData = { title: '', text: '', url: pageUrlForSharing }; // URL padrão
+                    let shareData = { title: '', text: '', url: pageUrlForSharing };
 
-                    if (currentSlideIndex === 0) { // Slide de Perfil
-                        console.log("DEBUG: Partilhando slide de PERFIL.");
-                        // Usa o título e descrição OG que o backend preparou para a visualização principal
+                    if (currentSlideIndex === 0) { 
                         shareData.title = {{ og_title | default(dados.nome if dados.nome else 'Perfil', true) | tojson | safe }};
                         shareData.text = {{ og_description | default(dados.bio if dados.bio else 'Confira!', true) | tojson | safe }};
-                        // shareData.url já é pageUrlForSharing (a URL base)
-                    } else { // Slide do Cartão de Visitas (assumindo slide 1)
-                        console.log("DEBUG: Partilhando slide de CARTÃO.");
+                    } else { 
                         const cardNameForShare = {{ (dados.card_nome if dados.card_nome else dados.nome if dados.nome else 'Usuário') | tojson | safe }};
                         shareData.title = `Cartão de Visita: ${cardNameForShare}`;
-                        
                         let cardTextParts = [];
                         const cardTitleText = {{ (dados.card_titulo if dados.card_titulo else '') | tojson | safe }};
                         const cardRegText = {{ (dados.card_registro_profissional if dados.card_registro_profissional else '') | tojson | safe }};
+                        const cardEnderecoText = {{ (dados.card_endereco if dados.card_endereco else '') | tojson | safe }}; // NOVO
                         if (cardTitleText) cardTextParts.push(cardTitleText);
                         if (cardRegText) cardTextParts.push(cardRegText);
-                        
+                        if (cardEnderecoText) cardTextParts.push(cardEnderecoText); // NOVO
                         let cardDynamicDescriptionForShare = cardTextParts.join(" | ");
                         if (!cardDynamicDescriptionForShare) {
                             cardDynamicDescriptionForShare = `Acesse o cartão de visita de ${cardNameForShare}.`;
                         }
                         shareData.text = cardDynamicDescriptionForShare;
-                        // Adiciona ?view=card à URL para que as meta tags OG corretas sejam carregadas
                         shareData.url = pageUrlForSharing + (pageUrlForSharing.includes('?') ? '&' : '?') + 'view=card';
                     }
                     console.log("DEBUG: Dados para partilha (navigator.share ou fallback):", JSON.stringify(shareData));
 
                     if (navigator.share) {
-                        console.log("DEBUG: API navigator.share disponível. Tentando partilhar...");
                         try {
                             await navigator.share(shareData);
-                            console.log("DEBUG: Conteúdo compartilhado com sucesso via navigator.share!");
                         } catch (err) {
-                            console.warn("DEBUG_WARN: Erro ao usar navigator.share:", err);
-                            if (err.name !== 'AbortError') { // Não mostra fallback se o usuário cancelar
+                            if (err.name !== 'AbortError') { 
                                 showShareFallbackModal(shareData.url, shareData.title, shareData.text);
                             }
                         }
                     } else {
-                        console.log("DEBUG: API navigator.share NÃO disponível. Mostrando fallback.");
                         showShareFallbackModal(shareData.url, shareData.title, shareData.text);
                     }
                 });
-            } else {
-                console.error("DEBUG_ERROR: Botão de partilha NÃO encontrado!");
             }
         } catch (e) {
             console.error("DEBUG_ERROR: Erro na configuração da lógica de partilha:", e);
         }
-        // --- FIM DA LÓGICA DE COMPARTILHAMENTO MODIFICADA ---
-
-        // Função showShareFallbackModal (sua lógica existente, já deve funcionar com a URL correta)
+        
         function showShareFallbackModal(url, title, text) {
-            // ... (sua implementação de showShareFallbackModal)
-            console.log("DEBUG: showShareFallbackModal chamada com URL:", url);
             const modal = document.getElementById('share-fallback-modal');
             const textContentElement = document.getElementById('fallback-text-content');
             const urlInput = document.getElementById('fallback-url-input');
             const copyButton = document.getElementById('copy-fallback-url-button');
             const whatsappLink = document.getElementById('whatsapp-fallback-link');
             const closeModalButton = document.getElementById('close-fallback-modal-button');
-
-            if (!modal || !textContentElement || !urlInput || !copyButton || !whatsappLink || !closeModalButton) {
-                console.error("DEBUG_ERROR: Um ou mais elementos do modal de fallback não foram encontrados!");
-                return;
-            }
+            if (!modal || !textContentElement || !urlInput || !copyButton || !whatsappLink || !closeModalButton) { return; }
             const displayText = `${title}\n${text.replace(/\\n/g, '\n')}`; 
             textContentElement.innerText = displayText;
-            urlInput.value = url; // URL já está correta (com ou sem ?view=card)
-            copyButton.onclick = async () => { /* ... */ try { await navigator.clipboard.writeText(url); alert('URL copiado!'); } catch (err) { try { urlInput.select(); document.execCommand('copy'); alert('URL copiado (método antigo)!'); } catch (copyErr) { alert('Erro ao copiar.'); }}};
+            urlInput.value = url; 
+            copyButton.onclick = async () => { try { await navigator.clipboard.writeText(url); alert('URL copiado!'); } catch (err) { try { urlInput.select(); document.execCommand('copy'); alert('URL copiado (método antigo)!'); } catch (copyErr) { alert('Erro ao copiar.'); }}};
             const whatsappMessage = encodeURIComponent(`${title}\n${text.replace(/\\n/g, '\n')}\n${url}`);
             whatsappLink.href = `https://wa.me/?text=${whatsappMessage}`;
             modal.style.display = 'flex';
@@ -345,44 +396,37 @@
             document.querySelector('.share-fallback-content').onclick = (event) => { event.stopPropagation(); };
         }
         
-        // Lógica de addToContacts (sua lógica existente)
         try {
-            console.log("DEBUG: Configurando lógica addToContacts...");
-            const cardLinksData = {{ dados.card_links | tojson | safe }}; // Já deve ser uma lista aqui
-            console.log("DEBUG: cardLinksData para vCard:", cardLinksData);
-
+            const cardLinksData = {{ dados.card_links | tojson | safe }};
+            const cardEnderecoVCF = {{ (dados.card_endereco if dados.card_endereco else '') | tojson | safe }}; // NOVO para vCard
             if (typeof addToContacts !== 'function') { 
                 window.addToContacts = function() { 
-                    // ... (sua implementação completa de addToContacts)
-                    console.log("DEBUG: addToContacts chamada.");
                     try {
-                        const sanitizeVCardString = (str) => { /* ... */ if (typeof str !== 'string') return ''; let cleanedStr = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''); cleanedStr = cleanedStr.replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/;/g, '\\;').replace(/\n/g, '\\n'); return cleanedStr; };
-                        const sanitizeForFilename = (str) => { /* ... */ if (typeof str !== 'string') return 'contato'; return str.replace(/[^a-z0-9_\-]/ig, '_'); };
-
+                        const sanitizeVCardString = (str) => { if (typeof str !== 'string') return ''; let cleanedStr = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''); cleanedStr = cleanedStr.replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/;/g, '\\;').replace(/\n/g, '\\n'); return cleanedStr; };
+                        const sanitizeForFilename = (str) => { if (typeof str !== 'string') return 'contato'; return str.replace(/[^a-z0-9_\-]/ig, '_'); };
                         const cardNome = sanitizeVCardString({{ (dados.card_nome if dados.card_nome else dados.nome if dados.nome else '') | tojson | safe }});
                         const cardTitulo = sanitizeVCardString({{ (dados.card_titulo if dados.card_titulo else '') | tojson | safe }});
                         const cardRegistro = sanitizeVCardString({{ (dados.card_registro_profissional if dados.card_registro_profissional else '') | tojson | safe }});
-                        const email = sanitizeVCardString({{ (dados.email if dados.email else '') | tojson | safe }}); // Email principal do usuário
-
+                        const email = sanitizeVCardString({{ (dados.email if dados.email else '') | tojson | safe }}); 
                         let vCardData = `BEGIN:VCARD\nVERSION:3.0\nN:${cardNome};;;;\nFN:${cardNome}`;
                         if (cardTitulo) vCardData += `\nTITLE:${cardTitulo}`;
-                        if (cardRegistro) vCardData += `\nORG:${cardRegistro}`; // Pode ser NOTE: também se preferir
+                        if (cardRegistro) vCardData += `\nORG:${cardRegistro}`; 
                         if (email) vCardData += `\nEMAIL;TYPE=INTERNET,PREF:${email}`;
+                        if (cardEnderecoVCF) vCardData += `\nADR;TYPE=WORK,PREF:;;${sanitizeVCardString(cardEnderecoVCF)};;;;`; // NOVO: Adiciona endereço ao vCard
 
                         if (Array.isArray(cardLinksData)) {
-                            cardLinksData.forEach(link => { /* ... (sua lógica de adicionar links ao vCard) ... */ 
+                            cardLinksData.forEach(link => {  
                                 if (typeof link !== 'object' || link === null) { return; }
                                 const icon_type = link.icon ? String(link.icon).toLowerCase() : "";
                                 const link_url_original = link.url || ""; const link_at_text_original = link.at_text || "";
                                 const link_url_sanitized = sanitizeVCardString(link_url_original); const link_at_text_sanitized = sanitizeVCardString(link_at_text_original);
                                 let iconNameForNote = link.icon ? String(link.icon).replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : "Contato";
-
                                 if (icon_type.includes('whatsapp') || icon_type.includes('phone') || String(link_url_original).startsWith('tel:')) {
                                     let phone_number = String(link_url_original).replace('tel:', '').replace('https://wa.me/', '');
                                     if (phone_number) { vCardData += `\nTEL;TYPE=CELL:${sanitizeVCardString(phone_number.split('?')[0])}`; }
                                 } else if (icon_type.includes('mail') || icon_type.includes('email') || String(link_url_original).startsWith('mailto:')) {
                                     let email_address = String(link_url_original).replace('mailto:', '');
-                                    if (email_address && email_address !== email) { vCardData += `\nEMAIL;TYPE=INTERNET:${sanitizeVCardString(email_address.split('?')[0])}`; } // Adiciona apenas se for diferente do principal
+                                    if (email_address && email_address !== email) { vCardData += `\nEMAIL;TYPE=INTERNET:${sanitizeVCardString(email_address.split('?')[0])}`; } 
                                 } else if (link_url_original) {
                                     if (icon_type.includes('linkedin')) { vCardData += `\nX-SOCIALPROFILE;TYPE=linkedin:${link_url_sanitized}`; }
                                     else if (icon_type.includes('twitter') || icon_type.includes('x-com')) { vCardData += `\nX-SOCIALPROFILE;TYPE=twitter:${link_url_sanitized}`; }
@@ -392,7 +436,6 @@
                             });
                         }
                         vCardData += `\nEND:VCARD`;
-                        console.log("DEBUG: vCardData gerado:", vCardData);
                         const blob = new Blob([vCardData], { type: 'text/vcard;charset=utf-8' });
                         const url = URL.createObjectURL(blob); const a = document.createElement('a');
                         a.href = url; const profileNameForFile = sanitizeForFilename({{ (dados.profile if dados.profile else 'contato') | tojson | safe }});

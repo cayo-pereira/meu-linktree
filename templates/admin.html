@@ -68,7 +68,7 @@
                                 <option value="Montserrat, sans-serif" {% if dados.nome_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
                             </select>
                             <label for="nome_color">Cor:</label>
-                            <input type="color" id="nome_color" name="nome_color" value="{{ dados.nome_color | default('#333333', true) }}" oninput="updateTextPreview('nome_preview', getValue('nome'), getValue('nome_font'), this.value)">
+                            <input type="color" id="nome_color" name="nome_color" value="{{ dados.nome_color | default(DEFAULT_TEXT_COLOR_PAGE, true) }}" oninput="updateTextPreview('nome_preview', getValue('nome'), getValue('nome_font'), this.value)">
                         </div>
                         <div class="text-preview" id="nome_preview">Prévia do Nome</div>
                     </div>
@@ -91,7 +91,7 @@
                                 <option value="Montserrat, sans-serif" {% if dados.bio_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
                             </select>
                             <label for="bio_color">Cor:</label>
-                            <input type="color" id="bio_color" name="bio_color" value="{{ dados.bio_color | default('#555555', true) }}" oninput="updateTextPreview('bio_preview', getValue('bio'), getValue('bio_font'), this.value)">
+                            <input type="color" id="bio_color" name="bio_color" value="{{ dados.bio_color | default(DEFAULT_BIO_COLOR_PAGE, true) }}" oninput="updateTextPreview('bio_preview', getValue('bio'), getValue('bio_font'), this.value)">
                         </div>
                         <div class="text-preview" id="bio_preview">Prévia da Biografia</div>
                     </div>
@@ -308,6 +308,26 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="card_endereco">Endereço (Cartão)</label>
+                        <div class="input-group-card-text-style">
+                            <input type="text" id="card_endereco" name="card_endereco" value="{{ dados.card_endereco }}" class="form-input" oninput="updateTextPreview('card_endereco_preview', this.value, getValue('card_endereco_font'), getValue('card_endereco_color'))">
+                            <select id="card_endereco_font" name="card_endereco_font" class="form-input" onchange="updateTextPreview('card_endereco_preview', getValue('card_endereco'), this.value, getValue('card_endereco_color'))">
+                                <option value="Inter, sans-serif" {% if dados.card_endereco_font == 'Inter, sans-serif' %}selected{% endif %}>Padrão (Inter)</option>
+                                <option value="Arial, sans-serif" {% if dados.card_endereco_font == 'Arial, sans-serif' %}selected{% endif %}>Arial</option>
+                                <option value="Verdana, sans-serif" {% if dados.card_endereco_font == 'Verdana, sans-serif' %}selected{% endif %}>Verdana</option>
+                                <option value="Georgia, serif" {% if dados.card_endereco_font == 'Georgia, serif' %}selected{% endif %}>Georgia</option>
+                                <option value="'Times New Roman', Times, serif" {% if dados.card_endereco_font == "'Times New Roman', Times, serif" %}selected{% endif %}>Times New Roman</option>
+                                <option value="'Courier New', Courier, monospace" {% if dados.card_endereco_font == "'Courier New', Courier, monospace" %}selected{% endif %}>Courier New</option>
+                                <option value="Roboto, sans-serif" {% if dados.card_endereco_font == 'Roboto, sans-serif' %}selected{% endif %}>Roboto</option>
+                                <option value="'Open Sans', sans-serif" {% if dados.card_endereco_font == "'Open Sans', sans-serif" %}selected{% endif %}>Open Sans</option>
+                                <option value="Lato, sans-serif" {% if dados.card_endereco_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
+                                <option value="Montserrat, sans-serif" {% if dados.card_endereco_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
+                            </select>
+                            <input type="color" id="card_endereco_color" name="card_endereco_color" value="{{ dados.card_endereco_color | default(DEFAULT_CARD_ENDERECO_COLOR, true) }}" oninput="updateTextPreview('card_endereco_preview', getValue('card_endereco'), getValue('card_endereco_font'), this.value)">
+                        </div>
+                        <div class="text-preview" id="card_endereco_preview">Prévia do Endereço (Cartão)</div>
+                    </div>
+                    <div class="form-group">
                         <label>Background do Cartão:</label>
                         <div class="card-background-options">
                             <label>
@@ -416,6 +436,7 @@
         // Passando constantes do Flask para o JavaScript
         const DEFAULT_FONT_JS = "{{ DEFAULT_FONT | e }}";
         const DEFAULT_TEXT_COLOR_CARD_JS = "{{ DEFAULT_TEXT_COLOR_CARD | e }}";
+        const DEFAULT_CARD_ENDERECO_COLOR_JS = "{{ DEFAULT_CARD_ENDERECO_COLOR | e }}"; // Nova constante para JS
     </script>
     <script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>

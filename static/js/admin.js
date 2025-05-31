@@ -11,10 +11,11 @@ function updateTextPreview(previewElementId, text, font, color) {
         previewEl.textContent = text || 'Prévia...';
         previewEl.style.fontFamily = font || 'Inter, sans-serif';
 
-        if (previewElementId.includes('card_')) { // Para previews de nome, título, registro no cartão
+        // Ajuste para diferenciar previews de página e previews de cartão
+        if (previewElementId.includes('card_')) { 
             previewEl.style.backgroundColor = '#444'; 
             previewEl.style.color = color || '#FFFFFF'; 
-        } else { // Para nome e bio da página
+        } else { 
             previewEl.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--input-bg-light').trim();
             previewEl.style.color = color || getComputedStyle(document.documentElement).getPropertyValue('--text-color-light').trim();
         }
@@ -77,6 +78,9 @@ document.addEventListener('DOMContentLoaded', function () {
     updateTextPreview('card_nome_preview', getValue('card_nome'), getValue('card_nome_font'), getValue('card_nome_color'));
     updateTextPreview('card_titulo_preview', getValue('card_titulo'), getValue('card_titulo_font'), getValue('card_titulo_color'));
     updateTextPreview('card_registro_preview', getValue('card_registro_profissional'), getValue('card_registro_font'), getValue('card_registro_color'));
+    // NOVO: Inicializar preview do endereço do cartão
+    updateTextPreview('card_endereco_preview', getValue('card_endereco'), getValue('card_endereco_font'), getValue('card_endereco_color'));
+
 
     // Inicializar previews de imagem
     const fotosParaPreview = [
@@ -316,25 +320,26 @@ document.addEventListener('DOMContentLoaded', function () {
             const iconPath = `/static/icons/${iconName}.png`;
             let targetContainer, itemClass, inputNameForCheck;
 
-            const newItemField = document.createElement('div'); // Criar o contêiner do item aqui
+            const newItemField = document.createElement('div'); 
 
             if (currentModalPurpose === 'social') {
                 targetContainer = socialIconsContainer;
                 itemClass = 'social-item';
                 inputNameForCheck = 'social_icon_name[]';
-                newItemField.innerHTML = `
+                // Guardar o HTML do item social para evitar redefinição acidental
+                const socialItemHTML = `
                     <i class="fas fa-grip-vertical drag-handle"></i> <img src="${iconPath}" alt="${iconName}" width="24">
                     <input type="hidden" name="social_icon_name[]" value="${escapeHtml(iconName)}">
                     <input type="text" name="social_icon_url[]"
                                 placeholder="Insira o link para ${iconName.replace(/-/g, ' ')}"
                                 class="form-input" required>
                     <span class="remove-item"><i class="fas fa-times"></i></span>`;
+                newItemField.innerHTML = socialItemHTML; // Definir o HTML aqui para o social_item
             } else if (currentModalPurpose === 'card_link') {
                 targetContainer = cardLinksContainer;
                 itemClass = 'card-link-item';
                 inputNameForCheck = 'card_icon_name[]';
                 
-                // Construção dinâmica para card_link_item
                 newItemField.className = itemClass;
 
                 const dragHandle = document.createElement('i');
@@ -390,7 +395,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 previewDiv.className = 'card-link-item-preview';
                 newItemField.appendChild(previewDiv);
                 
-                // Adicionar listeners para o novo item de link do cartão (após ser adicionado ao DOM)
                 atTextInput.addEventListener('input', () => updateCardLinkItemPreview(newItemField));
                 fontSelect.addEventListener('change', () => {
                     hiddenFontInput.value = fontSelect.value;
@@ -400,6 +404,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     hiddenColorInput.value = colorInput.value;
                     updateCardLinkItemPreview(newItemField);
                 });
+                 // Adiciona o botão de remover para card_link
+                const removeSpanCard = document.createElement('span');
+                removeSpanCard.className = 'remove-item';
+                removeSpanCard.innerHTML = '<i class="fas fa-times"></i>';
+                newItemField.appendChild(removeSpanCard); // Adiciona ao final do newItemField
                 
             } else { return; }
 
@@ -412,36 +421,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
             if (iconExists) { alert('Este ícone já foi adicionado!'); closeModals(); return; }
             
-            if (currentModalPurpose !== 'card_link') { // Se for social, usa innerHTML como antes
-                newItemField.className = itemClass; // Define a classe aqui se não for card_link
-                newItemField.innerHTML = socialItemHTML; // Supondo que socialItemHTML seja o HTML para social_item
+            // Definir classe aqui se não for card_link (já que socialItemHTML foi definido antes)
+            if (currentModalPurpose === 'social') {
+                newItemField.className = itemClass;
             }
-            // Para card_link, newItemField já foi construído dinamicamente
-
+            
             if(targetContainer) targetContainer.appendChild(newItemField);
             
-             // Adicionar botão de remover ao final para ambos os casos
-            if (currentModalPurpose === 'social' || currentModalPurpose === 'card_link') {
-                const removeSpan = document.createElement('span');
-                removeSpan.className = 'remove-item';
-                removeSpan.innerHTML = '<i class="fas fa-times"></i>';
-                removeSpan.addEventListener('click', function () {
+            // Adicionar listener de remoção após o item ser adicionado ao DOM
+            // O listener para card_link já é adicionado acima dinamicamente
+            // O listener para social_item precisa ser adicionado aqui, pois o HTML é setado via innerHTML
+            const removeButton = newItemField.querySelector('.remove-item');
+            if (removeButton) {
+                removeButton.addEventListener('click', function () {
                     this.closest(`.${itemClass}`).remove();
                 });
-                 // Se for social, e o span já foi adicionado pelo innerHTML, não precisa adicionar de novo.
-                // A construção dinâmica do card_link já pode incluir o removeSpan.
-                // Para simplificar, vamos garantir que o removeSpan seja adicionado se não existir.
-                if (!newItemField.querySelector('.remove-item')) {
-                    newItemField.appendChild(removeSpan);
-                } else { // Se já existe (ex: no innerHTML do social), apenas re-adiciona o listener
-                    newItemField.querySelector('.remove-item').addEventListener('click', function () {
-                         this.closest(`.${itemClass}`).remove();
-                    });
-                }
             }
 
 
-            if (currentModalPurpose === 'card_link') { // Inicializa o preview para o novo item de link do cartão
+            if (currentModalPurpose === 'card_link') { 
                 updateCardLinkItemPreview(newItemField);
             }
             
@@ -454,29 +452,27 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Inicializar previews para links de cartão existentes e adicionar listeners
-    // Deve ser chamado após a definição de updateCardLinkItemPreview
     document.querySelectorAll('#card-links-container .card-link-item').forEach(item => {
-        updateCardLinkItemPreview(item); // Inicializa o preview
+        updateCardLinkItemPreview(item); 
 
         const atTextInput = item.querySelector('.card-link-item-at-text');
-        const fontSelect = item.querySelector('.card-link-item-font'); // O select visível
-        const colorInput = item.querySelector('.card-link-item-color'); // O input color visível
-        const hiddenFontInput = item.querySelector('input[name="card_icon_font[]"]'); // O input hidden
-        const hiddenColorInput = item.querySelector('input[name="card_icon_color[]"]'); // O input hidden
+        const fontSelect = item.querySelector('.card-link-item-font'); 
+        const colorInput = item.querySelector('.card-link-item-color'); 
+        const hiddenFontInput = item.querySelector('input[name="card_icon_font[]"]'); 
+        const hiddenColorInput = item.querySelector('input[name="card_icon_color[]"]'); 
 
         if (atTextInput) {
             atTextInput.addEventListener('input', () => updateCardLinkItemPreview(item));
         }
         if (fontSelect && hiddenFontInput) {
             fontSelect.addEventListener('change', () => {
-                hiddenFontInput.value = fontSelect.value; // Atualiza o hidden
+                hiddenFontInput.value = fontSelect.value; 
                 updateCardLinkItemPreview(item);
             });
         }
         if (colorInput && hiddenColorInput) {
             colorInput.addEventListener('input', () => {
-                hiddenColorInput.value = colorInput.value; // Atualiza o hidden
+                hiddenColorInput.value = colorInput.value; 
                 updateCardLinkItemPreview(item);
             });
         }
