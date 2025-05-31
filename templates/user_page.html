@@ -14,7 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
@@ -45,20 +45,12 @@
         .swiper-button-disabled.swiper-arrow-animated::after {
             animation: none !important;
         }
-
-        /* Estilo opcional para as setas se quiser customizar além do padrão do Swiper */
-        /* .swiper-button-prev::after, 
-        .swiper-button-next::after {
-            font-size: 24px; // Exemplo de tamanho
-            color: white;    // Exemplo de cor
-        }
-        */
     </style>
 </head>
 {% if session.logado and session.profile == dados.profile %}
-<div style="position: fixed; bottom: 20px; right: 20px; z-index: 100;">
+<div style="position: fixed; bottom: 20px; right: 20px; z-index: 1001; /* Acima do swiper-pagination */">
     <a href="{{ url_for('admin_panel', username=dados.profile) }}"
-        style="background: #4361ee; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none; z-index: 999;">
+        style="background: #4361ee; color: white; padding: 10px 15px; border-radius: 8px; text-decoration: none; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
         <i class="fas fa-edit"></i> Editar Página
     </a>
 </div>
@@ -66,6 +58,8 @@
 
 <body {% if dados.background
     %}style="background-image: url('{{ dados.background if dados.background.startswith('http') else url_for('static', filename=dados.background) }}'); background-size: cover; background-position: center; background-attachment: fixed;"
+    {% else %}
+    style="background-color: #000;" /* Fallback se não houver imagem de fundo */
     {% endif %}>
     <div class="swiper-container">
         <div class="swiper-wrapper">
@@ -76,12 +70,12 @@
                         alt="Foto de perfil" class="profile-pic">
                     {% endif %}
 
-                    <h1 style="font-family: {{ dados.nome_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.nome_color | default('#333333', true) }};">
+                    <h1 style="font-family: {{ dados.nome_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.nome_color | default('#FFFFFF', true) }};">
                         {{ dados.nome if dados.nome else 'Usuário' }}
                     </h1>
 
                     {% if dados.bio %}
-                    <p class="bio" style="font-family: {{ dados.bio_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.bio_color | default('#555555', true) }};">
+                    <p class="bio" style="font-family: {{ dados.bio_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.bio_color | default('#CCCCCC', true) }};">
                         {{ dados.bio }}
                     </p>
                     {% endif %}
@@ -95,21 +89,23 @@
                     </div>
 
                     {% if dados.custom_buttons %}
-                    {% for button in dados.custom_buttons %}
-                    <a href="{{ button.link }}"
-                        class="link-button-custom 
-                                {% if button.hasHoverEffect %}has-hover-effect{% endif %}
-                                {% if button.shadowType and button.shadowType != 'none' %}shadow-{{ button.shadowType }}{% endif %}"
-                        style="background: {{ button.color }}; 
-                                        border-radius: {{ button.radius }}px; 
-                                        color: {{ button.textColor }}; 
-                                        font-weight: {{ 'bold' if button.bold else 'normal' }}; 
-                                        font-style: {{ 'italic' if button.italic else 'normal' }}; 
-                                        font-size: {{ button.fontSize }}px;
-                                        {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor }};{% endif %}" target="_blank">
-                        {{ button.text }}
-                    </a>
-                    {% endfor %}
+                    <div class="custom-buttons-container">
+                        {% for button in dados.custom_buttons %}
+                        <a href="{{ button.link }}"
+                            class="link-button-custom
+                                    {% if button.hasHoverEffect %}has-hover-effect{% endif %}
+                                    {% if button.shadowType and button.shadowType != 'none' %}shadow-{{ button.shadowType }}{% endif %}"
+                            style="background: {{ button.color }};
+                                            border-radius: {{ button.radius }}px;
+                                            color: {{ button.textColor }};
+                                            font-weight: {{ 'bold' if button.bold else 'normal' }};
+                                            font-style: {{ 'italic' if button.italic else 'normal' }};
+                                            font-size: {{ button.fontSize }}px;
+                                            {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor }};{% else %}border: none;{% endif %}" target="_blank">
+                            {{ button.text }}
+                        </a>
+                        {% endfor %}
+                    </div>
                     {% endif %}
 
                     <footer>
@@ -120,7 +116,7 @@
 
             <div class="swiper-slide card-page-slide">
                 <div class="card-container"
-                    style="{% if dados.card_background_type == 'color' %}background-color: {{ dados.card_background_value }};{% elif dados.card_background_type == 'image' and dados.card_background_value %}background-image: url('{{ dados.card_background_value if dados.card_background_value.startswith('http') else url_for('static', filename=dados.card_background_value) }}'); background-size: cover; background-position: center;{% else %}background-color: #4361ee;{% endif %}">
+                    style="{% if dados.card_background_type == 'color' %}background-color: {{ dados.card_background_value | default('#4361ee', true) }};{% elif dados.card_background_type == 'image' and dados.card_background_value %}background-image: url('{{ dados.card_background_value if dados.card_background_value.startswith('http') else url_for('static', filename=dados.card_background_value) }}'); background-size: cover; background-position: center;{% else %}background-color: #4361ee;{% endif %}">
                     <div class="card-content">
                         <div class="card-header-info">
                             <h2 style="font-family: {{ dados.card_nome_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.card_nome_color | default('#FFFFFF', true) }};">
@@ -138,7 +134,7 @@
                             {% endif %}
                         </div>
 
-                        <div class="card-links-and-button"> 
+                        <div class="card-links-and-button">
                             <div class="card-links">
                                 {% for link in dados.card_links %}
                                 <a href="{{ link.url if link.url else '#' }}" target="_blank" class="card-link-item"
@@ -154,7 +150,7 @@
                             <button class="add-to-contacts-btn" onclick="addToContacts()">
                                 <i class="fas fa-address-book"></i> Salvar Contato
                             </button>
-                        </div> 
+                        </div>
 
                     </div>
                 </div>
@@ -183,43 +179,38 @@
                     const scrollHeight = el.scrollHeight;
                     const clientHeight = el.clientHeight;
                     const scrollTop = el.scrollTop;
-                    const deltaY = event.deltaY; 
+                    const deltaY = event.deltaY;
 
                     if (scrollHeight <= clientHeight) {
-                        return; 
+                        return;
                     }
 
-                    const atTop = scrollTop === 0;
-                    const atBottom = scrollTop >= (scrollHeight - clientHeight - 1); 
+                    const atTop = scrollTop <= 0;
+                    const atBottom = scrollTop >= (scrollHeight - clientHeight - 1);
 
                     if ((deltaY < 0 && atTop) || (deltaY > 0 && atBottom)) {
                         return;
                     } else {
-                        event.preventDefault();
-                        el.scrollTop += deltaY; 
+                        event.stopPropagation();
+                        el.scrollTop += deltaY;
                     }
-                }, { passive: false }); 
+                }, { passive: true });
             }
-            
-            // Função para aplicar/remover classes de animação das setas
+
             function applyArrowAnimation(swiperInstance) {
                 const prevEl = swiperInstance.navigation.prevEl;
                 const nextEl = swiperInstance.navigation.nextEl;
 
                 if (!prevEl || !nextEl) {
-                    return; // Sai se os elementos das setas não estiverem prontos/configurados
+                    return;
                 }
 
-                // Limpa animações anteriores de ambas as setas
                 prevEl.classList.remove('swiper-arrow-animated');
                 nextEl.classList.remove('swiper-arrow-animated');
 
-                // Anima a seta 'next' se não estivermos no último slide
                 if (!swiperInstance.isEnd) {
                     nextEl.classList.add('swiper-arrow-animated');
                 }
-
-                // Anima a seta 'prev' se não estivermos no primeiro slide
                 if (!swiperInstance.isBeginning) {
                     prevEl.classList.add('swiper-arrow-animated');
                 }
@@ -229,11 +220,11 @@
                 effect: 'creative',
                 creativeEffect: {
                     prev: {
-                        shadow: false, 
+                        shadow: false,
                         translate: ['-120%', 0, -500],
                     },
                     next: {
-                        shadow: false, 
+                        shadow: false,
                         translate: ['120%', 0, -500],
                     },
                 },
@@ -248,10 +239,12 @@
                 },
                 loop: false,
                 simulateTouch: true,
-                mousewheel: false, 
-                observer: true, 
+                mousewheel: {
+                    enabled: true,
+                    releaseOnEdges: true,
+                },
+                observer: true,
                 observeParents: true,
-                // NOVO: Eventos para controlar a animação das setas
                 on: {
                     init: function () {
                         applyArrowAnimation(this);
@@ -259,46 +252,110 @@
                     slideChangeTransitionEnd: function () {
                         applyArrowAnimation(this);
                     }
-                    // As classes swiper-button-disabled que o Swiper adiciona
-                    // automaticamente quando loop:false já ajudarão a parar a animação
-                    // visualmente (por causa do CSS .swiper-button-disabled.swiper-arrow-animated::after)
                 }
             });
         });
 
+        // Passa os dados dos links do cartão como um objeto JSON para o JavaScript
+        const cardLinksData = {{ dados.card_links | tojson | safe }};
+
         function addToContacts() {
             const sanitizeVCardString = (str) => {
                 if (typeof str !== 'string') return '';
-                return str.replace(/\n/g, '\\n').replace(/,/g, '\\,').replace(/;/g, '\\;');
+                let cleanedStr = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''); // Remove caracteres de controle problemáticos
+                cleanedStr = cleanedStr.replace(/\\/g, '\\\\'); // Escapa barras invertidas
+                cleanedStr = cleanedStr.replace(/,/g, '\\,');   // Escapa vírgulas
+                cleanedStr = cleanedStr.replace(/;/g, '\\;');   // Escapa ponto e vírgula
+                cleanedStr = cleanedStr.replace(/\n/g, '\\n');  // Converte novas linhas para literal \n
+                return cleanedStr;
+            };
+            
+            // Sanitize o nome do perfil para o nome do arquivo .vcf
+            const sanitizeForFilename = (str) => {
+                if (typeof str !== 'string') return 'contato';
+                return str.replace(/[^a-z0-9_\-]/ig, '_');
             };
 
             const cardNome = sanitizeVCardString("{{ dados.card_nome if dados.card_nome else dados.nome }}");
             const cardTitulo = sanitizeVCardString("{{ dados.card_titulo }}");
             const cardRegistro = sanitizeVCardString("{{ dados.card_registro_profissional }}");
             const email = sanitizeVCardString("{{ dados.email }}");
-            
+
             let vCardData = `BEGIN:VCARD
 VERSION:3.0
 N:${cardNome};;;;
 FN:${cardNome}`;
             if (cardTitulo) vCardData += `\nTITLE:${cardTitulo}`;
-            if (cardRegistro) vCardData += `\nORG:${cardRegistro}`; 
+            if (cardRegistro) vCardData += `\nORG:${cardRegistro}`;
             if (email) vCardData += `\nEMAIL;TYPE=INTERNET,PREF:${email}`;
-            
-            {% for link in dados.card_links %}
-                {% if link.url and link.url.startswith('tel:') %}
-            vCardData += `\nTEL;TYPE=CELL:${sanitizeVCardString(link.url.replace('tel:', ''))}`;
-                {% elif link.url and link.url.startswith('mailto:') %}
-            vCardData += `\nEMAIL;TYPE=INTERNET:${sanitizeVCardString(link.url.replace('mailto:', ''))}`;
-                {% elif link.url %}
-            vCardData += `\nURL;TYPE={{ link.icon | replace('-', ' ') | title | replace(' ', '') }}:${sanitizeVCardString(link.url)}`; 
-                {% endif %}
-                {% if link.at_text and not link.url %} 
-            vCardData += `\nNOTE:{{ link.icon | replace('-', ' ') | title }}: ${sanitizeVCardString(link.at_text)}`;
-                {% elif link.at_text and link.url %} 
-            vCardData += `\nNOTE:{{ link.icon | replace('-', ' ') | title }} Handle: ${sanitizeVCardString(link.at_text)}`;
-                {% endif %}
-            {% endfor %}
+
+            // Itera sobre o array JavaScript cardLinksData
+            if (Array.isArray(cardLinksData)) {
+                cardLinksData.forEach(link => {
+                    const icon_type = link.icon ? link.icon.toLowerCase() : "";
+                    // Sanitize link.url e link.at_text aqui dentro do JavaScript
+                    const link_url_original = link.url || "";
+                    const link_at_text_original = link.at_text || "";
+
+                    const link_url_sanitized = sanitizeVCardString(link_url_original);
+                    const link_at_text_sanitized = sanitizeVCardString(link_at_text_original);
+                    
+                    let iconNameForNote = link.icon ? link.icon.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : "Contato";
+
+
+                    if (icon_type.includes('whatsapp') || icon_type.includes('phone') || link_url_original.startsWith('tel:')) {
+                        let phone_number = link_url_original.replace('tel:', '').replace('https://wa.me/', '');
+                        if (phone_number) {
+                             // Remove query params de números de telefone (ex: ?text=)
+                            vCardData += `\nTEL;TYPE=CELL:${sanitizeVCardString(phone_number.split('?')[0])}`;
+                        }
+                    } else if (icon_type.includes('mail') || icon_type.includes('email') || link_url_original.startsWith('mailto:')) {
+                        let email_address = link_url_original.replace('mailto:', '');
+                        if (email_address) {
+                            // Remove query params de emails (ex: ?subject=)
+                            vCardData += `\nEMAIL;TYPE=INTERNET:${sanitizeVCardString(email_address.split('?')[0])}`;
+                        }
+                    } else if (link_url_original) { // Se for um URL genérico
+                        // Usar X-SOCIALPROFILE para redes sociais conhecidas
+                        if (icon_type.includes('linkedin')) {
+                            vCardData += `\nX-SOCIALPROFILE;TYPE=linkedin:${link_url_sanitized}`;
+                        } else if (icon_type.includes('twitter') || icon_type.includes('x-com')) {
+                            vCardData += `\nX-SOCIALPROFILE;TYPE=twitter:${link_url_sanitized}`;
+                        } else if (icon_type.includes('instagram')) {
+                            vCardData += `\nX-SOCIALPROFILE;TYPE=instagram:${link_url_sanitized}`;
+                        } else if (icon_type.includes('facebook')) {
+                            vCardData += `\nX-SOCIALPROFILE;TYPE=facebook:${link_url_sanitized}`;
+                        } else { // Para outros links, usar URL padrão
+                            vCardData += `\nURL;TYPE=${sanitizeVCardString(iconNameForNote.replace(/ /g,''))}:${link_url_sanitized}`;
+                        }
+                    }
+
+                    // Adiciona o @texto como uma nota, se existir
+                    if (link_at_text_original) {
+                        // Ajusta o prefixo da nota para ser mais descritivo
+                        if (icon_type.includes('linkedin') && !link_url_original) {
+                             iconNameForNote = 'LinkedIn Handle';
+                        } else if ((icon_type.includes('twitter') || icon_type.includes('x-com')) && !link_url_original) {
+                             iconNameForNote = 'Twitter/X Handle';
+                             // Garante que o @texto para twitter/X comece com @ se não tiver
+                             if (!link_at_text_original.startsWith('@')) {
+                                 link_at_text_sanitized = sanitizeVCardString('@' + link_at_text_original);
+                             }
+                        } else if (icon_type.includes('instagram') && !link_url_original) {
+                             iconNameForNote = 'Instagram Handle';
+                             if (!link_at_text_original.startsWith('@')) {
+                                 link_at_text_sanitized = sanitizeVCardString('@' + link_at_text_original);
+                             }
+                        }
+                        vCardData += `\nNOTE:${iconNameForNote}: ${link_at_text_sanitized}`;
+                    }
+                });
+            }
+
+            {% if dados.foto and dados.foto.startswith('http') %}
+            // Adicionar foto via URL é menos suportado, mas pode ser incluído se desejado.
+            // vCardData += `\nPHOTO;VALUE=URL:{{ dados.foto }}`;
+            {% endif %}
 
             vCardData += `\nEND:VCARD`;
 
@@ -306,8 +363,9 @@ FN:${cardNome}`;
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            const profileName = "{{ dados.profile | default('contato', true) }}".replace(/[^a-z0-9_\-]/ig, '_');
-            a.download = `contato_${profileName}.vcf`;
+            // Usa a função de sanitização para o nome do arquivo
+            const profileNameForFile = sanitizeForFilename("{{ dados.profile | default('contato', true) }}");
+            a.download = `contato_${profileNameForFile}.vcf`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
