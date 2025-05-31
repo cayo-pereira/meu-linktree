@@ -42,8 +42,12 @@
         @keyframes progress { 0% { width: 0%; margin-left: 0%; } 50% { width: 100%; margin-left: 0%; } 100% { width: 0%; margin-left: 100%; } }
         .btn { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: var(--primary-color); color: white; text-decoration: none; border-radius: var(--border-radius); font-weight: 500; transition: all 0.3s ease; }
         .btn:hover { background-color: var(--secondary-color); transform: translateY(-2px); }
-        .debug-info { font-size: 0.8rem; color: var(--text-color-light); margin-top: 30px; }
-        #debug-log { margin-top: 15px; font-size: 0.7rem; text-align: left; max-height: 100px; overflow-y: auto; background: #eee; padding: 5px; border-radius: 3px; color: #333;}
+        /* A classe .debug-info pode ser mantida para a mensagem de fallback, mas o #debug-log será removido */
+        .debug-info { 
+            font-size: 0.8rem; 
+            color: var(--text-color-light); /* Usando variável de cor do texto */
+            margin-top: 30px; 
+        }
     </style>
 </head>
 <body>
@@ -62,23 +66,12 @@
         </a>
         <div class="debug-info">
             Se o redirecionamento não funcionar automaticamente, clique no botão acima.
-            <div id="debug-log" style="background-color: var(--input-bg-light); color: var(--text-color-light); border: 1px solid var(--border-color-light);"></div>
-        </div>
+            </div>
     </div>
 
     <script>
-        const debugLogEl = document.getElementById('debug-log');
-        function logToPage(message) {
-            if(debugLogEl) {
-                const p = document.createElement('p');
-                p.textContent = message;
-                p.style.margin = '2px 0';
-                p.style.borderBottom = '1px solid var(--border-color-light)';
-                p.style.paddingBottom = '2px';
-                debugLogEl.appendChild(p);
-            }
-            console.log(message); // Log to console as well
-        }
+        // A função logToPage e suas chamadas foram removidas.
+        // console.log ainda pode ser usado aqui para depuração no console do navegador se necessário.
 
         function getHashParams() {
             const hashParams = {};
@@ -103,32 +96,32 @@
         }
 
         window.onload = function() {
-            logToPage("Página callback.html carregada.");
-            logToPage("URL Completa: " + window.location.href);
-            logToPage("Hash da URL: " + window.location.hash);
-            logToPage("Query String: " + window.location.search);
+            // console.log("Página callback.html carregada."); // Exemplo de log no console do navegador
+            // console.log("URL Completa: " + window.location.href);
+            // console.log("Hash da URL: " + window.location.hash);
+            // console.log("Query String: " + window.location.search);
 
             const hashData = getHashParams();
             const queryData = getQueryParams();
 
             const accessToken = hashData.access_token;
             const refreshToken = hashData.refresh_token;
-            const authCode = queryData.code; // Get 'code' from query string
+            const authCode = queryData.code;
             const errorFromHash = hashData.error;
             const errorDescriptionFromHash = hashData.error_description;
             const errorFromQuery = queryData.error;
             const errorDescriptionFromQuery = queryData.error_description;
 
-            logToPage("Dados do Hash: " + JSON.stringify(hashData));
-            logToPage("Dados da Query String: " + JSON.stringify(queryData));
+            // console.log("Dados do Hash: " + JSON.stringify(hashData));
+            // console.log("Dados da Query String: " + JSON.stringify(queryData));
 
             if (errorFromHash) {
-                logToPage("Erro no hash: " + errorFromHash + (errorDescriptionFromHash ? " - " + errorDescriptionFromHash : ""));
+                // console.error("Erro no hash: " + errorFromHash + (errorDescriptionFromHash ? " - " + errorDescriptionFromHash : ""));
                 window.location.href = "{{ url_for('index') }}?error=" + encodeURIComponent(errorFromHash) + (errorDescriptionFromHash ? "&error_description=" + encodeURIComponent(errorDescriptionFromHash) : "");
                 return;
             }
             if (errorFromQuery) {
-                logToPage("Erro na query string: " + errorFromQuery + (errorDescriptionFromQuery ? " - " + errorDescriptionFromQuery : ""));
+                // console.error("Erro na query string: " + errorFromQuery + (errorDescriptionFromQuery ? " - " + errorDescriptionFromQuery : ""));
                 window.location.href = "{{ url_for('index') }}?error=" + encodeURIComponent(errorFromQuery) + (errorDescriptionFromQuery ? "&error_description=" + encodeURIComponent(errorDescriptionFromQuery) : "");
                 return;
             }
@@ -142,15 +135,15 @@
                     access_token: accessToken,
                     refresh_token: refreshToken 
                 };
-                logToPage("Access Token encontrado no hash. Usando método de tokens.");
+                // console.log("Access Token encontrado no hash. Usando método de tokens.");
             } else if (authCode) {
                 authMethod = "code";
                 payload = {
                     auth_code: authCode
                 };
-                logToPage("Código de autorização ('code') encontrado na query string. Usando método de código.");
+                // console.log("Código de autorização ('code') encontrado na query string. Usando método de código.");
             } else {
-                logToPage("Nenhum token no hash nem código na query string encontrados.");
+                // console.warn("Nenhum token no hash nem código na query string encontrados.");
                 window.location.href = "{{ url_for('index') }}?error=no_token_or_code";
                 return;
             }
@@ -163,33 +156,33 @@
                 body: JSON.stringify(payload),
             })
             .then(response => {
-                logToPage(`Resposta do fetch (/callback) com método '${authMethod}' - Status: ` + response.status);
+                // console.log(`Resposta do fetch (/callback) com método '${authMethod}' - Status: ` + response.status);
                 if (!response.ok) {
                     return response.json().then(errData => {
-                        logToPage("Fetch NÃO OK, JSON: " + JSON.stringify(errData));
+                        // console.error("Fetch NÃO OK, JSON: " + JSON.stringify(errData));
                         throw new Error(errData.error || `Erro do servidor: ${response.status}`);
                     }).catch((jsonError) => {
-                        logToPage("Fetch NÃO OK, não JSON ou erro ao parsear: " + jsonError.message + " Status Text: " + response.statusText);
+                        // console.error("Fetch NÃO OK, não JSON ou erro ao parsear: " + jsonError.message + " Status Text: " + response.statusText);
                         throw new Error(`Erro do servidor: ${response.status} ${response.statusText}`);
                     });
                 }
                 return response.json();
             })
             .then(data => {
-                logToPage("Dados do backend (/callback): " + JSON.stringify(data));
+                // console.log("Dados do backend (/callback): " + JSON.stringify(data));
                 if (data.redirect) {
-                    logToPage("Redirecionando para: " + data.redirect);
+                    // console.log("Redirecionando para: " + data.redirect);
                     window.location.href = data.redirect;
                 } else if (data.error) { 
-                    logToPage("Erro do backend: " + data.error);
+                    // console.error("Erro do backend: " + data.error);
                     window.location.href = "{{ url_for('index') }}?error=" + encodeURIComponent(data.error);
                 } else {
-                    logToPage("Resposta inesperada do servidor (sem redirect ou error).");
+                    // console.warn("Resposta inesperada do servidor (sem redirect ou error).");
                     window.location.href = "{{ url_for('index') }}?error=unexpected_backend_response";
                 }
             })
             .catch(error => {
-                logToPage("Erro no fetch ou processamento: " + error.message);
+                // console.error("Erro no fetch ou processamento: " + error.message);
                 window.location.href = "{{ url_for('index') }}?error=callback_processing_error&details=" + encodeURIComponent(error.message);
             });
         };
