@@ -254,61 +254,66 @@ footer {
 }
 
 .card-links-and-button {
-    display: flex !important; /* Mantido */
-    flex-direction: row !important; /* ALTERADO: Para layout lado a lado */
-    justify-content: space-between !important; /* ALTERADO: Para espaçar links e botão */
-    align-items: center !important; /* ALTERADO: Para alinhar verticalmente ao centro */
+    display: flex !important; 
+    flex-direction: row !important; 
+    justify-content: space-between !important; 
+    align-items: center !important; 
     width: 100% !important;
-    padding: 0 !important; /* Resetado padding, espaçamento será por gap ou nos filhos */
+    padding: 0 !important; 
     box-sizing: border-box !important;
-    gap: 5px !important; /* Pequeno espaço entre links e botão */
+    gap: 5px !important; 
     margin-top: auto !important;
 }
 
 .card-links {
     display: flex !important;
-    flex-direction: column !important; /* Links empilhados verticalmente */
-    gap: 2px !important; /* Espaço entre os links */
-    align-items: flex-start !important; /* Alinha os links à esquerda */
-    flex-grow: 1; /* Permite que a área dos links ocupe espaço */
-    overflow: hidden;
+    flex-direction: column !important; 
+    gap: 2px !important; 
+    align-items: flex-start !important; 
+    flex-grow: 1; 
+    overflow: hidden; 
 }
 
 .card-link-item {
     display: flex !important;
     align-items: center !important;
-    gap: 5px !important; /* Espaço entre ícone e texto do link */
+    gap: 5px !important; 
     padding: 1px 0 !important;
     text-decoration: none !important;
     color: white !important;
+    width: 100%; /* MODIFICADO: Adicionado para permitir que .card-link-text use flex-grow corretamente */
 }
 
 .card-link-item:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    transform: translateX(2px); /* Leve ajuste no hover */
+    transform: translateX(2px); 
 }
 
 .card-icon {
-    width: 16px !important; /* AJUSTADO: Menor para caber */
-    height: 16px !important; /* AJUSTADO: Menor para caber */
+    width: 16px !important; 
+    height: 16px !important; 
     object-fit: contain;
-    flex-shrink: 0;
+    flex-shrink: 0; /* MODIFICADO: Adicionado para impedir que o ícone encolha */
 }
+
 .card-link-item .card-link-text {
-    font-size: clamp(10px, 2.8vw, 12px) !important; /* AJUSTADO */
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 90px; /* AJUSTADO: Limite para o texto do link */
+    font-size: clamp(10px, 2.8vw, 12px) !important; 
+    white-space: nowrap;     /* Mantém em uma linha */
+    overflow: hidden;        /* Esconde o excesso */
+    text-overflow: ellipsis; /* Adiciona "..." */
+    /* max-width: 90px; */   /* MODIFICADO: Removido ou comentado */
+    flex-grow: 1;            /* MODIFICADO: Adicionado para ocupar espaço disponível */
+    min-width: 0;            /* MODIFICADO: Adicionado para text-overflow funcionar bem em flex */
+    text-align: left;
 }
 
 .add-to-contacts-btn {
     background-color: #28a745;
     color: white;
     border: none;
-    padding: 5px 8px !important; /* AJUSTADO: Menor padding */
-    border-radius: 6px !important; /* AJUSTADO */
-    font-size: clamp(9px, 2.5vw, 11px) !important; /* AJUSTADO */
+    padding: 5px 8px !important; 
+    border-radius: 6px !important; 
+    font-size: clamp(9px, 2.5vw, 11px) !important; 
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
     display: flex !important;
@@ -316,17 +321,17 @@ footer {
     justify-content: center !important;
     gap: 4px !important;
     text-align: center;
-    flex-shrink: 0; /* Não encolher */
+    flex-shrink: 0; 
     white-space: nowrap;
 }
 
 .add-to-contacts-btn i {
-    font-size: 0.9em !important; /* Mantido */
+    font-size: 0.9em !important; 
 }
 
 .add-to-contacts-btn:hover {
     background-color: #218838;
-    transform: translateY(-1px); /* Leve ajuste no hover */
+    transform: translateY(-1px); 
 }
 
 /* Media Queries para responsividade */
@@ -373,25 +378,7 @@ footer {
   .card-container {
     padding: 10px 15px !important;
     width: 95% !important;
-    /* A proporção de aspect-ratio principal será mantida */
   }
-
-  /* Para o layout do cartão no mobile, já ajustamos .card-links-and-button para row. */
-  /* Se ainda ficar muito apertado, podemos fazer o botão ficar abaixo SÓ AQUI: */
-  /*
-  .card-links-and-button {
-    flex-direction: column !important;
-    align-items: center !important;
-    gap: 8px !important;
-  }
-  .card-links {
-      align-items: center !important;
-  }
-  .add-to-contacts-btn {
-      width: 100% !important;
-      max-width: 180px !important;
-  }
-  */
 }
 
 @media (min-width: 481px) and (max-width: 768px) {
@@ -442,35 +429,29 @@ footer {
     transform: scale(1.1);
 }
 @media (max-width: 768px) {
-    /* Removemos a regra que escondia as setas */
-    /* Agora estilizamos as setas para mobile: */
     .swiper-button-prev,
     .swiper-button-next {
-        /* display: block !important; /* Garante que sejam visíveis se houver outra regra escondendo */
-        --swiper-navigation-size: 30px; /* Tamanho do ícone da seta (menor para mobile) */
-        /* A cor e o alinhamento vertical (top: 50%) são herdados das regras gerais, o que é bom. */
+        --swiper-navigation-size: 30px; 
     }
 
     .swiper-button-prev {
-        left: -240px !important; /* Posição da seta esquerda (mais próxima da borda) */
+        left: -240px !important; 
         margin-top: -90px !important;
     }
 
     .swiper-button-next {
-        right: -240px !important; /* Posição da seta direita (mais próxima da borda) */
+        right: -240px !important; 
         margin-top: -90px !important;
     }
 
-    /* As demais regras da media query para .swiper-pagination-bullet, etc., permanecem como estão */
-    .swiper-pagination-bullet { /* Esta regra já deve existir na sua media query */
+    .swiper-pagination-bullet { 
         background: rgba(255, 255, 255, 0.6);
         opacity: 1;
         transition: background-color 0.3s ease;
     }
-    .swiper-pagination-bullet-active { /* Esta regra já deve existir na sua media query */
+    .swiper-pagination-bullet-active { 
         background: white;
     }
-    /* Não precisamos mexer na paginação, apenas nas setas */
 }
 .swiper-pagination {
     bottom: 15px !important;
@@ -498,28 +479,24 @@ footer {
 }
 
 .swiper-container .swiper-wrapper .swiper-slide.user-page-slide {
-    /* Mantém o overflow-y: auto !important; que já está na regra anterior */
-    /* Estilização para Firefox */
     scrollbar-width: thin;
-    scrollbar-color: #6666663d #1e1e1e00; /* Cor do polegar (thumb) e da trilha (track) */
+    scrollbar-color: #6666663d #1e1e1e00; 
 }
 
-/* Estilização para Webkit (Chrome, Safari, Edge, Opera) */
 .swiper-container .swiper-wrapper .swiper-slide.user-page-slide::-webkit-scrollbar {
-    width: 6px; /* Largura da scrollbar (bem fina) */
+    width: 6px; 
 }
 
 .swiper-container .swiper-wrapper .swiper-slide.user-page-slide::-webkit-scrollbar-track {
-    background: #1E1E1E; /* Cor de fundo da trilha (um cinza bem escuro, quase preto) */
-    border-radius: 3px; /* Bordas arredondadas para a trilha */
+    background: #1E1E1E; 
+    border-radius: 3px; 
 }
 
 .swiper-container .swiper-wrapper .swiper-slide.user-page-slide::-webkit-scrollbar-thumb {
-    background-color: #666; /* Cor do polegar (um cinza médio) */
-    border-radius: 3px; /* Bordas arredondadas para o polegar */
-    /* border: 1px solid #333; */ /* Opcional: uma pequena borda no polegar se desejar mais definição */
+    background-color: #666; 
+    border-radius: 3px; 
 }
 
 .swiper-container .swiper-wrapper .swiper-slide.user-page-slide::-webkit-scrollbar-thumb:hover {
-    background-color: #888; /* Cor do polegar ao passar o mouse (um pouco mais claro) */
+    background-color: #888; 
 }

@@ -368,6 +368,61 @@ body.modal-open {
   gap: 1rem;
   align-items: center;
   border: 1px solid var(--border-color-light); /* Usando variável */
+  gap: 8px;
+  
+}
+
+.card-link-item .input-group {
+    /* flex-grow: 1; já deve existir */
+    /* gap: 10px; já deve existir */
+}
+
+.card-link-style-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px; 
+    margin-left: 5px; /* Pequeno espaço após o input group */
+}
+
+.card-link-style-controls .card-link-item-font { /* Para o select de fonte */
+    min-width: 120px; 
+    max-width: 150px;
+    flex-grow: 0; 
+    padding-top: 0.5rem; 
+    padding-bottom: 0.5rem;
+    height: 35px; 
+    font-size: 0.9rem; /* Um pouco menor para caber */
+}
+
+.card-link-style-controls .card-link-item-color { /* Para o input[type="color"] */
+    min-width: 35px;
+    width: 35px; /* Largura fixa */
+    height: 35px;
+    padding: 2px; /* Pequeno padding para a borda do seletor de cor */
+    border: 1px solid var(--border-color-light);
+    border-radius: 4px;
+    background: none;
+    cursor: pointer;
+}
+
+.card-link-item-preview {
+    padding: 0 10px; /* Padding horizontal */
+    border: 1px dashed #999; /* Borda mais suave */
+    min-width: 80px; 
+    max-width: 120px; /* Limitar largura máxima */
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-left: 5px; 
+    border-radius: var(--border-radius);
+    height: 35px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    font-size: 0.9rem;
+    background-color: #555; /* Fundo padrão para o preview no admin */
+    /* Cor do texto e fonte são definidas via JS */
 }
 
 .remove-item {

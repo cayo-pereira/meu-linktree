@@ -260,7 +260,7 @@
                                 <option value="Lato, sans-serif" {% if dados.card_nome_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
                                 <option value="Montserrat, sans-serif" {% if dados.card_nome_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
                             </select>
-                            <input type="color" id="card_nome_color" name="card_nome_color" value="{{ dados.card_nome_color | default('#FFFFFF', true) }}" oninput="updateTextPreview('card_nome_preview', getValue('card_nome'), getValue('card_nome_font'), this.value)">
+                            <input type="color" id="card_nome_color" name="card_nome_color" value="{{ dados.card_nome_color | default(DEFAULT_TEXT_COLOR_CARD, true) }}" oninput="updateTextPreview('card_nome_preview', getValue('card_nome'), getValue('card_nome_font'), this.value)">
                         </div>
                         <div class="text-preview" id="card_nome_preview">Prévia do Nome (Cartão)</div>
                     </div>
@@ -281,7 +281,7 @@
                                 <option value="Lato, sans-serif" {% if dados.card_titulo_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
                                 <option value="Montserrat, sans-serif" {% if dados.card_titulo_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
                             </select>
-                            <input type="color" id="card_titulo_color" name="card_titulo_color" value="{{ dados.card_titulo_color | default('#EEEEEE', true) }}" oninput="updateTextPreview('card_titulo_preview', getValue('card_titulo'), getValue('card_titulo_font'), this.value)">
+                            <input type="color" id="card_titulo_color" name="card_titulo_color" value="{{ dados.card_titulo_color | default(DEFAULT_TITLE_COLOR_CARD, true) }}" oninput="updateTextPreview('card_titulo_preview', getValue('card_titulo'), getValue('card_titulo_font'), this.value)">
                         </div>
                          <div class="text-preview" id="card_titulo_preview">Prévia do Título</div>
                     </div>
@@ -302,7 +302,7 @@
                                 <option value="Lato, sans-serif" {% if dados.card_registro_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
                                 <option value="Montserrat, sans-serif" {% if dados.card_registro_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
                             </select>
-                            <input type="color" id="card_registro_color" name="card_registro_color" value="{{ dados.card_registro_color | default('#BBBBBB', true) }}" oninput="updateTextPreview('card_registro_preview', getValue('card_registro_profissional'), getValue('card_registro_font'), this.value)">
+                            <input type="color" id="card_registro_color" name="card_registro_color" value="{{ dados.card_registro_color | default(DEFAULT_REG_COLOR_CARD, true) }}" oninput="updateTextPreview('card_registro_preview', getValue('card_registro_profissional'), getValue('card_registro_font'), this.value)">
                         </div>
                         <div class="text-preview" id="card_registro_preview">Prévia do Registro</div>
                     </div>
@@ -350,7 +350,7 @@
                     </div>
 
                     <div class="form-group form-group-inline">
-                        <label for="card_link_text_color">Cor do Texto dos Links do Cartão:</label>
+                        <label for="card_link_text_color">Cor Global do Texto dos Links do Cartão (Fallback):</label>
                         <input type="color" id="card_link_text_color" name="card_link_text_color" value="{{ dados.card_link_text_color | default(DEFAULT_CARD_LINK_TEXT_COLOR, true) }}">
                     </div>
 
@@ -363,7 +363,8 @@
                             {% if dados.card_links %}
                                 {% for link in dados.card_links %}
                                 <div class="card-link-item">
-                                    <i class="fas fa-grip-vertical drag-handle"></i> <img src="/static/icons/{{ link.icon }}.png" alt="{{ link.icon }}" width="24">
+                                    <i class="fas fa-grip-vertical drag-handle"></i>
+                                    <img src="/static/icons/{{ link.icon }}.png" alt="{{ link.icon }}" width="24">
                                     <input type="hidden" name="card_icon_name[]" value="{{ link.icon }}">
                                     <div class="input-group">
                                         <input type="text" name="card_icon_url[]"
@@ -373,16 +374,33 @@
                                         <input type="text" name="card_icon_at_text[]"
                                                     value="{{ link.at_text }}"
                                                     placeholder="@texto"
-                                                    class="form-input">
+                                                    class="form-input card-link-item-at-text">
                                     </div>
-                                    <span class="remove-item"><i class="fas fa-times"></i></span>
+                                    <div class="card-link-style-controls">
+                                        <input type="hidden" name="card_icon_font[]" value="{{ link.font | default(DEFAULT_FONT, true) }}">
+                                        <select class="form-input card-link-item-font">
+                                            <option value="Inter, sans-serif" {% if (link.font | default(DEFAULT_FONT, true)) == 'Inter, sans-serif' %}selected{% endif %}>Padrão (Inter)</option>
+                                            <option value="Arial, sans-serif" {% if (link.font | default(DEFAULT_FONT, true)) == 'Arial, sans-serif' %}selected{% endif %}>Arial</option>
+                                            <option value="Verdana, sans-serif" {% if (link.font | default(DEFAULT_FONT, true)) == 'Verdana, sans-serif' %}selected{% endif %}>Verdana</option>
+                                            <option value="Georgia, serif" {% if (link.font | default(DEFAULT_FONT, true)) == 'Georgia, serif' %}selected{% endif %}>Georgia</option>
+                                            <option value="'Times New Roman', Times, serif" {% if (link.font | default(DEFAULT_FONT, true)) == "'Times New Roman', Times, serif" %}selected{% endif %}>Times New Roman</option>
+                                            <option value="'Courier New', Courier, monospace" {% if (link.font | default(DEFAULT_FONT, true)) == "'Courier New', Courier, monospace" %}selected{% endif %}>Courier New</option>
+                                            <option value="Roboto, sans-serif" {% if (link.font | default(DEFAULT_FONT, true)) == 'Roboto, sans-serif' %}selected{% endif %}>Roboto</option>
+                                            <option value="'Open Sans', sans-serif" {% if (link.font | default(DEFAULT_FONT, true)) == "'Open Sans', sans-serif" %}selected{% endif %}>Open Sans</option>
+                                            <option value="Lato, sans-serif" {% if (link.font | default(DEFAULT_FONT, true)) == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
+                                            <option value="Montserrat, sans-serif" {% if (link.font | default(DEFAULT_FONT, true)) == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
+                                        </select>
+                                        <input type="hidden" name="card_icon_color[]" value="{{ link.color | default(DEFAULT_TEXT_COLOR_CARD, true) }}">
+                                        <input type="color" class="card-link-item-color" value="{{ link.color | default(DEFAULT_TEXT_COLOR_CARD, true) }}">
+                                    </div>
+                                    <div class="card-link-item-preview"></div> <span class="remove-item"><i class="fas fa-times"></i></span>
                                 </div>
                                 {% endfor %}
                             {% endif %}
                         </div>
                     </div>
                 </div>
-                 </div>
+            </div>
 
             <div class="form-actions">
                 <button type="submit" class="btn-save">
@@ -394,9 +412,14 @@
             </div>
         </form>
     </div>
+    <script>
+        // Passando constantes do Flask para o JavaScript
+        const DEFAULT_FONT_JS = "{{ DEFAULT_FONT | e }}";
+        const DEFAULT_TEXT_COLOR_CARD_JS = "{{ DEFAULT_TEXT_COLOR_CARD | e }}";
+    </script>
     <script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
-    <a href="/{{ dados.profile }}" class="preview-float-btn">
+    <a href="/{{ dados.profile }}" class="preview-float-btn" target="_blank">
         <i class="fas fa-eye"></i>
         <span class="preview-float-tooltip">Visualizar Página</span>
     </a>

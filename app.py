@@ -7,20 +7,16 @@ from uuid import uuid4
 import json
 import os
 import re
-import logging # MOVIMENTO IMPORT logging para cima
+import logging
 
 # Configurar loggers de bibliotecas antes de qualquer outra coisa
-# Silenciar logs INFO excessivos do httpx (usado pelo supabase-py)
 logging.getLogger("httpx").setLevel(logging.WARNING)
-# Se quiser silenciar também os logs de acesso padrão do Werkzeug (opcional, útil em dev):
 # logging.getLogger("werkzeug").setLevel(logging.WARNING)
 
 load_dotenv()
 
-# Configuração de logging do aplicativo
-# O nível INFO para o logger do app ainda mostrará os logger.info() do seu código.
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__) # Garante que o logger do app seja '__main__' ou o nome do módulo
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY') or 'dev-secret-key'
@@ -42,22 +38,20 @@ supabase: Client = create_client(
     )
 )
 
-# Configurações do app
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# --- VALORES PADRÃO PARA FONTES E CORES ---
 DEFAULT_FONT = "Inter, sans-serif"
 DEFAULT_TEXT_COLOR_PAGE = "#333333"
 DEFAULT_BIO_COLOR_PAGE = "#555555"
-DEFAULT_TEXT_COLOR_CARD = "#FFFFFF"
+DEFAULT_TEXT_COLOR_CARD = "#FFFFFF" # Usado para nome, título, registro E como padrão para itens de link
 DEFAULT_TITLE_COLOR_CARD = "#EEEEEE"
 DEFAULT_REG_COLOR_CARD = "#BBBBBB"
 DEFAULT_CARD_BG_COLOR = "#4361ee"
-DEFAULT_CARD_LINK_TEXT_COLOR = "#FFFFFF"
-# --- FIM VALORES PADRÃO ---
+DEFAULT_CARD_LINK_TEXT_COLOR = "#FFFFFF" # Cor global para links do cartão (fallback)
+
 
 def upload_to_supabase(file, user_id, field_type):
     try:
@@ -140,8 +134,8 @@ def delete_page():
         flash("❌ Sessão inválida. Por favor, faça login novamente.", "error")
         return redirect(url_for('login_google'))
     
-    user_id_to_delete = session.get('user_id') # Salva antes de limpar a sessão, se necessário
-    profile_to_redirect_to_admin = session.get('profile', '') # Para redirecionamento em caso de erro
+    user_id_to_delete = session.get('user_id') 
+    profile_to_redirect_to_admin = session.get('profile', '')
 
     try:
         user_id = session['user_id']
@@ -166,22 +160,18 @@ def delete_page():
                     logger.error(f"Erro ao remover arquivos do storage para usuário {user_id}: {str(e_storage)}")
         
         response_db_delete = supabase.table('usuarios').delete().eq('id', user_id).execute()
-        # Ajuste no log para verificar se data existe e seu tamanho
         affected_rows = len(response_db_delete.data) if hasattr(response_db_delete, 'data') and response_db_delete.data is not None else 0
         logger.info(f"Usuário {user_id} deletado da tabela 'usuarios'. Registros afetados: {affected_rows}.")
 
         
         try:
-            # Usar uma chave de serviço é mais seguro aqui.
-            # Se SUPABASE_SERVICE_KEY não estiver definida, ele usará SUPABASE_KEY (anon),
-            # o que pode não ter permissão para deletar usuários do Auth.
             supabase_admin_key = os.getenv("SUPABASE_SERVICE_KEY")
             if not supabase_admin_key:
                 logger.warning("Chave de serviço SUPABASE_SERVICE_KEY não configurada. Tentando com a chave anônima, o que pode falhar.")
                 supabase_admin_key = SUPABASE_KEY
 
             supabase_admin_client = create_client(SUPABASE_URL, supabase_admin_key)
-            supabase_admin_client.auth.admin.delete_user(user_id) # Isso requer o UUID do usuário no Auth
+            supabase_admin_client.auth.admin.delete_user(user_id) 
             logger.info(f"Usuário {user_id} (UUID) deletado do Supabase Auth.")
         except Exception as e_auth_delete:
             logger.warning(f"Não foi possível deletar o usuário {user_id} do Supabase Auth (pode ser permissão ou chave de serviço não configurada): {str(e_auth_delete)}")
@@ -193,7 +183,6 @@ def delete_page():
     except Exception as e:
         logger.error(f"Erro ao deletar página para o usuário {user_id_to_delete}: {str(e)}", exc_info=True)
         flash("⚠️ Erro ao apagar sua página. Tente novamente ou contate o suporte.", "error")
-        # Se profile_to_redirect_to_admin estiver vazio, redireciona para index
         return redirect(url_for('admin_panel', username=profile_to_redirect_to_admin) if profile_to_redirect_to_admin else url_for('index') )
 
 
@@ -214,6 +203,7 @@ def user_page(profile):
         
         user_data = res.data
         
+        # Populando com padrões
         user_data['nome_font'] = user_data.get('nome_font') or DEFAULT_FONT
         user_data['nome_color'] = user_data.get('nome_color') or DEFAULT_TEXT_COLOR_PAGE
         user_data['bio_font'] = user_data.get('bio_font') or DEFAULT_FONT
@@ -224,13 +214,14 @@ def user_page(profile):
         user_data['card_titulo_color'] = user_data.get('card_titulo_color') or DEFAULT_TITLE_COLOR_CARD
         user_data['card_registro_font'] = user_data.get('card_registro_font') or DEFAULT_FONT
         user_data['card_registro_color'] = user_data.get('card_registro_color') or DEFAULT_REG_COLOR_CARD
-        user_data['card_link_text_color'] = user_data.get('card_link_text_color') or DEFAULT_CARD_LINK_TEXT_COLOR
+        user_data['card_link_text_color'] = user_data.get('card_link_text_color') or DEFAULT_CARD_LINK_TEXT_COLOR # Cor global
 
         for key_json in ['custom_buttons', 'social_links', 'card_links']:
             if key_json in user_data and user_data[key_json]:
                 try:
                     if isinstance(user_data[key_json], str):
                         user_data[key_json] = json.loads(user_data[key_json])
+                    
                     if key_json == 'custom_buttons' and isinstance(user_data[key_json], list):
                         for button in user_data[key_json]: 
                             button.setdefault('bold', False)
@@ -242,20 +233,30 @@ def user_page(profile):
                             button.setdefault('textColor', '#FFFFFF')
                             button.setdefault('borderColor', '#000000')
                             button.setdefault('shadowType', 'none')
+                    
+                    # Adicionando padrões para font e color em card_links individuais
+                    if key_json == 'card_links' and isinstance(user_data[key_json], list):
+                        for link_item in user_data[key_json]:
+                            link_item.setdefault('font', DEFAULT_FONT)
+                            link_item.setdefault('color', DEFAULT_TEXT_COLOR_CARD) # Cor padrão para item individual
+                
                 except (json.JSONDecodeError, ValueError, TypeError) as e:
                     logger.warning(f"Erro ao processar {key_json} para perfil {profile}: {str(e)}")
                     user_data[key_json] = []
             else:
                 user_data[key_json] = []
         
-        response = make_response(render_template('user_page.html', dados=user_data))
+        response = make_response(render_template('user_page.html', 
+                                                dados=user_data, 
+                                                DEFAULT_TEXT_COLOR_CARD=DEFAULT_TEXT_COLOR_CARD, 
+                                                DEFAULT_FONT=DEFAULT_FONT))
         response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
         response.headers['Pragma'] = 'no-cache'
         response.headers['Expires'] = '0'
         return response
     
     except Exception as e:
-        if "PGRST116" in str(e):
+        if "PGRST116" in str(e): # Erro do Supabase para "zero rows"
             logger.warning(f"Perfil público não encontrado (PGRST116): {profile}")
             abort(404)
         logger.error(f"Erro ao carregar perfil público {profile}: {str(e)}", exc_info=True)
@@ -298,7 +299,6 @@ def callback():
         refresh_token_to_store = None
 
         if auth_code:
-            # Mudar para logger.debug ou comentar se não precisar mais deste log detalhado
             logger.debug(f"Recebido auth_code para processamento.")
             try:
                 exchanged_session_response = supabase.auth.exchange_code_for_session({'auth_code': auth_code})
@@ -306,7 +306,6 @@ def callback():
                     user = exchanged_session_response.user
                     access_token_to_store = exchanged_session_response.session.access_token
                     refresh_token_to_store = exchanged_session_response.session.refresh_token
-                    # Mudar para logger.debug ou comentar
                     logger.debug(f"Sessão trocada com sucesso para user ID: {user.id}")
                 else:
                     logger.error("Falha ao trocar código: resposta inválida do Supabase.")
@@ -316,7 +315,6 @@ def callback():
                 return jsonify({"error": "Autenticação com Supabase falhou ao trocar código"}), 401
         
         elif received_access_token:
-            # Mudar para logger.debug ou comentar
             logger.debug(f"Recebido access_token direto para processamento.")
             try:
                 session_response = supabase.auth.set_session(received_access_token, received_refresh_token)
@@ -356,7 +354,7 @@ def callback():
                 'card_nome': user.user_metadata.get('full_name', user.email if user.email else 'Usuário Anônimo'),
                 'card_titulo': '',
                 'card_registro_profissional': '',
-                'card_links': json.dumps([]),
+                'card_links': json.dumps([]), # Será populado com font e color padrão no GET
                 'card_background_type': 'color',
                 'card_background_value': DEFAULT_CARD_BG_COLOR,
                 'nome_font': DEFAULT_FONT,
@@ -378,7 +376,7 @@ def callback():
                     logger.error(f"Falha ao criar perfil para {user.id} no banco. Resposta: {insert_response}")
                     return jsonify({"error": "Falha ao criar perfil no banco de dados"}), 500
                 user_data = insert_response.data[0]
-                logger.info(f"Novo perfil criado para usuário {user.id} com slug {slug}.") # Log INFO para criação de usuário
+                logger.info(f"Novo perfil criado para usuário {user.id} com slug {slug}.")
             except Exception as e_insert:
                 logger.error(f"Erro ao inserir novo usuário {user.id} na tabela 'usuarios': {str(e_insert)}", exc_info=True)
                 return jsonify({"error": "Erro interno ao criar perfil"}), 500
@@ -389,7 +387,6 @@ def callback():
         session['profile'] = user_data['profile']
         session['logado'] = True
         
-        # Este log é importante para confirmar o login
         logger.info(f"Usuário {user.id} ({user_data['profile']}) logado com sucesso via callback.")
         return jsonify({
             "message": "Login bem-sucedido!",
@@ -418,7 +415,7 @@ def admin_panel(username):
             flash("🔑 Sua sessão expirou ou não pôde ser validada. Por favor, faça login novamente.", "error")
             return redirect(url_for('login_google'))
         
-    except Exception as e_auth: # noqa E722
+    except Exception as e_auth: 
         logger.warning(f"Erro ao verificar/restaurar sessão para Flask session user_id {session.get('user_id')}: {str(e_auth)}. Deslogando.", exc_info=True)
         session.clear()
         flash("🔑 Ocorreu um erro com sua sessão. Por favor, faça login novamente.", "error")
@@ -438,7 +435,7 @@ def admin_panel(username):
             flash("🚫 Você não tem permissão para acessar esta página.", "error")
             return redirect(url_for('admin_panel', username=session.get('profile')) if session.get('profile') else url_for('login_google'))
 
-    except Exception as e_fetch_target: # noqa E722
+    except Exception as e_fetch_target:
         logger.error(f"Erro ao buscar dados do perfil '{username}' para validação no admin_panel: {str(e_fetch_target)}")
         flash("⚠️ Ocorreu um erro ao verificar as permissões da página. Tente novamente.", "warning")
         return redirect(url_for('index'))
@@ -451,6 +448,7 @@ def admin_panel(username):
         session.clear()
         return redirect(url_for('login_google'))
 
+    # Populando com padrões para exibição no template
     user_data['nome_font'] = user_data.get('nome_font') or DEFAULT_FONT
     user_data['nome_color'] = user_data.get('nome_color') or DEFAULT_TEXT_COLOR_PAGE
     user_data['bio_font'] = user_data.get('bio_font') or DEFAULT_FONT
@@ -461,7 +459,7 @@ def admin_panel(username):
     user_data['card_titulo_color'] = user_data.get('card_titulo_color') or DEFAULT_TITLE_COLOR_CARD
     user_data['card_registro_font'] = user_data.get('card_registro_font') or DEFAULT_FONT
     user_data['card_registro_color'] = user_data.get('card_registro_color') or DEFAULT_REG_COLOR_CARD
-    user_data['card_link_text_color'] = user_data.get('card_link_text_color') or DEFAULT_CARD_LINK_TEXT_COLOR
+    user_data['card_link_text_color'] = user_data.get('card_link_text_color') or DEFAULT_CARD_LINK_TEXT_COLOR # Global
     user_data['card_background_type'] = user_data.get('card_background_type') or 'color'
     user_data['card_background_value'] = user_data.get('card_background_value') or DEFAULT_CARD_BG_COLOR
     if user_data['card_background_type'] == 'color' and not re.match(r'^#[0-9a-fA-F]{6}$', str(user_data.get('card_background_value',''))):
@@ -472,6 +470,7 @@ def admin_panel(username):
             try:
                 if isinstance(user_data[key_json], str):
                     user_data[key_json] = json.loads(user_data[key_json])
+                
                 if key_json == 'custom_buttons' and isinstance(user_data[key_json], list):
                     for button in user_data[key_json]:
                         button.setdefault('bold', False)
@@ -483,6 +482,13 @@ def admin_panel(username):
                         button.setdefault('textColor', '#FFFFFF')
                         button.setdefault('borderColor', '#000000')
                         button.setdefault('shadowType', 'none')
+                
+                # Adicionando padrões para font e color em card_links individuais para o template
+                if key_json == 'card_links' and isinstance(user_data[key_json], list):
+                    for link_item in user_data[key_json]:
+                        link_item.setdefault('font', DEFAULT_FONT)
+                        link_item.setdefault('color', DEFAULT_TEXT_COLOR_CARD) # Cor padrão para item individual
+
             except (json.JSONDecodeError, ValueError, TypeError) as e:
                 logger.warning(f"Erro ao processar {key_json} no admin para {username}: {str(e)}")
                 user_data[key_json] = []
@@ -510,36 +516,47 @@ def admin_panel(username):
                 'card_titulo_color': request.form.get('card_titulo_color', DEFAULT_TITLE_COLOR_CARD),
                 'card_registro_font': request.form.get('card_registro_font', DEFAULT_FONT),
                 'card_registro_color': request.form.get('card_registro_color', DEFAULT_REG_COLOR_CARD),
-                'card_link_text_color': request.form.get('card_link_text_color', DEFAULT_CARD_LINK_TEXT_COLOR),
+                'card_link_text_color': request.form.get('card_link_text_color', DEFAULT_CARD_LINK_TEXT_COLOR), # Global
             }
 
             novo_profile = update_data['profile']
             
             if not is_valid_slug(novo_profile):
                 flash("❌ URL da página inválida. Use apenas letras minúsculas, números e hífens.", "error")
-                current_form_data = user_data.copy()
-                current_form_data.update(request.form.to_dict())
-                for key_json_form in ['custom_buttons', 'social_links', 'card_links']:
-                     current_form_data[key_json_form] = json.loads(request.form.get(key_json_form, '[]')) if isinstance(request.form.get(key_json_form), str) else request.form.get(key_json_form, [])
-                for field in ['nome_font', 'nome_color', 'bio_font', 'bio_color', 'card_nome_font', 'card_nome_color', 'card_titulo_font', 'card_titulo_color', 'card_registro_font', 'card_registro_color', 'card_link_text_color']:
-                    current_form_data[field] = request.form.get(field, user_data.get(field))
-                return render_template('admin.html', dados=current_form_data, DEFAULT_CARD_LINK_TEXT_COLOR=DEFAULT_CARD_LINK_TEXT_COLOR)
-            
+                current_form_data = user_data.copy() # Start with current user_data to preserve loaded JSON lists
+                current_form_data.update(request.form.to_dict()) # Override with form values
+                # Manter os links sociais, botões e links do cartão como foram submetidos ou estavam
+                current_form_data['social_links'] = json.loads(request.form.get('social_links_json_hidden', json.dumps(user_data.get('social_links', []))))
+                current_form_data['custom_buttons'] = json.loads(request.form.get('custom_buttons_json_hidden', json.dumps(user_data.get('custom_buttons', []))))
+                current_form_data['card_links'] = json.loads(request.form.get('card_links_json_hidden', json.dumps(user_data.get('card_links', []))))
+                # Re-processar card_links para garantir font/color para o template, mesmo em erro
+                if isinstance(current_form_data['card_links'], list):
+                    for link_item in current_form_data['card_links']:
+                        link_item.setdefault('font', request.form.getlist('card_icon_font[]')[current_form_data['card_links'].index(link_item)] if current_form_data['card_links'].index(link_item) < len(request.form.getlist('card_icon_font[]')) else DEFAULT_FONT)
+                        link_item.setdefault('color', request.form.getlist('card_icon_color[]')[current_form_data['card_links'].index(link_item)] if current_form_data['card_links'].index(link_item) < len(request.form.getlist('card_icon_color[]')) else DEFAULT_TEXT_COLOR_CARD)
+
+                return render_template('admin.html', dados=current_form_data, DEFAULT_CARD_LINK_TEXT_COLOR=DEFAULT_CARD_LINK_TEXT_COLOR, DEFAULT_TEXT_COLOR_CARD=DEFAULT_TEXT_COLOR_CARD, DEFAULT_FONT=DEFAULT_FONT)
+
             if novo_profile != username and slug_exists(novo_profile, user_id_from_session):
                 flash(f"❌ A URL '{novo_profile}' já está em uso. Escolha outra.", "error")
-                update_data['profile'] = username
+                update_data['profile'] = username # Revert to old profile slug on error
                 current_form_data = user_data.copy()
-                current_form_data.update(update_data)
-                for key_json_form in ['custom_buttons', 'social_links', 'card_links']:
-                     current_form_data[key_json_form] = json.loads(request.form.get(key_json_form, '[]')) if isinstance(request.form.get(key_json_form), str) else request.form.get(key_json_form, [])
-                for field in ['nome_font', 'nome_color', 'bio_font', 'bio_color', 'card_nome_font', 'card_nome_color', 'card_titulo_font', 'card_titulo_color', 'card_registro_font', 'card_registro_color', 'card_link_text_color']:
-                    current_form_data[field] = request.form.get(field, user_data.get(field))
-                return render_template('admin.html', dados=current_form_data, DEFAULT_CARD_LINK_TEXT_COLOR=DEFAULT_CARD_LINK_TEXT_COLOR)
+                current_form_data.update(update_data) # Apply other changes
+                current_form_data['social_links'] = json.loads(request.form.get('social_links_json_hidden', json.dumps(user_data.get('social_links', []))))
+                current_form_data['custom_buttons'] = json.loads(request.form.get('custom_buttons_json_hidden', json.dumps(user_data.get('custom_buttons', []))))
+                current_form_data['card_links'] = json.loads(request.form.get('card_links_json_hidden', json.dumps(user_data.get('card_links', []))))
+                if isinstance(current_form_data['card_links'], list):
+                    for link_item in current_form_data['card_links']:
+                        link_item.setdefault('font', request.form.getlist('card_icon_font[]')[current_form_data['card_links'].index(link_item)] if current_form_data['card_links'].index(link_item) < len(request.form.getlist('card_icon_font[]')) else DEFAULT_FONT)
+                        link_item.setdefault('color', request.form.getlist('card_icon_color[]')[current_form_data['card_links'].index(link_item)] if current_form_data['card_links'].index(link_item) < len(request.form.getlist('card_icon_color[]')) else DEFAULT_TEXT_COLOR_CARD)
+                return render_template('admin.html', dados=current_form_data, DEFAULT_CARD_LINK_TEXT_COLOR=DEFAULT_CARD_LINK_TEXT_COLOR, DEFAULT_TEXT_COLOR_CARD=DEFAULT_TEXT_COLOR_CARD, DEFAULT_FONT=DEFAULT_FONT)
+
 
             if update_data['card_background_type'] == 'color':
                 update_data['card_background_value'] = request.form.get('card_background_value_color', DEFAULT_CARD_BG_COLOR)
             elif update_data['card_background_type'] == 'image':
-                update_data['card_background_value'] = user_data.get('card_background_value', '')
+                # Mantém o valor existente se nenhum novo arquivo for enviado e nenhum pedido de remoção
+                update_data['card_background_value'] = user_data.get('card_background_value', '') 
 
             social_links_list = []
             social_icon_names = request.form.getlist('social_icon_name[]')
@@ -550,6 +567,7 @@ def admin_panel(username):
 
             custom_buttons_list = []
             button_texts = request.form.getlist('custom_button_text[]')
+            # Iterar com base no número de textos de botão, assumindo que outras listas têm o mesmo comprimento
             for i in range(len(button_texts)):
                 custom_buttons_list.append({
                     'text': button_texts[i].strip(),
@@ -570,12 +588,20 @@ def admin_panel(username):
             
             card_links_list = []
             card_icon_names = request.form.getlist('card_icon_name[]')
+            card_icon_urls = request.form.getlist('card_icon_url[]')
+            card_icon_at_texts = request.form.getlist('card_icon_at_text[]')
+            card_icon_fonts = request.form.getlist('card_icon_font[]') # Lista de fontes
+            card_icon_colors = request.form.getlist('card_icon_color[]') # Lista de cores
+
             for i in range(len(card_icon_names)):
-                card_links_list.append({
+                link_data = {
                     'icon': card_icon_names[i],
-                    'url': request.form.getlist('card_icon_url[]')[i].strip(),
-                    'at_text': request.form.getlist('card_icon_at_text[]')[i].strip()
-                })
+                    'url': card_icon_urls[i].strip() if i < len(card_icon_urls) else '',
+                    'at_text': card_icon_at_texts[i].strip() if i < len(card_icon_at_texts) else '',
+                    'font': card_icon_fonts[i] if i < len(card_icon_fonts) else DEFAULT_FONT,
+                    'color': card_icon_colors[i] if i < len(card_icon_colors) else DEFAULT_TEXT_COLOR_CARD 
+                }
+                card_links_list.append(link_data)
             update_data['card_links'] = json.dumps(card_links_list)
 
 
@@ -595,17 +621,17 @@ def admin_panel(username):
                 card_bg_file = request.files.get('card_background_upload')
                 if card_bg_file and card_bg_file.filename != '' and arquivo_permitido(card_bg_file.filename):
                     file_url = upload_to_supabase(card_bg_file, user_id_from_session, 'card_background')
-                    if file_url: update_data['card_background_value'] = file_url
-                    else:
+                    if file_url: 
+                        update_data['card_background_value'] = file_url
+                    else: # Erro no upload, reverte para cor sólida
                         flash("❌ Erro ao fazer upload da imagem de fundo do cartão. Usando cor sólida.", "error")
                         update_data['card_background_type'] = 'color'
                         update_data['card_background_value'] = request.form.get('card_background_value_color', DEFAULT_CARD_BG_COLOR)
-                elif not (user_data.get('card_background_value') and supabase.storage.from_("usuarios").get_public_url("").startswith(str(user_data.get('card_background_value','')).rsplit('/',1)[0])):
-                    if not (user_data.get('card_background_value') and supabase.storage.from_("usuarios").get_public_url("").startswith(str(user_data.get('card_background_value','')).rsplit('/',1)[0])):
-                        update_data['card_background_type'] = 'color'
-                        update_data['card_background_value'] = request.form.get('card_background_value_color', DEFAULT_CARD_BG_COLOR)
-
+                # Se nenhum arquivo novo foi enviado, mas o tipo é imagem, mantém o valor existente (já tratado acima)
+                # A menos que a remoção seja solicitada:
+            
             if request.form.get('remove_card_background_image') == 'true':
+                # Remove a imagem antiga do storage se existir e pertencer ao usuário
                 if user_data.get('card_background_type') == 'image' and str(user_data.get('card_background_value','')).startswith(f"{SUPABASE_URL}/storage/v1/object/public/usuarios/"):
                     try:
                         old_card_bg_filename = user_data['card_background_value'].split('/')[-1]
@@ -613,52 +639,86 @@ def admin_panel(username):
                         logger.info(f"Imagem de fundo do cartão antiga '{old_card_bg_filename}' removida do storage.")
                     except Exception as e_storage_remove:
                         logger.error(f"Erro ao remover imagem de fundo do cartão antiga do storage: {str(e_storage_remove)}")
+                # Define como cor sólida
                 update_data['card_background_type'] = 'color'
                 update_data['card_background_value'] = request.form.get('card_background_value_color', DEFAULT_CARD_BG_COLOR)
+
 
             db_response = supabase.table('usuarios').update(update_data).eq('id', user_id_from_session).execute()
             
             if db_response.data:
                 if 'profile' in update_data and update_data['profile'] != username:
-                    session['profile'] = update_data['profile']
-                    username = update_data['profile']
+                    session['profile'] = update_data['profile'] # Atualiza o profile na sessão
+                    username = update_data['profile'] # Atualiza o username para o redirect
                 flash("✅ Alterações salvas com sucesso!", "success")
                 return redirect(url_for('admin_panel', username=username))
             else:
                 logger.error(f"Falha ao salvar dados para {username}. Supabase response: {db_response.error if db_response.error else 'Sem dados de erro específicos.'}")
                 flash("❌ Erro ao salvar os dados. Verifique os logs do servidor.", "error")
         
-        except Exception as e_post: # noqa E722
+        except Exception as e_post: 
             logger.error(f"Erro GERAL no POST do admin_panel para {username}: {str(e_post)}", exc_info=True)
             flash(f"⚠️ Ocorreu um erro inesperado ao salvar: Verifique os logs.", "error")
             
-            failed_update_form_data = user_data.copy()
-            failed_update_form_data.update(request.form.to_dict())
-            
-            failed_update_form_data['social_links'] = json.loads(request.form.get('social_links_json_hidden', '[]'))
-            failed_update_form_data['custom_buttons'] = json.loads(request.form.get('custom_buttons_json_hidden', '[]'))
-            failed_update_form_data['card_links'] = json.loads(request.form.get('card_links_json_hidden', '[]'))
+            # Tentar recarregar o formulário com os dados que o usuário tentou enviar
+            failed_update_form_data = user_data.copy() # Começa com os dados carregados
+            failed_update_form_data.update(request.form.to_dict()) # Sobrescreve com o que veio do form
 
-            for field in ['nome_font', 'nome_color', 'bio_font', 'bio_color', 'card_nome_font', 'card_nome_color', 'card_titulo_font', 'card_titulo_color', 'card_registro_font', 'card_registro_color', 'card_link_text_color']:
-                failed_update_form_data[field] = request.form.get(field, user_data.get(field))
+            # Lógica para reconstruir listas de links/botões a partir do form, se necessário
+            # (idealmente, o JS manteria inputs hidden com o JSON dessas listas)
+            # Exemplo simplificado:
+            failed_update_form_data['social_links'] = json.loads(request.form.get('social_links_json_hidden', json.dumps(user_data.get('social_links', []))))
+            failed_update_form_data['custom_buttons'] = json.loads(request.form.get('custom_buttons_json_hidden', json.dumps(user_data.get('custom_buttons', []))))
+            temp_card_links = []
+            card_icon_names_fail = request.form.getlist('card_icon_name[]')
+            card_icon_urls_fail = request.form.getlist('card_icon_url[]')
+            card_icon_at_texts_fail = request.form.getlist('card_icon_at_text[]')
+            card_icon_fonts_fail = request.form.getlist('card_icon_font[]')
+            card_icon_colors_fail = request.form.getlist('card_icon_color[]')
+
+            for i in range(len(card_icon_names_fail)):
+                temp_card_links.append({
+                    'icon': card_icon_names_fail[i],
+                    'url': card_icon_urls_fail[i] if i < len(card_icon_urls_fail) else '',
+                    'at_text': card_icon_at_texts_fail[i] if i < len(card_icon_at_texts_fail) else '',
+                    'font': card_icon_fonts_fail[i] if i < len(card_icon_fonts_fail) else DEFAULT_FONT,
+                    'color': card_icon_colors_fail[i] if i < len(card_icon_colors_fail) else DEFAULT_TEXT_COLOR_CARD
+                })
+            failed_update_form_data['card_links'] = temp_card_links
             
+            # Restaurar valores de fonte/cor dos campos principais
+            for field_key in ['nome_font', 'nome_color', 'bio_font', 'bio_color', 
+                              'card_nome_font', 'card_nome_color', 'card_titulo_font', 'card_titulo_color', 
+                              'card_registro_font', 'card_registro_color', 'card_link_text_color']:
+                failed_update_form_data[field_key] = request.form.get(field_key, user_data.get(field_key))
+
+
             failed_update_form_data['card_background_type'] = request.form.get('card_background_type', user_data.get('card_background_type', 'color'))
             if failed_update_form_data['card_background_type'] == 'color':
                 failed_update_form_data['card_background_value'] = request.form.get('card_background_value_color', user_data.get('card_background_value', DEFAULT_CARD_BG_COLOR))
-            else:
+            else: # Se for imagem, mantém o valor atual salvo (JS cuida do preview de novo upload)
                 failed_update_form_data['card_background_value'] = user_data.get('card_background_value')
 
-            return render_template('admin.html', dados=failed_update_form_data, DEFAULT_CARD_LINK_TEXT_COLOR=DEFAULT_CARD_LINK_TEXT_COLOR)
 
-    return render_template('admin.html', dados=user_data, DEFAULT_CARD_LINK_TEXT_COLOR=DEFAULT_CARD_LINK_TEXT_COLOR)
+            return render_template('admin.html', dados=failed_update_form_data, 
+                                   DEFAULT_CARD_LINK_TEXT_COLOR=DEFAULT_CARD_LINK_TEXT_COLOR,
+                                   DEFAULT_TEXT_COLOR_CARD=DEFAULT_TEXT_COLOR_CARD,
+                                   DEFAULT_FONT=DEFAULT_FONT)
+
+    # Para o método GET, passa as constantes de cor/fonte padrão para o template
+    return render_template('admin.html', 
+                           dados=user_data, 
+                           DEFAULT_CARD_LINK_TEXT_COLOR=DEFAULT_CARD_LINK_TEXT_COLOR,
+                           DEFAULT_TEXT_COLOR_CARD=DEFAULT_TEXT_COLOR_CARD, # Padrão para itens individuais
+                           DEFAULT_FONT=DEFAULT_FONT)
 
 
 @app.route('/logout')
 def logout():
     try:
         if 'access_token' in session:
-            sign_out_response = supabase.auth.sign_out()
-            logger.info(f"Usuário {session.get('user_id')} deslogado do Supabase.") # Log simplificado
+            sign_out_response = supabase.auth.sign_out() # noqa F841
+            logger.info(f"Usuário {session.get('user_id')} deslogado do Supabase.")
     except Exception as e:
         logger.error(f"Erro ao tentar deslogar do Supabase para usuário {session.get('user_id')}: {str(e)}")
     finally:
@@ -668,6 +728,4 @@ def logout():
 
 if __name__ == '__main__':
     is_production = os.getenv('FLASK_ENV') == 'production'
-    # Se não estiver em produção, o debug do Flask estará True, o que já ativa o logger do Werkzeug no nível DEBUG.
-    # Se estiver em produção (debug=False), o Werkzeug será menos verboso por padrão.
     app.run(debug=not is_production, host='0.0.0.0', port=int(os.getenv('PORT', 5000)))

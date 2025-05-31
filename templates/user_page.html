@@ -26,7 +26,6 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
-        /* Animações de seta (coloque as suas aqui se as removeu) */
         @keyframes subtle-bounce-right {
             0%, 100% { transform: translateX(0); }
             50% { transform: translateX(4px); }
@@ -44,121 +43,51 @@
         .swiper-button-disabled.swiper-arrow-animated::after {
             animation: none !important;
         }
-
-        /* Estilos para o botão de partilha */
         #share-button-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1005;
-            background-color: rgba(255, 255, 255, 0.85);
-            color: #333;
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            position: fixed; top: 20px; right: 20px; z-index: 1005;
+            background-color: rgba(255, 255, 255, 0.85); color: #333;
+            width: 44px; height: 44px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
         #share-button-container:hover {
-            background-color: rgba(240, 240, 240, 0.95);
-            transform: scale(1.1);
+            background-color: rgba(240, 240, 240, 0.95); transform: scale(1.1);
         }
-        #share-button-container i {
-            font-size: 20px;
-        }
-
-        /* Estilos para o Modal de Fallback da Partilha */
+        #share-button-container i { font-size: 20px; }
         #share-fallback-modal {
-            display: none !important; /* MUITO IMPORTANTE */
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.6);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
-            box-sizing: border-box;
+            display: none !important; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6);
+            z-index: 2000; justify-content: center; align-items: center;
+            padding: 15px; box-sizing: border-box;
         }
         .share-fallback-content {
-            background-color: #fff;
-            color: #333;
-            padding: 25px;
-            border-radius: 10px;
-            text-align: center;
-            max-width: 350px;
-            width: 100%;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background-color: #fff; color: #333; padding: 25px;
+            border-radius: 10px; text-align: center; max-width: 350px;
+            width: 100%; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
-        .share-fallback-content h3 {
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-            color: #4361ee;
-        }
+        .share-fallback-content h3 { margin-top: 0; margin-bottom: 15px; font-size: 1.3em; color: #4361ee; }
         .share-fallback-content p {
-            margin-bottom: 15px;
-            font-size: 0.9em;
-            white-space: pre-wrap;
-            color: #555;
-            max-height: 100px;
-            overflow-y: auto;
-            border: 1px solid #eee;
-            padding: 8px;
-            border-radius: 5px;
-            background-color: #f9f9f9;
+            margin-bottom: 15px; font-size: 0.9em; white-space: pre-wrap; color: #555;
+            max-height: 100px; overflow-y: auto; border: 1px solid #eee;
+            padding: 8px; border-radius: 5px; background-color: #f9f9f9;
         }
         .share-fallback-content input[type="text"] {
-            width: calc(100% - 22px);
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 0.9em;
-            box-sizing: border-box;
+            width: calc(100% - 22px); padding: 10px; margin-bottom: 15px;
+            border: 1px solid #ddd; border-radius: 5px; font-size: 0.9em; box-sizing: border-box;
         }
-        .share-fallback-content button,
-        .share-fallback-content a.share-fallback-btn {
-            display: inline-block;
-            padding: 10px 18px;
-            margin: 8px 5px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 0.9em;
-            font-weight: 500;
-            cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            border: none;
+        .share-fallback-content button, .share-fallback-content a.share-fallback-btn {
+            display: inline-block; padding: 10px 18px; margin: 8px 5px;
+            border-radius: 5px; text-decoration: none; font-size: 0.9em;
+            font-weight: 500; cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease; border: none;
         }
-        .share-fallback-btn-primary {
-            background-color: #4361ee;
-            color: white;
-        }
-        .share-fallback-btn-primary:hover {
-            background-color: #3f37c9;
-            transform: translateY(-1px);
-        }
-        .share-fallback-btn-whatsapp {
-            background-color: #25D366;
-            color: white;
-        }
-        .share-fallback-btn-whatsapp:hover {
-            background-color: #1DAE52;
-            transform: translateY(-1px);
-        }
-        .share-fallback-btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-        .share-fallback-btn-secondary:hover {
-            background-color: #5a6268;
-        }
+        .share-fallback-btn-primary { background-color: #4361ee; color: white; }
+        .share-fallback-btn-primary:hover { background-color: #3f37c9; transform: translateY(-1px); }
+        .share-fallback-btn-whatsapp { background-color: #25D366; color: white; }
+        .share-fallback-btn-whatsapp:hover { background-color: #1DAE52; transform: translateY(-1px); }
+        .share-fallback-btn-secondary { background-color: #6c757d; color: white; }
+        .share-fallback-btn-secondary:hover { background-color: #5a6268; }
     </style>
 </head>
 
@@ -205,13 +134,13 @@
                     {% endif %}
 
                     <h1
-                        style="font-family: {{ dados.nome_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.nome_color | default('#FFFFFF', true) }};">
+                        style="font-family: {{ dados.nome_font | style_safe | default(DEFAULT_FONT, true) }}; color: {{ dados.nome_color | default('#FFFFFF', true) }};">
                         {{ dados.nome if dados.nome else 'Usuário' }}
                     </h1>
 
                     {% if dados.bio %}
                     <p class="bio"
-                        style="font-family: {{ dados.bio_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.bio_color | default('#CCCCCC', true) }};">
+                        style="font-family: {{ dados.bio_font | style_safe | default(DEFAULT_FONT, true) }}; color: {{ dados.bio_color | default('#CCCCCC', true) }};">
                         {{ dados.bio }}
                     </p>
                     {% endif %}
@@ -250,18 +179,18 @@
                     <div class="card-content">
                         <div class="card-header-info">
                             <h2
-                                style="font-family: {{ dados.card_nome_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.card_nome_color | default('#FFFFFF', true) }};">
+                                style="font-family: {{ dados.card_nome_font | style_safe | default(DEFAULT_FONT, true) }}; color: {{ dados.card_nome_color | default(DEFAULT_TEXT_COLOR_CARD, true) }};">
                                 {{ dados.card_nome if dados.card_nome else dados.nome }}
                             </h2>
                             {% if dados.card_titulo %}
                             <p class="card-title"
-                                style="font-family: {{ dados.card_titulo_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.card_titulo_color | default('#EEEEEE', true) }};">
+                                style="font-family: {{ dados.card_titulo_font | style_safe | default(DEFAULT_FONT, true) }}; color: {{ dados.card_titulo_color | default('#EEEEEE', true) }};">
                                 {{ dados.card_titulo }}
                             </p>
                             {% endif %}
                             {% if dados.card_registro_profissional %}
                             <p class="card-registration"
-                                style="font-family: {{ dados.card_registro_font | style_safe | default('Inter, sans-serif', true) }}; color: {{ dados.card_registro_color | default('#BBBBBB', true) }};">
+                                style="font-family: {{ dados.card_registro_font | style_safe | default(DEFAULT_FONT, true) }}; color: {{ dados.card_registro_color | default('#BBBBBB', true) }};">
                                 {{ dados.card_registro_profissional }}
                             </p>
                             {% endif %}
@@ -276,8 +205,10 @@
                                         alt="{{ link.icon | replace('-', ' ') | title }}">
                                     {% if link.at_text %}
                                     <span class="card-link-text"
-                                        style="color: {{ dados.card_link_text_color | default('#FFFFFF', true) }};">{{
-                                        link.at_text }}</span>
+                                        style="color: {{ link.color | default(dados.card_link_text_color, true) | default(DEFAULT_TEXT_COLOR_CARD, true) }};
+                                               font-family: {{ link.font | style_safe | default(DEFAULT_FONT, true) }};">
+                                        {{ link.at_text }}
+                                    </span>
                                     {% endif %}
                                 </a>
                                 {% endfor %}
@@ -326,7 +257,7 @@
             console.error("DEBUG_ERROR: Elemento .user-page-slide NÃO encontrado!");
         }
 
-        let swiperInstance = null; // Declarar swiperInstance aqui para que seja acessível
+        let swiperInstance = null; 
         try {
             console.log("DEBUG: Tentando definir applyArrowAnimation...");
             function applyArrowAnimation(currentSwiper) {
@@ -379,7 +310,6 @@
             console.error("DEBUG_ERROR: ERRO CRÍTICO AO INICIALIZAR O SWIPER:", e);
         }
 
-        // --- Lógica de Partilha ---
         try {
             console.log("DEBUG: Configurando lógica de partilha...");
             const shareButton = document.getElementById('share-button-container');
@@ -397,7 +327,6 @@
                     const currentSlideIndex = swiperInstance.activeIndex;
                     let pageUrl = "";
                     try {
-                        // Atenção aqui: Jinja renderiza no servidor. Isto será uma string JS constante.
                         pageUrl = {{ (request.url_root.rstrip('/') + url_for('user_page', profile=dados.profile)) | tojson | safe }};
                         console.log("DEBUG: pageUrl para partilha:", pageUrl);
                         if (!pageUrl) throw new Error("pageUrl é nulo ou vazio após renderização Jinja.");
@@ -419,10 +348,10 @@
                         shareData.title = {{ ('Cartão de Visita: ' + (dados.card_nome if dados.card_nome else dados.nome if dados.nome else '')) | tojson | safe }};
                         let cardText = {{ (dados.card_titulo if dados.card_titulo else "") | tojson | safe }};
                         {% if dados.card_registro_profissional %}
-                        if (cardText) cardText += "\n"; // JS \n
+                        if (cardText) cardText += "\n"; 
                         cardText += {{ dados.card_registro_profissional | tojson | safe }};
                         {% endif %}
-                        if (cardText) cardText += "\n\n"; // JS \n
+                        if (cardText) cardText += "\n\n"; 
                         cardText += "Acesse o contato:";
                         shareData.text = cardText;
                     }
@@ -435,7 +364,7 @@
                             console.log("DEBUG: Conteúdo compartilhado com sucesso via navigator.share!");
                         } catch (err) {
                             console.warn("DEBUG_WARN: Erro ao usar navigator.share:", err);
-                            if (err.name !== 'AbortError') { // Não mostrar fallback se o utilizador cancelou
+                            if (err.name !== 'AbortError') { 
                                 showShareFallbackModal(shareData.url, shareData.title, shareData.text);
                             }
                         }
@@ -465,7 +394,7 @@
                 return;
             }
 
-            const displayText = `${title}\n${text.replace(/\\n/g, '\n')}`; // JS replace \n string to actual newline
+            const displayText = `${title}\n${text.replace(/\\n/g, '\n')}`; 
             textContentElement.innerText = displayText;
             urlInput.value = url;
 
@@ -506,17 +435,14 @@
                 event.stopPropagation();
             };
         }
-        // --- Fim da Lógica de Partilha ---
-
-        // --- Lógica addToContacts e cardLinksData ---
+        
         try {
             console.log("DEBUG: Configurando lógica addToContacts...");
-            // Atenção aqui: Jinja renderiza no servidor. Isto será um array/null JS constante.
             const cardLinksData = {{ dados.card_links | tojson | safe }};
             console.log("DEBUG: cardLinksData:", cardLinksData);
 
-            if (typeof addToContacts !== 'function') { // Evitar redefinir se já incluído em outro lugar
-                window.addToContacts = function() { // Tornar global ou certificar que está no escopo do onclick
+            if (typeof addToContacts !== 'function') { 
+                window.addToContacts = function() { 
                     console.log("DEBUG: addToContacts chamada.");
                     try {
                         const sanitizeVCardString = (str) => {
@@ -533,7 +459,6 @@
                             return str.replace(/[^a-z0-9_\-]/ig, '_');
                         };
 
-                        // Usar `dados` diretamente do Jinja aqui, garantindo que sejam strings JS válidas
                         const cardNome = sanitizeVCardString({{ (dados.card_nome if dados.card_nome else dados.nome if dados.nome else '') | tojson | safe }});
                         const cardTitulo = sanitizeVCardString({{ (dados.card_titulo if dados.card_titulo else '') | tojson | safe }});
                         const cardRegistro = sanitizeVCardString({{ (dados.card_registro_profissional if dados.card_registro_profissional else '') | tojson | safe }});
@@ -548,7 +473,7 @@
                             cardLinksData.forEach(link => {
                                 if (typeof link !== 'object' || link === null) {
                                     console.warn("DEBUG_WARN: Item inválido em cardLinksData:", link);
-                                    return; // Pular este link
+                                    return; 
                                 }
                                 const icon_type = link.icon ? String(link.icon).toLowerCase() : "";
                                 const link_url_original = link.url || "";
@@ -604,7 +529,6 @@
                     }
                 };
             }
-             // Garantir que addToContacts está no escopo global se o onclick for diretamente no HTML
             if (typeof window.addToContacts === 'undefined' && typeof addToContacts === 'function') {
                 window.addToContacts = addToContacts;
             }
