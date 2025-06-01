@@ -81,7 +81,7 @@ body {
 .form-section {
   background: var(--card-bg-light); /* Usando variável */
   border-radius: 12px;
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05); 
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease;
   position: relative;
   top: 0;
@@ -89,8 +89,8 @@ body {
 }
 
 .form-section:hover {
-  top: -5px; 
-  box-shadow: var(--shadow-light); 
+  top: -5px;
+  box-shadow: var(--shadow-light);
 }
 
 .form-section h2 {
@@ -110,19 +110,19 @@ body {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
-  color: var(--text-color-light); 
+  color: var(--text-color-light);
 }
 
 .form-input {
   width: 100%;
   padding: 0.8rem 1rem;
-  border: 1px solid var(--border-color-light); 
+  border: 1px solid var(--border-color-light);
   border-radius: var(--border-radius);
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
   transition: var(--transition);
-  background-color: var(--input-bg-light); 
-  color: var(--text-color-light); 
+  background-color: var(--input-bg-light);
+  color: var(--text-color-light);
 }
 
 .form-input:focus {
@@ -132,21 +132,21 @@ body {
 }
 
 .form-input::placeholder {
-    color: var(--placeholder-color-light); 
+    color: var(--placeholder-color-light);
 }
 
 .form-textarea {
   width: 100%;
   min-height: 120px;
   padding: 0.8rem 1rem;
-  border: 1px solid var(--border-color-light); 
+  border: 1px solid var(--border-color-light);
   border-radius: var(--border-radius);
   font-family: 'Inter', sans-serif;
   font-size: 1rem;
   resize: vertical;
   transition: var(--transition);
-  background-color: var(--input-bg-light); 
-  color: var(--text-color-light); 
+  background-color: var(--input-bg-light);
+  color: var(--text-color-light);
 }
 
 .form-textarea:focus {
@@ -156,7 +156,7 @@ body {
 }
 
 .form-textarea::placeholder {
-    color: var(--placeholder-color-light); 
+    color: var(--placeholder-color-light);
 }
 
 .file-upload {
@@ -179,17 +179,17 @@ body {
 .file-label {
   display: block;
   padding: 0.8rem 1rem;
-  background-color: var(--input-bg-light); 
-  border: 1px dashed var(--border-color-light); 
+  background-color: var(--input-bg-light);
+  border: 1px dashed var(--border-color-light);
   border-radius: var(--border-radius);
   text-align: center;
   cursor: pointer;
   transition: var(--transition);
-  color: var(--text-color-light); 
+  color: var(--text-color-light);
 }
 
 .file-label:hover {
-  background-color: var(--button-secondary-bg-light); 
+  background-color: var(--button-secondary-bg-light);
   border-color: var(--primary-color);
 }
 
@@ -298,14 +298,14 @@ body {
 }
 
 .modal-content {
-  background-color: var(--card-bg-light); 
+  background-color: var(--card-bg-light);
   padding: 2.5rem;
   border-radius: var(--border-radius);
   width: 90%;
   max-width: 650px;
   max-height: 90vh;
   overflow-y: auto;
-  box-shadow: var(--shadow-light); 
+  box-shadow: var(--shadow-light);
   transform: scale(0.9);
   opacity: 0;
   transition: transform 0.4s ease-out, opacity 0.4s ease-out;
@@ -330,21 +330,26 @@ body.modal-open {
 
 .icons-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Ajustado para melhor responsividade */
-  gap: 1rem;
+  grid-template-columns: repeat(3, 1fr); /* Força 3 colunas */
+  gap: 0.8rem; /* Reduzido para mais espaço entre itens */
   margin: 1.5rem 0;
-  max-height: 300px; /* Altura máxima para o grid de ícones */
-  overflow-y: auto; /* Scroll se necessário */
+  max-height: 320px; /* Aumentado ligeiramente para acomodar 3 linhas confortavelmente */
+  overflow-y: auto;
 }
 
 .icon-option {
-  padding: 1rem;
-  border: 1px solid var(--border-color-light); 
+  padding: 0.8rem;
+  border: 1px solid var(--border-color-light);
   border-radius: var(--border-radius);
   text-align: center;
   cursor: pointer;
   transition: var(--transition);
-  background: var(--input-bg-light); 
+  background: var(--input-bg-light);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px; /* Altura mínima para consistência */
 }
 
 .icon-option:hover,
@@ -357,25 +362,27 @@ body.modal-open {
   width: 30px;
   height: 30px;
   object-fit: contain;
-  margin-bottom: 0.5rem; /* Espaço entre imagem e texto */
+  margin-bottom: 0.5rem;
 }
 .icon-option p {
-    font-size: 0.85rem; /* Texto do ícone menor */
+    font-size: 0.8rem; /* Texto do ícone menor */
     word-break: break-word;
+    line-height: 1.2;
+    margin-top: auto;
 }
 
 
 .social-item,
 .custom-button-item,
-.card-link-item { 
-  background: var(--input-bg-light); 
+.card-link-item {
+  background: var(--input-bg-light);
   padding: 1rem;
   border-radius: var(--border-radius);
   margin-bottom: 1rem;
   display: flex;
   gap: 0.8rem; /* Ajustado gap */
   align-items: center;
-  border: 1px solid var(--border-color-light); 
+  border: 1px solid var(--border-color-light);
 }
 
 .card-link-item .input-group {
@@ -391,25 +398,25 @@ body.modal-open {
 .card-link-style-controls {
     display: flex;
     align-items: center;
-    gap: 8px; 
-    margin-left: 5px; 
+    gap: 8px;
+    margin-left: 5px;
 }
 
-.card-link-style-controls .card-link-item-font { 
-    min-width: 120px; 
+.card-link-style-controls .card-link-item-font {
+    min-width: 120px;
     max-width: 150px;
-    flex-grow: 0; 
-    padding-top: 0.5rem; 
+    flex-grow: 0;
+    padding-top: 0.5rem;
     padding-bottom: 0.5rem;
-    height: 35px; 
-    font-size: 0.9rem; 
+    height: 35px;
+    font-size: 0.9rem;
 }
 
-.card-link-style-controls .card-link-item-color { 
+.card-link-style-controls .card-link-item-color {
     min-width: 35px;
-    width: 35px; 
+    width: 35px;
     height: 35px;
-    padding: 2px; 
+    padding: 2px;
     border: 1px solid var(--border-color-light);
     border-radius: 4px;
     background: none;
@@ -417,22 +424,22 @@ body.modal-open {
 }
 
 .card-link-item-preview {
-    padding: 0 10px; 
-    border: 1px dashed #999; 
-    min-width: 80px; 
-    max-width: 120px; 
+    padding: 0 10px;
+    border: 1px dashed #999;
+    min-width: 80px;
+    max-width: 120px;
     text-align: center;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-left: 5px; 
+    margin-left: 5px;
     border-radius: var(--border-radius);
-    height: 35px; 
-    display: flex; 
-    align-items: center; 
+    height: 35px;
+    display: flex;
+    align-items: center;
     justify-content: center;
     font-size: 0.9rem;
-    background-color: #555; 
+    background-color: #555;
 }
 
 .remove-item {
@@ -488,6 +495,10 @@ body.modal-open {
     margin-top: 0.5rem;
     max-width: none;
   }
+  .icons-grid {
+    grid-template-columns: repeat(2, 1fr); /* 2 colunas em telas menores para melhor visualização */
+    gap: 0.5rem;
+  }
 }
 
 .login-container {
@@ -495,14 +506,14 @@ body.modal-open {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background-color: var(--bg-color-light); 
+  background-color: var(--bg-color-light);
   padding: 1rem;
 }
 
 .login-card {
-  background: var(--card-bg-light); 
+  background: var(--card-bg-light);
   border-radius: var(--border-radius);
-  box-shadow: var(--shadow-light); 
+  box-shadow: var(--shadow-light);
   padding: 2.5rem;
   width: 100%;
   max-width: 450px;
@@ -515,12 +526,12 @@ body.modal-open {
 
 .login-header h1 {
   font-size: 1.8rem;
-  color: var(--text-color-light); 
+  color: var(--text-color-light);
   margin-bottom: 0.5rem;
 }
 
 .login-header p {
-  color: var(--text-color-light); 
+  color: var(--text-color-light);
   font-size: 1rem;
 }
 
@@ -552,7 +563,7 @@ body.modal-open {
 }
 
 .login-error {
-  background-color: #ffeeee; 
+  background-color: #ffeeee;
   color: var(--danger-color);
   padding: 1rem;
   border-radius: var(--border-radius);
@@ -560,7 +571,7 @@ body.modal-open {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  border: 1px solid #ffcccc; 
+  border: 1px solid #ffcccc;
 }
 
 
@@ -634,6 +645,9 @@ body.modal-open {
   .preview-float-tooltip {
     right: 60px;
   }
+  .icons-grid {
+    grid-template-columns: repeat(2, 1fr); /* Mantém 2 colunas em telas muito pequenas */
+  }
 }
 
 
@@ -700,7 +714,7 @@ body.modal-open {
     transform: translateY(-2px);
 }
 .pagination-btn:disabled {
-    background-color: var(--border-color-light); 
+    background-color: var(--border-color-light);
     cursor: not-allowed;
     transform: none;
 }
@@ -708,12 +722,12 @@ body.modal-open {
 
 #icon-search {
     margin-bottom: 1rem;
-    background-color: var(--input-bg-light); 
-    color: var(--text-color-light); 
-    border-color: var(--border-color-light); 
+    background-color: var(--input-bg-light);
+    color: var(--text-color-light);
+    border-color: var(--border-color-light);
 }
 #icon-search::placeholder {
-    color: var(--placeholder-color-light); 
+    color: var(--placeholder-color-light);
 }
 #icon-search:focus {
   outline: none;
@@ -765,7 +779,7 @@ body.modal-open {
 
 
 .card-section-full-width {
-  grid-column: 1 / -1; 
+  grid-column: 1 / -1;
 }
 
 
@@ -834,14 +848,14 @@ body.modal-open {
     align-items: center;
 }
 .url-prefix {
-    padding: 0.8rem 1rem; 
+    padding: 0.8rem 1rem;
     background: var(--input-bg-light);
     border: 1px solid var(--border-color-light);
     border-right: none;
-    border-radius: var(--border-radius) 0 0 var(--border-radius); 
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
     color: var(--text-color-light);
-    font-size: 1rem; 
-    line-height: 1.6; 
+    font-size: 1rem;
+    line-height: 1.6;
     white-space: nowrap; /* Para não quebrar */
 }
 .profile-url .form-input {
@@ -854,7 +868,7 @@ body.modal-open {
     align-items: center;
     gap: 10px;
     margin-bottom: 10px;
-    flex-wrap: wrap; 
+    flex-wrap: wrap;
 }
 .form-group-inline label {
     margin-bottom: 0;
@@ -867,19 +881,19 @@ body.modal-open {
 }
 .form-group-inline input[type="color"],
 .form-group input[type="color"] {
-    padding: 0; 
-    min-width: 35px; 
+    padding: 0;
+    min-width: 35px;
     width: 35px; /* Largura fixa */
     height: 35px;
-    border: 1px solid var(--border-color-light); 
+    border: 1px solid var(--border-color-light);
     border-radius: 4px;
     cursor: pointer;
-    background: none; 
+    background: none;
     vertical-align: middle;
 }
 .form-group-inline select.form-input {
-    flex-grow: 1; 
-    min-width: 120px; 
+    flex-grow: 1;
+    min-width: 120px;
 }
 
 
@@ -904,22 +918,22 @@ body.modal-open {
 
 .social-item,
 .custom-button-item,
-.card-link-item { 
-    cursor: grab; 
-    display: flex; 
+.card-link-item {
+    cursor: grab;
+    display: flex;
     align-items: center;
     gap: 1rem;
     background: var(--input-bg-light);
     padding: 1rem;
     border-radius: var(--border-radius);
     margin-bottom: 1rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     transition: box-shadow 0.2s ease, transform 0.2s ease;
-    border: 1px solid var(--border-color-light); 
+    border: 1px solid var(--border-color-light);
 }
 .social-item:hover,
 .custom-button-item:hover,
-.card-link-item:hover { 
+.card-link-item:hover {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
 }
 
@@ -964,27 +978,27 @@ body.modal-open {
     font-style: normal; /* Será sobrescrito */
     text-decoration: none;
     display: inline-block;
-    transition: all 0.1s ease-out; 
-    white-space: nowrap; 
+    transition: all 0.1s ease-out;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 90%; 
+    max-width: 90%;
     border: none; /* Base, será sobrescrito se tiver borda */
 }
 
 
 .text-preview {
     padding: 10px;
-    border: 1px dashed #ccc; 
+    border: 1px dashed #ccc;
     margin-top: 10px;
     border-radius: var(--border-radius);
-    background-color: var(--input-bg-light); 
-    color: var(--text-color-light); 
-    min-height: 40px; 
-    transition: all 0.2s ease; 
+    background-color: var(--input-bg-light);
+    color: var(--text-color-light);
+    min-height: 40px;
+    transition: all 0.2s ease;
     white-space: pre-wrap; /* Mantido pre-line, mas pre-wrap pode ser melhor para bio */
-    word-wrap: break-word; 
-    font-size: 0.9em; 
+    word-wrap: break-word;
+    font-size: 0.9em;
     line-height: 1.4; /* Melhorar legibilidade */
 }
 /* Preview para itens do cartão com fundo mais escuro */
@@ -1000,15 +1014,15 @@ body.modal-open {
 
 .input-group-card-text-style {
     display: flex;
-    align-items: center; 
-    gap: 8px; 
-    width: 100%; 
+    align-items: center;
+    gap: 8px;
+    width: 100%;
     flex-wrap: nowrap; /* Evitar quebra, a menos que a tela seja muito pequena */
 }
-.input-group-card-text-style > .form-input[type="text"] { 
-    flex-grow: 1; 
+.input-group-card-text-style > .form-input[type="text"] {
+    flex-grow: 1;
     flex-basis: 0;
-    min-width: 100px; 
+    min-width: 100px;
 }
 .input-group-card-text-style > select.form-input {
     width: auto;
@@ -1039,5 +1053,36 @@ body.modal-open {
 }
 
 .form-group .text-preview { /* Já existe, mas confirmando */
-    margin-top: 10px; 
+    margin-top: 10px;
+}
+
+/* Estilização da Scrollbar para Modais e Grades Internas */
+.modal-content,
+#icon-modal .icons-grid { /* Aplicado também à grade de ícones */
+    scrollbar-width: thin; /* "thin" ou "auto" ou "none" */
+    scrollbar-color: var(--placeholder-color-light) var(--input-bg-light); /* Cor do thumb e da track */
+}
+
+/* Para navegadores WebKit (Chrome, Safari, Edge novo) */
+.modal-content::-webkit-scrollbar,
+#icon-modal .icons-grid::-webkit-scrollbar {
+    width: 8px; /* Largura da scrollbar */
+}
+
+.modal-content::-webkit-scrollbar-track,
+#icon-modal .icons-grid::-webkit-scrollbar-track {
+    background: var(--input-bg-light); /* Cor de fundo da trilha */
+    border-radius: 4px; /* Arredondamento da trilha */
+}
+
+.modal-content::-webkit-scrollbar-thumb,
+#icon-modal .icons-grid::-webkit-scrollbar-thumb {
+    background-color: var(--placeholder-color-light); /* Cor do controle deslizante */
+    border-radius: 4px; /* Arredondamento do controle */
+    border: 2px solid var(--input-bg-light); /* Cria uma "borda" interna usando a cor da trilha */
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover,
+#icon-modal .icons-grid::-webkit-scrollbar-thumb:hover {
+    background-color: var(--text-color-light); /* Cor do controle ao passar o mouse, adaptável ao tema */
 }

@@ -12,10 +12,10 @@ function updateTextPreview(previewElementId, text, font, color) {
         previewEl.style.fontFamily = font || 'Inter, sans-serif';
 
         // Ajuste para diferenciar previews de página e previews de cartão
-        if (previewElementId.includes('card_')) { 
-            previewEl.style.backgroundColor = '#444'; 
-            previewEl.style.color = color || '#FFFFFF'; 
-        } else { 
+        if (previewElementId.includes('card_')) {
+            previewEl.style.backgroundColor = '#444';
+            previewEl.style.color = color || '#FFFFFF';
+        } else {
             previewEl.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--input-bg-light').trim();
             previewEl.style.color = color || getComputedStyle(document.documentElement).getPropertyValue('--text-color-light').trim();
         }
@@ -97,10 +97,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const fileWrapper = uploadInput ? uploadInput.closest('.file-upload-wrapper') : null;
 
         if (previewElement && previewElement.src && previewElement.src !== window.location.href && !previewElement.src.includes('blob:') && previewElement.src.trim() !== '') {
-            if(containerElement) containerElement.style.display = 'block';
-            if(containerElement) containerElement.classList.add('preview-active');
+            if (containerElement) containerElement.style.display = 'block';
+            if (containerElement) containerElement.classList.add('preview-active');
             if (infoElement) {
-                 try {
+                try {
                     const urlParts = previewElement.src.split('/');
                     const fileNameWithQuery = urlParts[urlParts.length - 1];
                     const fileName = fileNameWithQuery.split('?')[0];
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             if (infoElement) infoElement.textContent = 'Nenhum arquivo selecionado';
             if (containerElement) containerElement.style.display = 'none';
-             if (item.id === 'card_background_image_preview') {
+            if (item.id === 'card_background_image_preview') {
                 const removeBtn = document.getElementById('remove_card_background_image_btn');
                 if (removeBtn) removeBtn.style.display = 'none';
             }
@@ -130,20 +130,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const cardBgImagePreview = document.getElementById('card_background_image_preview');
     const cardBgImagePreviewContainer = document.getElementById('card_background_image_preview_container');
     const removeCardBgHiddenInput = document.getElementById('remove_card_background_image');
-    const cardBgInfo = document.getElementById('card_background_info'); 
-    
+    const cardBgInfo = document.getElementById('card_background_info');
+
     if (removeCardBgBtn) {
         removeCardBgBtn.addEventListener('click', () => {
-            if(cardBgUploadInput) cardBgUploadInput.value = ''; 
-            if(cardBgImagePreview) cardBgImagePreview.src = ''; 
-            if(cardBgImagePreview) cardBgImagePreview.style.display = 'none'; 
-            if(cardBgImagePreviewContainer) cardBgImagePreviewContainer.classList.remove('preview-active');
-            if(cardBgImagePreviewContainer) cardBgImagePreviewContainer.style.display = 'none'; 
-            if(cardBgInfo) cardBgInfo.textContent = 'Nenhum arquivo selecionado'; 
+            if (cardBgUploadInput) cardBgUploadInput.value = '';
+            if (cardBgImagePreview) cardBgImagePreview.src = '';
+            if (cardBgImagePreview) cardBgImagePreview.style.display = 'none';
+            if (cardBgImagePreviewContainer) cardBgImagePreviewContainer.classList.remove('preview-active');
+            if (cardBgImagePreviewContainer) cardBgImagePreviewContainer.style.display = 'none';
+            if (cardBgInfo) cardBgInfo.textContent = 'Nenhum arquivo selecionado';
             const cardBgUploadWrapper = cardBgUploadInput ? cardBgUploadInput.closest('.file-upload-wrapper') : null;
-            if(cardBgUploadWrapper) cardBgUploadWrapper.classList.remove('has-file');
-            if(removeCardBgHiddenInput) removeCardBgHiddenInput.value = 'true'; 
-            removeCardBgBtn.style.display = 'none'; 
+            if (cardBgUploadWrapper) cardBgUploadWrapper.classList.remove('has-file');
+            if (removeCardBgHiddenInput) removeCardBgHiddenInput.value = 'true';
+            removeCardBgBtn.style.display = 'none';
         });
     }
 
@@ -180,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         buttonField.innerHTML = `
             <i class="fas fa-grip-vertical drag-handle"></i> <div style="flex-grow: 1;">
-                <div class="${buttonPreviewClasses.join(' ')}" 
+                <div class="${buttonPreviewClasses.join(' ')}"
                     style="background: ${buttonData.color}; border-radius: ${buttonData.radius}px; padding: 8px; margin-bottom: 8px; color: ${textColor}; font-weight: ${bold ? 'bold' : 'normal'}; font-style: ${italic ? 'italic' : 'normal'}; font-size: ${fontSize}px; ${borderStyle}">
                     ${escapeHtml(buttonData.text)}
                 </div>
@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function () {
             this.closest('.custom-button-item').remove();
         });
     }
-    
+
     const iconModalContent = document.querySelector('#icon-modal .modal-content');
     if (iconModalContent) iconModalContent.addEventListener('click', (e) => e.stopPropagation());
     const buttonModalContent = document.querySelector('#button-modal .modal-content');
@@ -213,12 +213,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const socialIconsContainer = document.getElementById('social-icons-container');
     const customButtonsContainer = document.getElementById('custom-buttons-container');
-    const cardLinksContainer = document.getElementById('card-links-container'); 
+    const cardLinksContainer = document.getElementById('card-links-container');
 
     if (socialIconsContainer) new Sortable(socialIconsContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle', });
     if (customButtonsContainer) new Sortable(customButtonsContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle', });
-    if (cardLinksContainer) new Sortable(cardLinksContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle', }); 
-    
+    if (cardLinksContainer) new Sortable(cardLinksContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle', });
+
     const iconModal = document.getElementById('icon-modal');
     const buttonModal = document.getElementById('button-modal');
     const addIconBtn = document.getElementById('add-icon-btn');
@@ -238,18 +238,17 @@ document.addEventListener('DOMContentLoaded', function () {
         { name: 'instagram-redondo', path: '/static/icons/instagram-redondo.png' },
         { name: 'linkedin', path: '/static/icons/linkedin.png' },
         { name: 'linkedin-redondo', path: '/static/icons/linkedin-redondo.png' },
-        { name: 'linkedin-preto', path: '/static/icons/linkedin-preto' },
+        { name: 'linkedin-p', path: '/static/icons/linkedin-p.png' },
         { name: 'github', path: '/static/icons/github.png' },
         { name: 'github-redondo', path: '/static/icons/github-redondo.png' },
         { name: 'email', path: '/static/icons/email.png' },
         { name: 'email-preto', path: '/static/icons/email-preto.png' },
         { name: 'gmail', path: '/static/icons/gmail.png' },
         { name: 'gmail-redondo', path: '/static/icons/gmail-redondo.png' },
-        { name: 'gmail-preto', path: '/static/icons/gmail-redondo.png' },
+        { name: 'gmail-preto', path: '/static/icons/gmail-redondo.png' }, // Note: Duplicated path for gmail-preto, using gmail-redondo
         { name: 'whatsapp', path: '/static/icons/whatsapp.png' },
         { name: 'whatsapp-v-p', path: '/static/icons/whatsapp-v-p.png' },
         { name: 'whatsapp-preto', path: '/static/icons/whatsapp-preto.png' },
-        { name: 'twitter', path: '/static/icons/twitter.png' },
         { name: 'facebook', path: '/static/icons/facebook.png' },
         { name: 'youtube', path: '/static/icons/youtube.png' },
         { name: 'telegram', path: '/static/icons/telegram.png' },
@@ -260,43 +259,124 @@ document.addEventListener('DOMContentLoaded', function () {
         { name: 'snapchat', path: '/static/icons/snapchat.png' },
         { name: 'reddit', path: '/static/icons/reddit.png' },
         { name: 'vimeo', path: '/static/icons/vimeo.png' },
-        { name: 'medium', path: '/static/icons/medium.png' },
         { name: 'spotify', path: '/static/icons/spotify.png' },
         { name: 'soundcloud', path: '/static/icons/soundcloud.png' },
         { name: 'behance', path: '/static/icons/behance.png' },
-        { name: 'dribbble', path: '/static/icons/dribbble.png' },
         { name: 'flickr', path: '/static/icons/flickr.png' },
-        { name: 'etsy', path: '/static/icons/etsy.png' },
         { name: 'paypal', path: '/static/icons/paypal.png' },
         { name: 'google-drive', path: '/static/icons/google-drive.png' },
         { name: 'dropbox', path: '/static/icons/dropbox.png' },
         { name: 'link', path: '/static/icons/link.png' },
-        { name: 'phone', path: '/static/icons/phone.png' },
         { name: 'website', path: '/static/icons/website.png' },
-        { name: 'xing', path: '/static/icons/xing.png' },
-        { name: 'mastodon', path: '/static/icons/mastodon.png' },
-        { name: 'stack-overflow', path: '/static/icons/stack-overflow.png' },
         { name: 'gitlab', path: '/static/icons/gitlab.png' },
-        { name: 'bitbucket', path: '/static/icons/bitbucket.png' },
         { name: 'codepen', path: '/static/icons/codepen.png' },
-        { name: 'dev-to', path: '/static/icons/dev-to.png' },
-        { name: 'freecodecamp', path: '/static/icons/freecodecamp.png' },
-        { name: 'hashnode', path: '/static/icons/hashnode.png' },
-        { name: 'product-hunt', path: '/static/icons/product-hunt.png' },
-        { name: 'unsplash', path: '/static/icons/unsplash.png' },
         { name: 'patreon', path: '/static/icons/patreon.png' },
         { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' },
         { name: 'ko-fi', path: '/static/icons/ko-fi.png' },
         { name: 'slack', path: '/static/icons/slack.png' },
         { name: 'teams', path: '/static/icons/teams.png' },
         { name: 'skype', path: '/static/icons/skype.png' },
-        { name: 'google-scholar', path: '/static/icons/google-scholar.png' },
-        { name: 'researchgate', path: '/static/icons/researchgate.png' },
-        { name: 'academia-edu', path: '/static/icons/academia-edu.png' }
+        { name: 'academia-edu', path: '/static/icons/academia-edu.png' },
+        // { name: 'academia-edu', path: '/static/icons/academia-edu.png' }, // Duplicate
+        // { name: 'behance', path: '/static/icons/behance.png' }, // Duplicate
+        { name: 'behance-p', path: '/static/icons/behance-p.png' },
+        { name: 'bluesky-r-p', path: '/static/icons/bluesky-r-p.png' },
+        // { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' }, // Duplicate
+        { name: 'buymeacoffee-p', path: '/static/icons/buymeacoffee-p.png' },
+        { name: 'closefans-r', path: '/static/icons/closefans-r.png' },
+        // { name: 'codepen', path: '/static/icons/codepen.png' }, // Duplicate
+        { name: 'codepen-p-r', path: '/static/icons/codepen-p-r.png' },
+        { name: 'codepen-r-b', path: '/static/icons/codepen-r-b.png' },
+        { name: 'colsefans-r-p', path: '/static/icons/colsefans-r-p.png' },
+        // { name: 'discord', path: '/static/icons/discord.png' }, // Duplicate
+        { name: 'discord-p', path: '/static/icons/discord-p.png' },
+        { name: 'discord-p-r', path: '/static/icons/discord-p-r.png' },
+        { name: 'discord-r', path: '/static/icons/discord-r.png' },
+        // { name: 'dropbox', path: '/static/icons/dropbox.png' }, // Duplicate
+        { name: 'dropbox-p', path: '/static/icons/dropbox-p.png' },
+        // { name: 'facebook', path: '/static/icons/facebook.png' }, // Duplicate
+        { name: 'facebook-redondo', path: '/static/icons/facebook-redondo.png' },
+        // { name: 'flickr', path: '/static/icons/flickr.png' }, // Duplicate
+        // { name: 'gitlab', path: '/static/icons/gitlab.png' }, // Duplicate
+        { name: 'gitlab-p-r', path: '/static/icons/gitlab-p-r.png' },
+        { name: 'gitlab-r', path: '/static/icons/gitlab-r.png' },
+        { name: 'gitlab-rv-p', path: '/static/icons/gitlab-rv-p.png' },
+        // { name: 'google-drive', path: '/static/icons/google-drive.png' }, // Duplicate
+        { name: 'google-drive-r', path: '/static/icons/google-drive-r.png' },
+        { name: 'google-drive-r-p', path: '/static/icons/google-drive-r-p.png' },
+        // { name: 'ko-fi', path: '/static/icons/ko-fi.png' }, // Duplicate
+        { name: 'ko-fi-p', path: '/static/icons/ko-fi-p.png' },
+        { name: 'kwai', path: '/static/icons/kwai.png' },
+        { name: 'kwai-p', path: '/static/icons/kwai-p.png' },
+        { name: 'kwai-r', path: '/static/icons/kwai-r.png' },
+        { name: 'kwai-r-p', path: '/static/icons/kwai-r-p.png' },
+        { name: 'kwai-rb-p', path: '/static/icons/kwai-rb-p.png' },
+        { name: 'kwai-vr-p', path: '/static/icons/kwai-vr-p.png' },
+        // { name: 'link', path: '/static/icons/link.png' }, // Duplicate
+        { name: 'link-1', path: '/static/icons/link-1.png' },
+        { name: 'link-2', path: '/static/icons/link-2.png' },
+        { name: 'onlyfans', path: '/static/icons/onlyfans.png' },
+        { name: 'onlyfans-r', path: '/static/icons/onlyfans-r.png' },
+        { name: 'onlyfans-r-p', path: '/static/icons/onlyfans-r-p.png' },
+        { name: 'onlyfans-rv-p', path: '/static/icons/onlyfans-rv-p.png' },
+        // { name: 'patreon', path: '/static/icons/patreon.png' }, // Duplicate
+        { name: 'patreon-c', path: '/static/icons/patreon-c.png' },
+        { name: 'patreon-r', path: '/static/icons/patreon-r.png' },
+        { name: 'patreon-r-p', path: '/static/icons/patreon-r-p.png' },
+        // { name: 'paypal', path: '/static/icons/paypal.png' }, // Duplicate
+        { name: 'paypal-p', path: '/static/icons/paypal-p.png' },
+        { name: 'paypal-p-r', path: '/static/icons/paypal-p-r.png' },
+        { name: 'paypal-r', path: '/static/icons/paypal-r.png' },
+        // { name: 'pinterest', path: '/static/icons/pinterest.png' }, // Duplicate
+        { name: 'pinterest-p', path: '/static/icons/pinterest-p.png' },
+        { name: 'privacy', path: '/static/icons/privacy.png' },
+        { name: 'privacy-r', path: '/static/icons/privacy-r.png' },
+        { name: 'privacy-r-p', path: '/static/icons/privacy-r-p.png' },
+        { name: 'privacy-rv-p', path: '/static/icons/privacy-rv-p.png' },
+        // { name: 'reddit', path: '/static/icons/reddit.png' }, // Duplicate
+        { name: 'reddit-p', path: '/static/icons/reddit-p.png' },
+        // { name: 'skype', path: '/static/icons/skype.png' }, // Duplicate
+        { name: 'skype-o', path: '/static/icons/skype-o.png' },
+        { name: 'skype-o-p', path: '/static/icons/skype-o-p.png' },
+        { name: 'skype-p', path: '/static/icons/skype-p.png' },
+        // { name: 'slack', path: '/static/icons/slack.png' }, // Duplicate
+        { name: 'slack-r', path: '/static/icons/slack-r.png' },
+        { name: 'slack-r-p', path: '/static/icons/slack-r-p.png' },
+        // { name: 'snapchat', path: '/static/icons/snapchat.png' }, // Duplicate
+        { name: 'snapchat-r', path: '/static/icons/snapchat-r.png' },
+        // { name: 'soundcloud', path: '/static/icons/soundcloud.png' }, // Duplicate
+        { name: 'soundcloud-p', path: '/static/icons/soundcloud-p.png' },
+        // { name: 'spotify', path: '/static/icons/spotify.png' }, // Duplicate
+        { name: 'spotify-p', path: '/static/icons/spotify-p.png' },
+        // { name: 'teams', path: '/static/icons/teams.png' }, // Duplicate
+        { name: 'teams-r', path: '/static/icons/teams-r.png' },
+        { name: 'teams-r-p', path: '/static/icons/teams-r-p.png' },
+        // { name: 'telegram', path: '/static/icons/telegram.png' }, // Duplicate
+        { name: 'telegrama-p', path: '/static/icons/telegrama-p.png' },
+        // { name: 'tiktok', path: '/static/icons/tiktok.png' }, // Duplicate
+        { name: 'tiktok-r', path: '/static/icons/tiktok-r.png' },
+        // { name: 'twitch', path: '/static/icons/twitch.png' }, // Duplicate
+        { name: 'twitch-r', path: '/static/icons/twitch-r.png' },
+        // { name: 'vimeo', path: '/static/icons/vimeo.png' }, // Duplicate
+        // { name: 'website', path: '/static/icons/website.png' }, // Duplicate
+        { name: 'website-p', path: '/static/icons/website-p.png' },
+        { name: 'x-twitter', path: '/static/icons/x-twitter.png' },
+        { name: 'x-twitter-r', path: '/static/icons/x-twitter-r.png' },
+        // { name: 'youtube', path: '/static/icons/youtube.png' }, // Duplicate
+        { name: 'youtube-p-r', path: '/static/icons/youtube-p-r.png' },
+        { name: 'youtube-preto', path: '/static/icons/youtube-preto.png' },
+        { name: 'youtube-r', path: '/static/icons/youtube-r.png' },
+        { name: 'bluesky R.V', path: '/static/icons/bluesky-r-v.png' },
+        { name: 'bluesky R.B.P', path: '/static/icons/bluesky-rb-p.png' },
+        { name: 'bluesky R', path: '/static/icons/bluesky-r.png' },
+        { name: 'bluesky P', path: '/static/icons/bluesky-p.png' },
+        { name: 'bluesky', path: '/static/icons/bluesky.png' },
+        { name: 'presente-p', path: '/static/icons/presente-p.png' },
+        { name: 'presente', path: '/static/icons/presente.png' }
     ];
     let filteredIcons = [];
     let currentPage = 1;
-    const iconsPerPage = 8;
+    const iconsPerPage = 9; // Alterado para 9 para uma grade 3x3
 
     function renderIcons() {
         if (!iconsGrid) return;
@@ -339,17 +419,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function closeModals() {
-        if(iconModal) iconModal.classList.remove('active', 'show');
-        if(buttonModal) buttonModal.classList.remove('active', 'show');
+        if (iconModal) iconModal.classList.remove('active', 'show');
+        if (buttonModal) buttonModal.classList.remove('active', 'show');
         document.body.classList.remove('modal-open');
         currentModalPurpose = '';
     }
 
-    if(iconSearchInput) iconSearchInput.addEventListener('input', filterAndRenderIcons);
-    if(prevIconPageBtn) prevIconPageBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderIcons(); } });
-    if(nextIconPageBtn) nextIconPageBtn.addEventListener('click', () => { const totalPages = Math.ceil(filteredIcons.length / iconsPerPage); if (currentPage < totalPages) { currentPage++; renderIcons(); } });
+    if (iconSearchInput) iconSearchInput.addEventListener('input', filterAndRenderIcons);
+    if (prevIconPageBtn) prevIconPageBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderIcons(); } });
+    if (nextIconPageBtn) nextIconPageBtn.addEventListener('click', () => { const totalPages = Math.ceil(filteredIcons.length / iconsPerPage); if (currentPage < totalPages) { currentPage++; renderIcons(); } });
 
-    if(addIconBtn) addIconBtn.addEventListener('click', () => {
+    if (addIconBtn) addIconBtn.addEventListener('click', () => {
         currentModalPurpose = 'social';
         filterAndRenderIcons();
         iconModal.classList.add('show');
@@ -357,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setTimeout(() => iconModal.classList.add('active'), 50);
     });
 
-    if(addCardLinkBtn) addCardLinkBtn.addEventListener('click', () => {
+    if (addCardLinkBtn) addCardLinkBtn.addEventListener('click', () => {
         const currentCardLinksCount = document.querySelectorAll('#card-links-container .card-link-item').length;
         if (currentCardLinksCount >= 3) {
             alert('Você pode adicionar no máximo 3 links ao cartão de visitas.');
@@ -372,7 +452,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
     const saveIconBtn = document.getElementById('save-icon');
-    if(saveIconBtn) saveIconBtn.addEventListener('click', function (event) {
+    if (saveIconBtn) saveIconBtn.addEventListener('click', function (event) {
         event.preventDefault();
         const selectedIcon = document.querySelector('.icon-option.selected');
         if (selectedIcon) {
@@ -380,7 +460,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const iconPath = `/static/icons/${iconName}.png`;
             let targetContainer, itemClass, inputNameForCheck;
 
-            const newItemField = document.createElement('div'); 
+            const newItemField = document.createElement('div');
 
             if (currentModalPurpose === 'social') {
                 targetContainer = socialIconsContainer;
@@ -399,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 targetContainer = cardLinksContainer;
                 itemClass = 'card-link-item';
                 inputNameForCheck = 'card_icon_name[]';
-                
+
                 newItemField.className = itemClass;
 
                 const dragHandle = document.createElement('i');
@@ -426,14 +506,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const styleControlsDiv = document.createElement('div');
                 styleControlsDiv.className = 'card-link-style-controls';
-                
+
                 const hiddenFontInput = document.createElement('input');
                 hiddenFontInput.type = 'hidden'; hiddenFontInput.name = 'card_icon_font[]'; hiddenFontInput.value = DEFAULT_FONT_JS;
                 styleControlsDiv.appendChild(hiddenFontInput);
 
                 const fontSelect = document.createElement('select');
                 fontSelect.className = 'form-input card-link-item-font';
-                const fonts = [ { name: 'Padrão (Inter)', value: 'Inter, sans-serif' }, { name: 'Arial', value: 'Arial, sans-serif' }, { name: 'Verdana', value: 'Verdana, sans-serif' }, { name: 'Georgia', value: 'Georgia, serif' }, { name: 'Times New Roman', value: "'Times New Roman', Times, serif" }, { name: 'Courier New', value: "'Courier New', Courier, monospace" }, { name: 'Roboto', value: 'Roboto, sans-serif' }, { name: 'Open Sans', value: "'Open Sans', sans-serif" }, { name: 'Lato', value: 'Lato, sans-serif' }, { name: 'Montserrat', value: 'Montserrat, sans-serif' }];
+                const fonts = [{ name: 'Padrão (Inter)', value: 'Inter, sans-serif' }, { name: 'Arial', value: 'Arial, sans-serif' }, { name: 'Verdana', value: 'Verdana, sans-serif' }, { name: 'Georgia', value: 'Georgia, serif' }, { name: 'Times New Roman', value: "'Times New Roman', Times, serif" }, { name: 'Courier New', value: "'Courier New', Courier, monospace" }, { name: 'Roboto', value: 'Roboto, sans-serif' }, { name: 'Open Sans', value: "'Open Sans', sans-serif" }, { name: 'Lato', value: 'Lato, sans-serif' }, { name: 'Montserrat', value: 'Montserrat, sans-serif' }];
                 fonts.forEach(font => {
                     const option = document.createElement('option');
                     option.value = font.value; option.textContent = font.name;
@@ -454,7 +534,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const previewDiv = document.createElement('div');
                 previewDiv.className = 'card-link-item-preview';
                 newItemField.appendChild(previewDiv);
-                
+
                 atTextInput.addEventListener('input', () => updateCardLinkItemPreview(newItemField));
                 fontSelect.addEventListener('change', () => {
                     hiddenFontInput.value = fontSelect.value;
@@ -464,30 +544,30 @@ document.addEventListener('DOMContentLoaded', function () {
                     hiddenColorInput.value = colorInput.value;
                     updateCardLinkItemPreview(newItemField);
                 });
-                 // Adiciona o botão de remover para card_link
+                // Adiciona o botão de remover para card_link
                 const removeSpanCard = document.createElement('span');
                 removeSpanCard.className = 'remove-item';
                 removeSpanCard.innerHTML = '<i class="fas fa-times"></i>';
                 newItemField.appendChild(removeSpanCard); // Adiciona ao final do newItemField
-                
+
             } else { return; }
 
             let iconExists = false;
-            if(targetContainer) {
+            if (targetContainer) {
                 targetContainer.querySelectorAll(`input[name="${inputNameForCheck}"]`).forEach(input => {
                     if (input.value === iconName) iconExists = true;
                 });
             }
 
             if (iconExists) { alert('Este ícone já foi adicionado!'); closeModals(); return; }
-            
+
             // Definir classe aqui se não for card_link (já que socialItemHTML foi definido antes)
             if (currentModalPurpose === 'social') {
                 newItemField.className = itemClass;
             }
-            
-            if(targetContainer) targetContainer.appendChild(newItemField);
-            
+
+            if (targetContainer) targetContainer.appendChild(newItemField);
+
             // Adicionar listener de remoção após o item ser adicionado ao DOM
             // O listener para card_link já é adicionado acima dinamicamente
             // O listener para social_item precisa ser adicionado aqui, pois o HTML é setado via innerHTML
@@ -499,10 +579,10 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
 
-            if (currentModalPurpose === 'card_link') { 
+            if (currentModalPurpose === 'card_link') {
                 updateCardLinkItemPreview(newItemField);
             }
-            
+
             const firstInput = newItemField.querySelector('input[type="text"]');
             if (firstInput) firstInput.focus();
 
@@ -513,26 +593,26 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.querySelectorAll('#card-links-container .card-link-item').forEach(item => {
-        updateCardLinkItemPreview(item); 
+        updateCardLinkItemPreview(item);
 
         const atTextInput = item.querySelector('.card-link-item-at-text');
-        const fontSelect = item.querySelector('.card-link-item-font'); 
-        const colorInput = item.querySelector('.card-link-item-color'); 
-        const hiddenFontInput = item.querySelector('input[name="card_icon_font[]"]'); 
-        const hiddenColorInput = item.querySelector('input[name="card_icon_color[]"]'); 
+        const fontSelect = item.querySelector('.card-link-item-font');
+        const colorInput = item.querySelector('.card-link-item-color');
+        const hiddenFontInput = item.querySelector('input[name="card_icon_font[]"]');
+        const hiddenColorInput = item.querySelector('input[name="card_icon_color[]"]');
 
         if (atTextInput) {
             atTextInput.addEventListener('input', () => updateCardLinkItemPreview(item));
         }
         if (fontSelect && hiddenFontInput) {
             fontSelect.addEventListener('change', () => {
-                hiddenFontInput.value = fontSelect.value; 
+                hiddenFontInput.value = fontSelect.value;
                 updateCardLinkItemPreview(item);
             });
         }
         if (colorInput && hiddenColorInput) {
             colorInput.addEventListener('input', () => {
-                hiddenColorInput.value = colorInput.value; 
+                hiddenColorInput.value = colorInput.value;
                 updateCardLinkItemPreview(item);
             });
         }
@@ -541,8 +621,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const buttonHasBorderCheckbox = document.getElementById('button-has-border');
     const borderOptionsGroup = document.getElementById('border-options-group');
-    if(buttonHasBorderCheckbox) buttonHasBorderCheckbox.addEventListener('change', function() {
-        if(borderOptionsGroup) borderOptionsGroup.style.display = this.checked ? 'flex' : 'none';
+    if (buttonHasBorderCheckbox) buttonHasBorderCheckbox.addEventListener('change', function () {
+        if (borderOptionsGroup) borderOptionsGroup.style.display = this.checked ? 'flex' : 'none';
         updateButtonPreview();
     });
 
@@ -575,38 +655,38 @@ document.addEventListener('DOMContentLoaded', function () {
         if (buttonShadowTypeSelect.value !== 'none') liveButtonPreview.classList.add(`shadow-${buttonShadowTypeSelect.value}`);
         liveButtonPreview.classList.toggle('hover-effect-preview', buttonHasHoverCheckbox.checked);
     }
-    
+
     [buttonTextInput, buttonColorInput, buttonRadiusInput, buttonTextColorInput, buttonTextBoldCheckbox, buttonTextItalicCheckbox, buttonFontSizeInput, buttonBorderColorInput, buttonBorderWidthInput, buttonHasHoverCheckbox, buttonShadowTypeSelect].forEach(el => {
         if (el) el.addEventListener(el.type === 'checkbox' || el.type === 'select-one' ? 'change' : 'input', updateButtonPreview);
     });
 
-    if(addButtonBtn) addButtonBtn.addEventListener('click', () => {
-        if(buttonTextInput) buttonTextInput.value = '';
+    if (addButtonBtn) addButtonBtn.addEventListener('click', () => {
+        if (buttonTextInput) buttonTextInput.value = '';
         const buttonLinkInput = document.getElementById('button-link');
-        if(buttonLinkInput) buttonLinkInput.value = '';
-        if(buttonColorInput) buttonColorInput.value = '#4CAF50';
-        if(buttonRadiusInput) buttonRadiusInput.value = '10';
-        if(radiusValueSpan) radiusValueSpan.textContent = '10px';
-        if(buttonTextColorInput) buttonTextColorInput.value = '#FFFFFF';
-        if(buttonTextBoldCheckbox) buttonTextBoldCheckbox.checked = false;
-        if(buttonTextItalicCheckbox) buttonTextItalicCheckbox.checked = false;
-        if(buttonFontSizeInput) buttonFontSizeInput.value = '16';
-        if(buttonHasBorderCheckbox) buttonHasBorderCheckbox.checked = false;
-        if(borderOptionsGroup) borderOptionsGroup.style.display = 'none';
-        if(buttonBorderColorInput) buttonBorderColorInput.value = '#000000';
-        if(buttonBorderWidthInput) buttonBorderWidthInput.value = '2';
-        if(buttonHasHoverCheckbox) buttonHasHoverCheckbox.checked = false;
-        if(buttonShadowTypeSelect) buttonShadowTypeSelect.value = 'none';
+        if (buttonLinkInput) buttonLinkInput.value = '';
+        if (buttonColorInput) buttonColorInput.value = '#4CAF50';
+        if (buttonRadiusInput) buttonRadiusInput.value = '10';
+        if (radiusValueSpan) radiusValueSpan.textContent = '10px';
+        if (buttonTextColorInput) buttonTextColorInput.value = '#FFFFFF';
+        if (buttonTextBoldCheckbox) buttonTextBoldCheckbox.checked = false;
+        if (buttonTextItalicCheckbox) buttonTextItalicCheckbox.checked = false;
+        if (buttonFontSizeInput) buttonFontSizeInput.value = '16';
+        if (buttonHasBorderCheckbox) buttonHasBorderCheckbox.checked = false;
+        if (borderOptionsGroup) borderOptionsGroup.style.display = 'none';
+        if (buttonBorderColorInput) buttonBorderColorInput.value = '#000000';
+        if (buttonBorderWidthInput) buttonBorderWidthInput.value = '2';
+        if (buttonHasHoverCheckbox) buttonHasHoverCheckbox.checked = false;
+        if (buttonShadowTypeSelect) buttonShadowTypeSelect.value = 'none';
         updateButtonPreview();
-        if(buttonModal) {
+        if (buttonModal) {
             buttonModal.classList.add('show');
             document.body.classList.add('modal-open');
             setTimeout(() => buttonModal.classList.add('active'), 50);
         }
     });
-    
+
     const saveButtonBtn = document.getElementById('save-button');
-    if(saveButtonBtn) saveButtonBtn.addEventListener('click', function (event) {
+    if (saveButtonBtn) saveButtonBtn.addEventListener('click', function (event) {
         event.preventDefault();
         const btnText = buttonTextInput.value;
         const btnLink = document.getElementById('button-link').value;
@@ -624,14 +704,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    if(iconModalCloseBtn) iconModalCloseBtn.addEventListener('click', closeModals);
-    if(buttonModalCloseBtn) buttonModalCloseBtn.addEventListener('click', closeModals);
+    if (iconModalCloseBtn) iconModalCloseBtn.addEventListener('click', closeModals);
+    if (buttonModalCloseBtn) buttonModalCloseBtn.addEventListener('click', closeModals);
     window.addEventListener('click', function (event) {
         if (event.target === iconModal || event.target === buttonModal) closeModals();
     });
 
     document.querySelectorAll('.social-item .remove-item, .custom-button-item .remove-item, .card-link-item .remove-item').forEach(item => {
-        item.addEventListener('click', function() {
+        item.addEventListener('click', function () {
             this.closest('.social-item, .custom-button-item, .card-link-item').remove();
         });
     });
