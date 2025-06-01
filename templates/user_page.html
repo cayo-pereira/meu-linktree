@@ -11,17 +11,18 @@
     <title>{{ og_title | default(dados.nome if dados.nome else 'Perfil Pessoal', true) | e }}</title>
     <meta property="og:title" content="{{ og_title | default(dados.nome if dados.nome else 'Perfil Pessoal', true) | e }}">
     <meta property="og:description" content="{{ og_description | default((dados.bio | striptags | truncate(150)) if dados.bio else 'Confira esta página!', true) | e }}">
-    <meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ url_for('user_page', profile=dados.profile) }}{% if card_og_image_url %}?view=card{% endif %}">
+    <meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ url_for('user_page', profile=dados.profile) }}">
 
-    {% if card_og_image_url %}
-    <meta property="og:image" content="{{ card_og_image_url | e }}">
-    <meta property="og:image:width" content="380"> 
-    <meta property="og:image:height" content="220"> 
-    {% elif dados.foto %}
-    <meta property="og:image" content="{{ (dados.foto if dados.foto.startswith('http') else url_for('static', filename=dados.foto, _external=True)) | e }}">
-    {% else %}
+    {# A imagem OG agora usará a foto de perfil (passada como og_image) ou uma imagem padrão do site #}
+    {% if og_image %}
+        <meta property="og:image" content="{{ (og_image if og_image.startswith('http') else url_for('static', filename=og_image, _external=True)) | e }}">
+    {# Você pode adicionar um fallback para uma imagem OG padrão do seu site aqui, se og_image não for passada E dados.foto não existir #}
+    {# Ex: {% elif url_for('static', filename='default_og_image.png', _external=True) %} #}
     {# <meta property="og:image" content="{{ url_for('static', filename='default_og_image.png', _external=True) | e }}"> #}
     {% endif %}
+    {# Se a foto de perfil tiver dimensões conhecidas, você pode adicioná-las aqui #}
+    {# <meta property="og:image:width" content="LARGURA_DA_FOTO_DE_PERFIL"> #}
+    {# <meta property="og:image:height" content="ALTURA_DA_FOTO_DE_PERFIL"> #}
     <meta property="og:type" content="profile">
 
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -56,37 +57,36 @@
         .share-fallback-btn-secondary { background-color: #6c757d; color: white; }
         .share-fallback-btn-secondary:hover { background-color: #5a6268; }
 
-        /* NOVO: Estilos para o container dos botões movidos */
+        /* Botão de Download do Cartão REMOVIDO, então .moved-card-actions-container pode precisar de ajustes se o botão "Salvar Contato" ficar sozinho */
         .moved-card-actions-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px; /* Espaço entre os botões */
-            margin-top: 15px; /* Espaço abaixo do cartão */
+            gap: 10px; 
+            margin-top: 15px; 
             width: 100%;
         }
-        /* Ajustes nos botões se necessário, mas eles já têm estilos globais */
-        .moved-card-actions-container .add-to-contacts-btn,
-        .moved-card-actions-container .download-card-btn {
-            width: auto; /* Para não ocupar 100% se o texto for pequeno */
-            min-width: 180px; /* Largura mínima para boa aparência */
-            max-width: 90%;   /* Para não estourar em telas pequenas */
+        .moved-card-actions-container .add-to-contacts-btn { /* Estilo para o botão Salvar Contato se ele for o único */
+            width: auto; 
+            min-width: 180px; 
+            max-width: 90%;   
             box-sizing: border-box;
         }
+        /* Se não houver mais botões abaixo do cartão, você pode remover .moved-card-actions-container completamente */
 
-        /* NOVO: Estilos para a seção de endereço dentro do cartão */
+
         .card-bottom-section {
             display: flex;
-            justify-content: space-between; /* Links à esquerda, endereço à direita */
-            align-items: flex-end; /* Alinha na base */
+            justify-content: space-between; 
+            align-items: flex-end; 
             width: 100%;
-            margin-top: auto; /* Empurra para o fundo do card-content */
-            gap: 8px; /* Espaço entre área de links e área de endereço */
-            min-height: 40px; /* Altura mínima para acomodar 3 links ou endereço */
+            margin-top: auto; 
+            gap: 8px; 
+            min-height: 40px; 
         }
 
-        .card-links { /* Confirmar se precisa de ajuste */
-            flex-grow: 1; /* Ocupa espaço à esquerda */
+        .card-links { 
+            flex-grow: 1; 
             display: flex;
             flex-direction: column;
             gap: 2px !important;
@@ -95,19 +95,18 @@
         }
 
         .card-address-area {
-            flex-shrink: 0; /* Não encolhe */
+            flex-shrink: 0; 
             text-align: right;
-            max-width: 45%; /* Evitar que o endereço comprima demais os links se houver muitos links */
-            /* Se não houver links, o endereço pode ocupar mais espaço, mas isso é gerenciado pelo flex-grow do card-links */
+            max-width: 45%; 
         }
 
         .card-address-text {
             font-size: clamp(10px, 2.5vw, 12px); 
-            /* Cor e fonte serão aplicadas inline */
             margin: 0;
-            word-break: break-word;
-            line-height: 1.3; /* Melhor legibilidade para múltiplas linhas */
-            padding-bottom: 2px; /* Pequeno ajuste para alinhar melhor com os links se eles tiverem ícones */
+            word-break: break-word; /* Substituído para overflow-wrap se WeasyPrint reclamar */
+            overflow-wrap: break-word; /* Alternativa mais moderna */
+            line-height: 1.3; 
+            padding-bottom: 2px; 
         }
     </style>
 </head>
@@ -212,7 +211,6 @@
                             {% endif %}
                         </div>
 
-                        {# NOVO: Seção inferior do cartão para links e endereço #}
                         <div class="card-bottom-section">
                             <div class="card-links">
                                 {% for link in dados.card_links %}
@@ -243,17 +241,13 @@
                     </div>
                 </div>
 
-                {# NOVO: Container para os botões movidos para FORA e ABAIXO do cartão #}
+                {# Container para os botões movidos ABAIXO do cartão #}
+                {# O botão de download foi REMOVIDO #}
                 <div class="moved-card-actions-container">
                     <button class="add-to-contacts-btn" onclick="addToContacts()">
                         <i class="fas fa-address-book"></i> Salvar Contato
                     </button>
-                    <a href="{{ url_for('download_card_image', profile=dados.profile) }}"
-                       class="download-card-btn"
-                       download="cartao_{{ dados.profile | e }}.png" 
-                       title="Baixar imagem do cartão">
-                        <i class="fas fa-download"></i> Baixar Cartão
-                    </a>
+                    {# O botão de download foi removido daqui #}
                 </div>
 
             </div>
@@ -265,6 +259,10 @@
     </div>
 
 <script>
+    // O JavaScript permanece o mesmo da versão anterior, pois a lógica do Swiper,
+    // compartilhamento, e "Salvar Contato" (VCF) não foi alterada.
+    // Apenas o botão de download do cartão foi removido do HTML.
+
     console.log("DEBUG: Script principal iniciado.");
     document.body.style.opacity = 0; 
 
@@ -346,16 +344,16 @@
                         let cardTextParts = [];
                         const cardTitleText = {{ (dados.card_titulo if dados.card_titulo else '') | tojson | safe }};
                         const cardRegText = {{ (dados.card_registro_profissional if dados.card_registro_profissional else '') | tojson | safe }};
-                        const cardEnderecoText = {{ (dados.card_endereco if dados.card_endereco else '') | tojson | safe }}; // NOVO
+                        const cardEnderecoText = {{ (dados.card_endereco if dados.card_endereco else '') | tojson | safe }};
                         if (cardTitleText) cardTextParts.push(cardTitleText);
                         if (cardRegText) cardTextParts.push(cardRegText);
-                        if (cardEnderecoText) cardTextParts.push(cardEnderecoText); // NOVO
+                        if (cardEnderecoText) cardTextParts.push(cardEnderecoText);
                         let cardDynamicDescriptionForShare = cardTextParts.join(" | ");
                         if (!cardDynamicDescriptionForShare) {
                             cardDynamicDescriptionForShare = `Acesse o cartão de visita de ${cardNameForShare}.`;
                         }
                         shareData.text = cardDynamicDescriptionForShare;
-                        shareData.url = pageUrlForSharing + (pageUrlForSharing.includes('?') ? '&' : '?') + 'view=card';
+                        // A URL de partilha não precisa mais de ?view=card para a imagem OG do cartão.
                     }
                     console.log("DEBUG: Dados para partilha (navigator.share ou fallback):", JSON.stringify(shareData));
 
@@ -398,7 +396,7 @@
         
         try {
             const cardLinksData = {{ dados.card_links | tojson | safe }};
-            const cardEnderecoVCF = {{ (dados.card_endereco if dados.card_endereco else '') | tojson | safe }}; // NOVO para vCard
+            const cardEnderecoVCF = {{ (dados.card_endereco if dados.card_endereco else '') | tojson | safe }};
             if (typeof addToContacts !== 'function') { 
                 window.addToContacts = function() { 
                     try {
@@ -412,7 +410,7 @@
                         if (cardTitulo) vCardData += `\nTITLE:${cardTitulo}`;
                         if (cardRegistro) vCardData += `\nORG:${cardRegistro}`; 
                         if (email) vCardData += `\nEMAIL;TYPE=INTERNET,PREF:${email}`;
-                        if (cardEnderecoVCF) vCardData += `\nADR;TYPE=WORK,PREF:;;${sanitizeVCardString(cardEnderecoVCF)};;;;`; // NOVO: Adiciona endereço ao vCard
+                        if (cardEnderecoVCF) vCardData += `\nADR;TYPE=WORK,PREF:;;${sanitizeVCardString(cardEnderecoVCF)};;;;`;
 
                         if (Array.isArray(cardLinksData)) {
                             cardLinksData.forEach(link => {  

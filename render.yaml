@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: cp.pages # ou o nome do seu serviço
+    env: python
+    plan: free # ou seu plano atual
+    region: Oregon (US West) # ou sua região
+    buildCommand: |
+      pip install -r requirements.txt
+    startCommand: "gunicorn app:app"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11" # Mantenha sua versão do Python
+      # Suas outras variáveis de ambiente (SUPABASE_URL, SUPABASE_KEY, FLASK_SECRET_KEY etc.)
+    aptPackages:
+      # Mantenha apenas pacotes realmente necessários.
+      # Ex: Se você não precisa de manipulação de imagem complexa no backend agora,
+      # muitos dos pacotes de fontes e gráficos podem ser removidos.
+      # libfontconfig1 e fonts-liberation podem ser úteis para consistência de fontes web.
+      - libfontconfig1
+      - fonts-liberation
+      # Avalie se os outros da sua lista original ainda são necessários
+      # para outras funcionalidades além da geração de imagem/pdf.
