@@ -1025,3 +1025,76 @@ input[type="range"].form-input {
 #background_info_page {
     margin-top: 5px;
 }
+
+input[type="range"].form-input {
+  -webkit-appearance: none; /* Remove aparência padrão no WebKit (Chrome, Safari, Edge) */
+  appearance: none; /* Remove aparência padrão em outros navegadores */
+  width: 100%;
+  height: 24px; /* Altura total para acomodar o thumb e a trilha */
+  background: transparent; /* Fundo do elemento input em si é transparente */
+  cursor: pointer;
+  padding: 0 !important; /* Remove qualquer padding que possa interferir */
+  margin-top: 5px; /* Ajuste para alinhar com labels se necessário */
+  margin-bottom: 5px;
+}
+
+/* --- Trilha (Track) --- */
+input[type="range"].form-input::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px; /* Altura da trilha (similar ao "thin" da scrollbar) */
+  background: var(--input-bg-light);
+  border: 1px solid var(--border-color-light);
+  border-radius: 3px; /* Cantos arredondados */
+}
+
+input[type="range"].form-input::-moz-range-track {
+  width: 100%;
+  height: 6px;
+  background: var(--input-bg-light);
+  border: 1px solid var(--border-color-light);
+  border-radius: 3px;
+}
+
+/* --- Polegar/Botão Deslizante (Thumb) --- */
+input[type="range"].form-input::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Necessário para estilizar no WebKit */
+  appearance: none;
+  margin-top: -7px; /* Centraliza o thumb na trilha: ((Altura do Thumb / 2) - (Altura da Trilha / 2)) * -1 + ajuste_borda_thumb */
+                     /* Ex: (18/2 - 6/2)*-1 - 1px_borda_thumb_cima = (9-3)*-1 - 1 = -7px */
+  width: 18px; /* Largura do thumb */
+  height: 18px; /* Altura do thumb */
+  background: var(--primary-color); /* Cor principal para o thumb */
+  border-radius: 50%; /* Thumb circular */
+  border: 2px solid var(--card-bg-light); /* Borda para destacar, usando cor de fundo do "cartão" para flutuar sobre a trilha */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* Sombra sutil no thumb */
+}
+
+input[type="range"].form-input::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--primary-color);
+  border-radius: 50%;
+  border: 2px solid var(--card-bg-light);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* --- Estados Hover/Focus/Active para o Thumb (Opcional, mas melhora o feedback) --- */
+input[type="range"].form-input:hover::-webkit-slider-thumb,
+input[type="range"].form-input:focus::-webkit-slider-thumb {
+  background: var(--secondary-color); /* Cor do thumb no hover/focus */
+}
+
+input[type="range"].form-input:hover::-moz-range-thumb,
+input[type="range"].form-input:focus::-moz-range-thumb {
+  background: var(--secondary-color);
+}
+
+input[type="range"].form-input:active::-webkit-slider-thumb {
+  transform: scale(1.1); /* Leve aumento ao clicar */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+input[type="range"].form-input:active::-moz-range-thumb {
+  transform: scale(1.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
