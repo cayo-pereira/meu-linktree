@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Administrativo</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}?v={{ range(1, 100000) | random }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}?v={{ range(1, 100000) | random }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -31,27 +31,26 @@
     </div>
 
     <form method="POST" action="{{ url_for('delete_page') }}"
-        onsubmit="return confirm('Tem certeza que deseja APAGAR SUA PÁGINA permanentemente? Esta ação não pode ser desfeita!')"
-        style="position: absolute; top: 20px; left: 20px;">
+        onsubmit="return confirm('Tem certeza que deseja APAGAR SUA PÁGINA E CONTA permanentemente? Esta ação não pode ser desfeita!')"
+        style="position: absolute; top: 20px; left: 20px; z-index: 1001;">
         <button type="submit" class="btn-delete">
-            <i class="fas fa-trash"></i> Apagar Página
+            <i class="fas fa-trash"></i> Apagar Página e Conta
         </button>
     </form>
 
     <div class="admin-container">
         <div class="admin-header">
             <h1><i class="fas fa-cog"></i> Painel Administrativo</h1>
-            <p>Edite suas informações pessoais</p>
+            <p>Edite suas informações pessoais e aparência da página</p>
         </div>
 
         <form method="POST" enctype="multipart/form-data" action="{{ url_for('admin_panel', username=dados.profile) }}"
-            class="admin-form">
+            class="admin-form" id="admin-main-form">
             <div class="form-grid">
                 <div class="form-section">
                     <h2><i class="fas fa-user"></i> Informações Pessoais</h2>
-
                     <div class="form-group">
-                        <label for="nome">Nome Completo</label>
+                        <label for="nome">Nome Completo (Exibido na Página)</label>
                         <input type="text" id="nome" name="nome" value="{{ dados.nome }}" class="form-input" oninput="updateTextPreview('nome_preview', this.value, getValue('nome_font'), getValue('nome_color'))">
                         <div class="form-group-inline" style="margin-top: 8px;">
                             <label for="nome_font">Fonte:</label>
@@ -68,13 +67,12 @@
                                 <option value="Montserrat, sans-serif" {% if dados.nome_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
                             </select>
                             <label for="nome_color">Cor:</label>
-                            <input type="color" id="nome_color" name="nome_color" value="{{ dados.nome_color | default(DEFAULT_TEXT_COLOR_PAGE, true) }}" oninput="updateTextPreview('nome_preview', getValue('nome'), getValue('nome_font'), this.value)">
+                            <input type="color" id="nome_color" name="nome_color" value="{{ dados.nome_color | default(DEFAULT_TEXT_COLOR_PAGE, true) }}">
                         </div>
                         <div class="text-preview" id="nome_preview">Prévia do Nome</div>
                     </div>
-
                     <div class="form-group">
-                        <label for="bio">Biografia</label>
+                        <label for="bio">Biografia (Exibida na Página)</label>
                         <textarea id="bio" name="bio" class="form-textarea" oninput="updateTextPreview('bio_preview', this.value, getValue('bio_font'), getValue('bio_color'))">{{ dados.bio }}</textarea>
                         <div class="form-group-inline" style="margin-top: 8px;">
                             <label for="bio_font">Fonte:</label>
@@ -91,28 +89,28 @@
                                 <option value="Montserrat, sans-serif" {% if dados.bio_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
                             </select>
                             <label for="bio_color">Cor:</label>
-                            <input type="color" id="bio_color" name="bio_color" value="{{ dados.bio_color | default(DEFAULT_BIO_COLOR_PAGE, true) }}" oninput="updateTextPreview('bio_preview', getValue('bio'), getValue('bio_font'), this.value)">
+                            <input type="color" id="bio_color" name="bio_color" value="{{ dados.bio_color | default(DEFAULT_BIO_COLOR_PAGE, true) }}">
                         </div>
                         <div class="text-preview" id="bio_preview">Prévia da Biografia</div>
                     </div>
-
                     <div class="form-group">
-                        <label for="profile">URL da sua página</label>
+                        <label for="profile">URL da sua página (Ex: seunome)</label>
                         <div class="profile-url">
-                            <span class="url-prefix">cpages.onrender.com/</span> <input type="text" id="profile" name="profile" value="{{ dados.profile }}" class="form-input"
-                                pattern="[a-z0-9-]+" title="Apenas letras minúsculas, números e hífens">
+                            <span class="url-prefix">cpages.onrender.com/</span>
+                            <input type="text" id="profile" name="profile" value="{{ dados.profile }}" class="form-input"
+                                pattern="[a-z0-9](?:[a-z0-9-]*[a-z0-9])?"
+                                title="Apenas letras minúsculas, números e hífens. Não pode começar ou terminar com hífen. Ex: meu-perfil-123">
                         </div>
                     </div>
                 </div>
 
                 <div class="form-section">
                     <h2><i class="fas fa-images"></i> Imagens da Página</h2>
-
                     <div class="form-group">
-                        <label for="foto_upload">Foto de Perfil</label>
+                        <label for="foto_upload">Foto de Perfil (Recomendado: Quadrada, ex: 300x300px)</label>
                         <div class="file-upload-wrapper">
                             <div class="file-upload">
-                                <input type="file" id="foto_upload" name="foto_upload" accept="image/*" class="file-input"
+                                <input type="file" id="foto_upload" name="foto_upload" accept="image/png, image/jpeg, image/gif" class="file-input"
                                     onchange="previewImage(this, 'foto_preview', 'foto_info')">
                                 <label for="foto_upload" class="file-label">
                                     <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
@@ -121,16 +119,15 @@
                             <div class="file-info" id="foto_info">Nenhum arquivo selecionado</div>
                             <div class="image-preview-container" id="foto_preview_container">
                                 <img src="{{ dados.foto if dados.foto else '' }}" class="image-preview" id="foto_preview"
-                                    onerror="this.style.display='none'">
+                                    alt="Prévia da Foto de Perfil" onerror="this.style.display='none'">
                             </div>
                         </div>
                     </div>
-
                     <div class="form-group">
-                        <label for="background_upload">Imagem de Fundo da Página</label>
+                        <label for="background_upload">Imagem de Fundo da Página (Opcional)</label>
                         <div class="file-upload-wrapper">
                             <div class="file-upload">
-                                <input type="file" id="background_upload" name="background_upload" accept="image/*" class="file-input"
+                                <input type="file" id="background_upload" name="background_upload" accept="image/png, image/jpeg, image/gif" class="file-input"
                                     onchange="previewImage(this, 'background_preview', 'background_info')">
                                 <label for="background_upload" class="file-label">
                                     <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
@@ -139,15 +136,14 @@
                             <div class="file-info" id="background_info">Nenhum arquivo selecionado</div>
                             <div class="image-preview-container" id="background_preview_container">
                                 <img src="{{ dados.background if dados.background else '' }}" class="image-preview"
-                                    id="background_preview" onerror="this.style.display='none'">
+                                    id="background_preview" alt="Prévia do Fundo da Página" onerror="this.style.display='none'">
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <div class="form-section">
-                    <h2><i class="fas fa-link"></i> Links Sociais e Botões</h2>
 
+                <div class="form-section">
+                    <h2><i class="fas fa-link"></i> Links e Botões (Página Principal)</h2>
                     <div class="buttons-container">
                         <button type="button" class="btn btn-add" id="add-icon-btn">
                             <i class="fas fa-plus"></i> Adicionar Ícone Social
@@ -156,47 +152,64 @@
                             <i class="fas fa-plus"></i> Adicionar Botão Personalizado
                         </button>
                     </div>
-
+                    <p style="font-size: 0.9em; margin-bottom: 10px;">Arraste os itens para reordenar.</p>
                     <div id="social-icons-container">
                         {% if dados.social_links %}
                             {% for link in dados.social_links %}
                             <div class="social-item">
-                                <i class="fas fa-grip-vertical drag-handle"></i> <img src="/static/icons/{{ link.icon }}.png" alt="{{ link.icon }}" width="24">
+                                <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
+                                <img src="{{ url_for('static', filename='icons/' + link.icon + '.png') }}" alt="{{ link.icon }}" width="24" height="24">
                                 <input type="hidden" name="social_icon_name[]" value="{{ link.icon }}">
                                 <input type="text" name="social_icon_url[]"
                                             value="{{ link.url }}"
                                             placeholder="Insira o link para {{ link.icon.replace('-', ' ') }}"
                                             class="form-input" required>
-                                <span class="remove-item"><i class="fas fa-times"></i></span>
+                                <span class="remove-item" title="Remover este ícone"><i class="fas fa-times"></i></span>
                             </div>
                             {% endfor %}
                         {% endif %}
                     </div>
-
                     <div id="custom-buttons-container">
                         {% if dados.custom_buttons %}
                             {% for button in dados.custom_buttons %}
                             <div class="custom-button-item">
-                                <i class="fas fa-grip-vertical drag-handle"></i> <div style="flex-grow: 1;">
-                                    <div class="button-preview {% if button.hasBorder %}has-border-preview{% endif %} {% if button.hasHoverEffect %}hover-effect-preview{% endif %} {% if button.shadowType %}shadow-{{ button.shadowType }}{% endif %}"
-                                        style="background: {{ button.color }}; border-radius: {{ button.radius }}px; padding: 8px; margin-bottom: 8px; color: {{ button.textColor }}; font-weight: {{ 'bold' if button.bold else 'normal' }}; font-style: {{ 'italic' if button.italic else 'normal' }}; font-size: {{ button.fontSize }}px; {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor }};{% endif %}">
-                                        {{ button.text }}
+                                <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
+                                <div style="flex-grow: 1;">
+                                    <div class="button-preview
+                                        {% if button.hasBorder %}has-border-preview{% endif %}
+                                        {% if button.hasHoverEffect and button.buttonStyle == 'default' %}hover-effect-preview{% endif %}
+                                        {% if button.shadowType and button.shadowType != 'none' and button.buttonStyle == 'default' %}shadow-{{ button.shadowType }}{% endif %}
+                                        button-style-{{ button.buttonStyle | default(DEFAULT_BUTTON_STYLE) }}"
+                                        style="--btn-bg-color: {{ button.color | style_safe }}; --btn-opacity: {{ button.opacity | default(DEFAULT_BUTTON_OPACITY) }}; border-radius: {{ button.radius }}px; padding: 8px; margin-bottom: 8px; color: {{ button.textColor | style_safe }}; font-weight: {{ 'bold' if button.bold else 'normal' }}; font-style: {{ 'italic' if button.italic else 'normal' }}; font-size: {{ button.fontSize }}px; {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor | style_safe }};{% endif %}">
+
+                                        {% if button.iconType == 'image_url' and button.iconUrl %}
+                                            <img src="{{ button.iconUrl | e }}" alt="Ícone" class="button-embedded-icon {{ 'rounded' if button.iconRounded else '' }}">
+                                        {% elif button.iconType == 'library_icon' and button.iconUrl %}
+                                            {# Assumindo que iconUrl para library_icon é o nome do arquivo do ícone em static/icons/ #}
+                                            <img src="{{ url_for('static', filename='icons/' + button.iconUrl) }}" alt="Ícone" class="button-embedded-icon">
+                                        {% endif %}
+                                        <span class="button-text-content">{{ button.text }}</span>
                                     </div>
-                                    <input type="hidden" name="custom_button_text[]" value="{{ button.text }}">
-                                    <input type="hidden" name="custom_button_link[]" value="{{ button.link }}">
-                                    <input type="hidden" name="custom_button_color[]" value="{{ button.color }}">
+                                    <input type="hidden" name="custom_button_text[]" value="{{ button.text | e }}">
+                                    <input type="hidden" name="custom_button_link[]" value="{{ button.link | e }}">
+                                    <input type="hidden" name="custom_button_color[]" value="{{ button.color | e }}">
                                     <input type="hidden" name="custom_button_radius[]" value="{{ button.radius }}">
-                                    <input type="hidden" name="custom_button_text_color[]" value="{{ button.textColor }}">
+                                    <input type="hidden" name="custom_button_text_color[]" value="{{ button.textColor | e }}">
                                     <input type="hidden" name="custom_button_text_bold[]" value="{{ 'true' if button.bold else 'false' }}">
                                     <input type="hidden" name="custom_button_text_italic[]" value="{{ 'true' if button.italic else 'false' }}">
                                     <input type="hidden" name="custom_button_font_size[]" value="{{ button.fontSize }}">
                                     <input type="hidden" name="custom_button_has_border[]" value="{{ 'true' if button.hasBorder else 'false' }}">
-                                    <input type="hidden" name="custom_button_border_color[]" value="{{ button.borderColor }}">
+                                    <input type="hidden" name="custom_button_border_color[]" value="{{ button.borderColor | e }}">
                                     <input type="hidden" name="custom_button_border_width[]" value="{{ button.borderWidth }}">
                                     <input type="hidden" name="custom_button_has_hover[]" value="{{ 'true' if button.hasHoverEffect else 'false' }}">
-                                    <input type="hidden" name="custom_button_shadow_type[]" value="{{ button.shadowType | default('none') }}">
+                                    <input type="hidden" name="custom_button_shadow_type[]" value="{{ button.shadowType | default('none') | e }}">
+                                    <input type="hidden" name="custom_button_opacity[]" value="{{ button.opacity | default(DEFAULT_BUTTON_OPACITY) }}">
+                                    <input type="hidden" name="custom_button_icon_url[]" value="{{ button.iconUrl | default('') | e }}">
+                                    <input type="hidden" name="custom_button_icon_type[]" value="{{ button.iconType | default(DEFAULT_BUTTON_ICON_TYPE) | e }}">
+                                    <input type="hidden" name="custom_button_icon_rounded[]" value="{{ 'true' if button.iconRounded else 'false' }}">
+                                    <input type="hidden" name="custom_button_style[]" value="{{ button.buttonStyle | default(DEFAULT_BUTTON_STYLE) | e }}">
                                 </div>
-                                <span class="remove-item"><i class="fas fa-times"></i></span>
+                                <span class="remove-item" title="Remover este botão"><i class="fas fa-times"></i></span>
                             </div>
                             {% endfor %}
                         {% endif %}
@@ -204,48 +217,113 @@
 
                     <div id="icon-modal" class="modal">
                         <div class="modal-content">
-                            <span class="close icon-modal-close">&times;</span>
-                            <h3>Selecione um ícone</h3>
+                            <span class="close icon-modal-close" title="Fechar">&times;</span>
+                            <h3>Selecione um Ícone</h3>
                             <div class="form-group">
-                                <input type="text" id="icon-search" class="form-input" placeholder="Buscar ícones...">
+                                <input type="text" id="icon-search" class="form-input" placeholder="Buscar ícones pelo nome...">
                             </div>
                             <div class="pagination-container">
-                                <button type="button" class="pagination-btn" id="prev-icon-page"><i class="fas fa-chevron-left"></i></button>
-                                <div class="icons-grid"></div>
-                                <button type="button" class="pagination-btn" id="next-icon-page"><i class="fas fa-chevron-right"></i></button>
+                                <button type="button" class="pagination-btn" id="prev-icon-page" title="Página Anterior"><i class="fas fa-chevron-left"></i></button>
+                                <div class="icons-grid"> </div>
+                                <button type="button" class="pagination-btn" id="next-icon-page" title="Próxima Página"><i class="fas fa-chevron-right"></i></button>
                             </div>
                             <div class="page-info" style="text-align: center; margin-top: 10px; font-size: 0.9rem;">Página <span id="current-page">1</span></div>
-                            <button type="button" id="save-icon" class="btn-save">Salvar Ícone</button>
+                            <button type="button" id="save-icon" class="btn-save"><i class="fas fa-check"></i> Salvar Ícone Selecionado</button>
                         </div>
                     </div>
 
                     <div id="button-modal" class="modal">
                         <div class="modal-content">
-                            <span class="close button-modal-close">&times;</span>
-                            <h3>Criar Novo Botão</h3>
+                            <span class="close button-modal-close" title="Fechar">&times;</span>
+                            <h3>Adicionar/Editar Botão Personalizado</h3>
                             <div id="button-preview-area">
-                                <a href="#" id="live-button-preview">Texto do Botão</a>
+                                <a href="#" id="live-button-preview" class="button-style-default" target="_blank" rel="noopener noreferrer" title="Prévia do botão">
+                                    <span class="button-icon-preview"></span>
+                                    <span class="button-text-preview">Texto do Botão</span>
+                                </a>
                             </div>
-                            <div class="form-group"><label for="button-text">Texto do Botão</label><input type="text" id="button-text" class="form-input" placeholder="Ex: Currículo"></div>
-                            <div class="form-group"><label for="button-link">Link</label><input type="text" id="button-link" class="form-input" placeholder="https://"></div>
-                            <div class="form-group"><label for="button-color">Cor do Botão</label><input type="color" id="button-color" value="#4CAF50"></div>
-                            <div class="form-group"><label for="button-radius">Arredondamento (px)</label><input type="range" id="button-radius" min="0" max="20" value="10"><span id="radius-value">10px</span></div>
-                            <div class="form-group"><label for="button-text-color">Cor do Texto</label><input type="color" id="button-text-color" value="#FFFFFF"></div>
+                            <input type="hidden" id="button-modal-editing-index" value="-1"> <input type="hidden" id="button-modal-actual-icon-type" value="none">
+                            <input type="hidden" id="button-modal-actual-icon-value" value="">
+
+
+                            <div class="form-group"><label for="button-text">Texto do Botão:</label><input type="text" id="button-text" class="form-input" placeholder="Ex: Meu Portfólio"></div>
+                            <div class="form-group"><label for="button-link">Link do Botão (URL completa):</label><input type="url" id="button-link" name=""button-link" class="form-input" placeholder="https://exemplo.com"></div>
+
+                            <div class="form-group">
+                                <label for="button-style-select">Estilo do Botão:</label>
+                                <select id="button-style-select" class="form-input">
+                                    <option value="default">Padrão</option>
+                                    <option value="solid_shadow">Sombra Destacada</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="button-icon-type-select">Ícone/Imagem no Botão:</label>
+                                <select id="button-icon-type-select" class="form-input">
+                                    <option value="none" selected>Nenhum</option>
+                                    <option value="image_url_external">Usar URL de Imagem Externa</option>
+                                    <option value="image_upload_new">Enviar Nova Imagem</option>
+                                    <option value="library_icon">Selecionar Ícone da Biblioteca</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" id="button-icon-url-external-group" style="display: none;">
+                                <label for="button-icon-url-external-input">URL da Imagem Externa:</label>
+                                <input type="url" id="button-icon-url-external-input" class="form-input" placeholder="https://servidor.com/imagem.png">
+                            </div>
+
+                            <div class="form-group" id="button-new-image-file-group" style="display: none;">
+                                <label for="button-new-image-file-input">Enviar Nova Imagem:</label>
+                                <input type="file" id="button-new-image-file-input" class="form-input" accept="image/png, image/jpeg, image/gif">
+                                <div class="file-info" id="button-new-image-file-info">Nenhum arquivo selecionado</div>
+                            </div>
+
+                            <div class="form-group" id="button-select-library-icon-group" style="display: none;">
+                                <button type="button" id="button-select-library-icon-btn" class="btn btn-add" style="width: auto;">
+                                    <i class="fas fa-icons"></i> Selecionar Ícone da Biblioteca
+                                </button>
+                                <div id="button-library-icon-name-preview" style="margin-top: 5px; font-style: italic;"></div>
+                            </div>
+                            <div class="form-group-inline" id="button-icon-rounded-group" style="display: none; margin-top: 5px;">
+                                <input type="checkbox" id="button-icon-rounded"><label for="button-icon-rounded">Arredondar Imagem (estilo foto de perfil)</label>
+                            </div>
+
+
+                            <div class="form-group"><label for="button-color">Cor de Fundo do Botão:</label><input type="color" id="button-color" value="#4CAF50"></div>
+
+                            <div class="form-group">
+                                <label for="button-opacity">Opacidade do Fundo: <span id="opacity-value">1.00</span></label>
+                                <input type="range" id="button-opacity" min="0" max="1" step="0.05" value="1.0" class="form-input">
+                            </div>
+
+                            <div class="form-group"><label for="button-radius">Arredondamento da Borda (px): <span id="radius-value">10px</span></label><input type="range" id="button-radius" min="0" max="30" value="10" class="form-input"></div>
+                            <div class="form-group"><label for="button-text-color">Cor do Texto:</label><input type="color" id="button-text-color" value="#FFFFFF"></div>
                             <div class="form-group-inline"><label>Estilo do Texto:</label><input type="checkbox" id="button-text-bold" name="button-text-bold"><label for="button-text-bold">Negrito</label><input type="checkbox" id="button-text-italic" name="button-text-italic"><label for="button-text-italic">Itálico</label></div>
-                            <div class="form-group"><label for="button-font-size">Tamanho da Fonte (px)</label><input type="number" id="button-font-size" min="12" max="30" value="16" class="form-input"></div>
-                            <div class="form-group-inline"><input type="checkbox" id="button-has-border"><label for="button-has-border">Adicionar Borda</label><div id="border-options-group" style="display: none;" class="border-options-group"><div class="form-group-inline"><label for="button-border-color">Cor</label><input type="color" id="button-border-color" value="#000000"></div><div class="form-group-inline"><label for="button-border-width">Tamanho (px)</label><input type="number" id="button-border-width" min="1" max="10" value="2" class="form-input" style="width: 60px;"></div></div></div>
-                            <div class="form-group-inline"><input type="checkbox" id="button-has-hover"><label for="button-has-hover">Efeito Hover</label></div>
-                            <div class="form-group"><label for="button-shadow-type">Tipo de Sombra</label><select id="button-shadow-type" class="form-input"><option value="none">Nenhuma</option><option value="soft">Suave</option><option value="medium">Média</option><option value="hard">Forte</option><option value="inset">Interna (Inset)</option></select></div>
-                            <button type="button" id="save-button" class="btn-save">Salvar Botão</button>
+                            <div class="form-group"><label for="button-font-size">Tamanho da Fonte (px):</label><input type="number" id="button-font-size" min="10" max="30" value="16" class="form-input" style="width: 80px;"></div>
+
+                            <div class="form-group-inline"><input type="checkbox" id="button-has-border"><label for="button-has-border">Adicionar Borda</label></div>
+                            <div id="border-options-group" style="display: none;" class="border-options-group">
+                                <div class="form-group-inline"><label for="button-border-color">Cor da Borda:</label><input type="color" id="button-border-color" value="#000000"></div>
+                                <div class="form-group-inline"><label for="button-border-width">Largura (px):</label><input type="number" id="button-border-width" min="1" max="10" value="2" class="form-input" style="width: 60px;"></div>
+                            </div>
+
+                            <div data-style-target="default"> <div class="form-group-inline"><input type="checkbox" id="button-has-hover"><label for="button-has-hover">Efeito Hover (Elevar)</label></div>
+                                <div class="form-group"><label for="button-shadow-type">Tipo de Sombra (Padrão):</label>
+                                    <select id="button-shadow-type" class="form-input">
+                                        <option value="none">Nenhuma</option><option value="soft">Suave</option>
+                                        <option value="medium">Média</option><option value="hard">Forte</option><option value="inset">Interna</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="button" id="save-button" class="btn-save"><i class="fas fa-check"></i> Salvar Botão</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="form-section card-section-full-width"> 
-                    <h2><i class="fas fa-id-card"></i> Cartão de Visitas</h2>
-                    
+                <div class="form-section card-section-full-width">
+                    <h2><i class="fas fa-id-card"></i> Configurações do Cartão de Visitas</h2>
                     <div class="form-group">
-                        <label for="card_nome">Nome Completo (Cartão)</label>
+                        <label for="card_nome">Nome Completo (Exibido no Cartão):</label>
                         <div class="input-group-card-text-style">
                             <input type="text" id="card_nome" name="card_nome" value="{{ dados.card_nome }}" class="form-input" oninput="updateTextPreview('card_nome_preview', this.value, getValue('card_nome_font'), getValue('card_nome_color'))">
                             <select id="card_nome_font" name="card_nome_font" class="form-input" onchange="updateTextPreview('card_nome_preview', getValue('card_nome'), this.value, getValue('card_nome_color'))">
@@ -260,13 +338,13 @@
                                 <option value="Lato, sans-serif" {% if dados.card_nome_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
                                 <option value="Montserrat, sans-serif" {% if dados.card_nome_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
                             </select>
-                            <input type="color" id="card_nome_color" name="card_nome_color" value="{{ dados.card_nome_color | default(DEFAULT_TEXT_COLOR_CARD, true) }}" oninput="updateTextPreview('card_nome_preview', getValue('card_nome'), getValue('card_nome_font'), this.value)">
+                            <input type="color" id="card_nome_color" name="card_nome_color" value="{{ dados.card_nome_color | default(DEFAULT_TEXT_COLOR_CARD, true) }}">
                         </div>
                         <div class="text-preview" id="card_nome_preview">Prévia do Nome (Cartão)</div>
                     </div>
 
                     <div class="form-group">
-                        <label for="card_titulo">Título/Profissão</label>
+                        <label for="card_titulo">Título/Profissão (Cartão):</label>
                         <div class="input-group-card-text-style">
                             <input type="text" id="card_titulo" name="card_titulo" value="{{ dados.card_titulo }}" class="form-input" oninput="updateTextPreview('card_titulo_preview', this.value, getValue('card_titulo_font'), getValue('card_titulo_color'))">
                             <select id="card_titulo_font" name="card_titulo_font" class="form-input" onchange="updateTextPreview('card_titulo_preview', getValue('card_titulo'), this.value, getValue('card_titulo_color'))">
@@ -281,13 +359,13 @@
                                 <option value="Lato, sans-serif" {% if dados.card_titulo_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
                                 <option value="Montserrat, sans-serif" {% if dados.card_titulo_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
                             </select>
-                            <input type="color" id="card_titulo_color" name="card_titulo_color" value="{{ dados.card_titulo_color | default(DEFAULT_TITLE_COLOR_CARD, true) }}" oninput="updateTextPreview('card_titulo_preview', getValue('card_titulo'), getValue('card_titulo_font'), this.value)">
+                            <input type="color" id="card_titulo_color" name="card_titulo_color" value="{{ dados.card_titulo_color | default(DEFAULT_TITLE_COLOR_CARD, true) }}">
                         </div>
                          <div class="text-preview" id="card_titulo_preview">Prévia do Título</div>
                     </div>
 
                     <div class="form-group">
-                        <label for="card_registro_profissional">Registro Profissional (Ex: CREA, OAB)</label>
+                        <label for="card_registro_profissional">Registro Profissional (Ex: CREA, OAB) (Cartão):</label>
                         <div class="input-group-card-text-style">
                             <input type="text" id="card_registro_profissional" name="card_registro_profissional" value="{{ dados.card_registro_profissional }}" class="form-input" oninput="updateTextPreview('card_registro_preview', this.value, getValue('card_registro_font'), getValue('card_registro_color'))">
                             <select id="card_registro_font" name="card_registro_font" class="form-input" onchange="updateTextPreview('card_registro_preview', getValue('card_registro_profissional'), this.value, getValue('card_registro_color'))">
@@ -302,13 +380,13 @@
                                 <option value="Lato, sans-serif" {% if dados.card_registro_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
                                 <option value="Montserrat, sans-serif" {% if dados.card_registro_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
                             </select>
-                            <input type="color" id="card_registro_color" name="card_registro_color" value="{{ dados.card_registro_color | default(DEFAULT_REG_COLOR_CARD, true) }}" oninput="updateTextPreview('card_registro_preview', getValue('card_registro_profissional'), getValue('card_registro_font'), this.value)">
+                            <input type="color" id="card_registro_color" name="card_registro_color" value="{{ dados.card_registro_color | default(DEFAULT_REG_COLOR_CARD, true) }}">
                         </div>
                         <div class="text-preview" id="card_registro_preview">Prévia do Registro</div>
                     </div>
 
                     <div class="form-group">
-                        <label for="card_endereco">Endereço (Cartão)</label>
+                        <label for="card_endereco">Endereço (Ex: Cidade, Estado) (Cartão):</label>
                         <div class="input-group-card-text-style">
                             <input type="text" id="card_endereco" name="card_endereco" value="{{ dados.card_endereco }}" class="form-input" oninput="updateTextPreview('card_endereco_preview', this.value, getValue('card_endereco_font'), getValue('card_endereco_color'))">
                             <select id="card_endereco_font" name="card_endereco_font" class="form-input" onchange="updateTextPreview('card_endereco_preview', getValue('card_endereco'), this.value, getValue('card_endereco_color'))">
@@ -323,17 +401,17 @@
                                 <option value="Lato, sans-serif" {% if dados.card_endereco_font == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
                                 <option value="Montserrat, sans-serif" {% if dados.card_endereco_font == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
                             </select>
-                            <input type="color" id="card_endereco_color" name="card_endereco_color" value="{{ dados.card_endereco_color | default(DEFAULT_CARD_ENDERECO_COLOR, true) }}" oninput="updateTextPreview('card_endereco_preview', getValue('card_endereco'), getValue('card_endereco_font'), this.value)">
+                            <input type="color" id="card_endereco_color" name="card_endereco_color" value="{{ dados.card_endereco_color | default(DEFAULT_CARD_ENDERECO_COLOR, true) }}">
                         </div>
                         <div class="text-preview" id="card_endereco_preview">Prévia do Endereço (Cartão)</div>
                     </div>
                     <div class="form-group">
-                        <label>Background do Cartão:</label>
+                        <label>Fundo do Cartão de Visitas:</label>
                         <div class="card-background-options">
                             <label>
                                 <input type="radio" name="card_background_type" value="color" {% if dados.card_background_type == 'color' or dados.card_background_type is none %}checked{% endif %}>
                                 Cor Sólida
-                                <input type="color" id="card_background_color_picker" name="card_background_value_color" value="{{ dados.card_background_value if dados.card_background_type == 'color' else '#4361ee' }}" class="form-input" style="width: 50px; height: 30px; padding:0; border: none;">
+                                <input type="color" id="card_background_color_picker" name="card_background_value_color" value="{{ dados.card_background_value if dados.card_background_type == 'color' else DEFAULT_CARD_BG_COLOR }}" class="form-input" style="width: 50px; height: 30px; padding:0; border: none;">
                             </label>
                             <label>
                                 <input type="radio" name="card_background_type" value="image" {% if dados.card_background_type == 'image' %}checked{% endif %}>
@@ -343,26 +421,19 @@
                         <div id="card_background_image_upload_section" style="display: {% if dados.card_background_type == 'image' %}block{% else %}none{% endif %};">
                             <div class="file-upload-wrapper">
                                 <div class="file-upload">
-                                    <input type="file" id="card_background_upload" name="card_background_upload" accept="image/*" class="file-input"
+                                    <input type="file" id="card_background_upload" name="card_background_upload" accept="image/png, image/jpeg, image/gif" class="file-input"
                                         onchange="previewImage(this, 'card_background_image_preview', 'card_background_info');">
                                     <label for="card_background_upload" class="file-label">
-                                        <i class="fas fa-cloud-upload-alt"></i> Escolher imagem para o cartão
+                                        <i class="fas fa-cloud-upload-alt"></i> Escolher imagem para o fundo do cartão
                                     </label>
                                 </div>
                                 <div class="file-info" id="card_background_info">
-                                    {% if dados.card_background_type == 'image' and dados.card_background_value %}
-                                        {% else %}
-                                        Nenhum arquivo selecionado
-                                    {% endif %}
+                                    Nenhum arquivo selecionado
                                 </div>
                                 <div class="image-preview-container" id="card_background_image_preview_container" style="display: {% if dados.card_background_type == 'image' and dados.card_background_value %}block{% else %}none{% endif %};">
                                     <img src="{{ dados.card_background_value if dados.card_background_type == 'image' else '' }}" class="image-preview" id="card_background_image_preview"
-                                        onerror="this.style.display='none'">
-                                    {% if dados.card_background_type == 'image' and dados.card_background_value %}
-                                    <button type="button" class="btn-delete btn-sm" id="remove_card_background_image_btn" style="margin-top: 10px; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-times-circle"></i>Remover Imagem</button>
-                                    {% else %}
-                                    <button type="button" class="btn-delete btn-sm" id="remove_card_background_image_btn" style="margin-top: 10px; display: none; align-items: center; gap: 5px;"><i class="fas fa-times-circle"></i>Remover Imagem</button>
-                                    {% endif %}
+                                        alt="Prévia do Fundo do Cartão" onerror="this.style.display='none'">
+                                    <button type="button" class="btn-delete btn-sm" id="remove_card_background_image_btn" style="margin-top: 10px; display: {% if dados.card_background_type == 'image' and dados.card_background_value %}inline-flex{% else %}none{% endif %}; align-items: center; gap: 5px;" title="Remover imagem de fundo do cartão"><i class="fas fa-times-circle"></i>Remover Imagem</button>
                                     <input type="hidden" name="remove_card_background_image" id="remove_card_background_image" value="false">
                                 </div>
                             </div>
@@ -370,35 +441,36 @@
                     </div>
 
                     <div class="form-group form-group-inline">
-                        <label for="card_link_text_color">Cor Global do Texto dos Links do Cartão (Fallback):</label>
+                        <label for="card_link_text_color">Cor Padrão do Texto dos Links do Cartão:</label>
                         <input type="color" id="card_link_text_color" name="card_link_text_color" value="{{ dados.card_link_text_color | default(DEFAULT_CARD_LINK_TEXT_COLOR, true) }}">
                     </div>
 
                     <div class="form-group">
-                        <label>Links Customizáveis do Cartão (até 3)</label>
+                        <label>Links Customizáveis do Cartão (até 3):</label>
                         <button type="button" class="btn btn-add" id="add-card-link-btn">
                             <i class="fas fa-plus"></i> Adicionar Link ao Cartão
                         </button>
+                        <p style="font-size: 0.9em; margin-bottom: 10px;">Arraste os itens para reordenar.</p>
                         <div id="card-links-container">
                             {% if dados.card_links %}
                                 {% for link in dados.card_links %}
                                 <div class="card-link-item">
-                                    <i class="fas fa-grip-vertical drag-handle"></i>
-                                    <img src="/static/icons/{{ link.icon }}.png" alt="{{ link.icon }}" width="24">
+                                    <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
+                                    <img src="{{ url_for('static', filename='icons/' + link.icon + '.png') }}" alt="{{ link.icon }}" width="24" height="24">
                                     <input type="hidden" name="card_icon_name[]" value="{{ link.icon }}">
                                     <div class="input-group">
-                                        <input type="text" name="card_icon_url[]"
+                                        <input type="url" name="card_icon_url[]"
                                                     value="{{ link.url }}"
-                                                    placeholder="URL (Opcional)"
+                                                    placeholder="URL do Link (Opcional)"
                                                     class="form-input">
                                         <input type="text" name="card_icon_at_text[]"
                                                     value="{{ link.at_text }}"
-                                                    placeholder="@texto"
+                                                    placeholder="Texto exibido (ex: @meuusuario)"
                                                     class="form-input card-link-item-at-text">
                                     </div>
                                     <div class="card-link-style-controls">
                                         <input type="hidden" name="card_icon_font[]" value="{{ link.font | default(DEFAULT_FONT, true) }}">
-                                        <select class="form-input card-link-item-font">
+                                        <select class="form-input card-link-item-font" title="Fonte do texto do link">
                                             <option value="Inter, sans-serif" {% if (link.font | default(DEFAULT_FONT, true)) == 'Inter, sans-serif' %}selected{% endif %}>Padrão (Inter)</option>
                                             <option value="Arial, sans-serif" {% if (link.font | default(DEFAULT_FONT, true)) == 'Arial, sans-serif' %}selected{% endif %}>Arial</option>
                                             <option value="Verdana, sans-serif" {% if (link.font | default(DEFAULT_FONT, true)) == 'Verdana, sans-serif' %}selected{% endif %}>Verdana</option>
@@ -410,10 +482,11 @@
                                             <option value="Lato, sans-serif" {% if (link.font | default(DEFAULT_FONT, true)) == 'Lato, sans-serif' %}selected{% endif %}>Lato</option>
                                             <option value="Montserrat, sans-serif" {% if (link.font | default(DEFAULT_FONT, true)) == 'Montserrat, sans-serif' %}selected{% endif %}>Montserrat</option>
                                         </select>
-                                        <input type="hidden" name="card_icon_color[]" value="{{ link.color | default(DEFAULT_TEXT_COLOR_CARD, true) }}">
-                                        <input type="color" class="card-link-item-color" value="{{ link.color | default(DEFAULT_TEXT_COLOR_CARD, true) }}">
+                                        <input type="hidden" name="card_icon_color[]" value="{{ link.color | default(dados.card_link_text_color, true) | default(DEFAULT_TEXT_COLOR_CARD, true) }}">
+                                        <input type="color" class="card-link-item-color" title="Cor do texto do link" value="{{ link.color | default(dados.card_link_text_color, true) | default(DEFAULT_TEXT_COLOR_CARD, true) }}">
                                     </div>
-                                    <div class="card-link-item-preview"></div> <span class="remove-item"><i class="fas fa-times"></i></span>
+                                    <div class="card-link-item-preview" title="Prévia do texto do link"></div>
+                                    <span class="remove-item" title="Remover este link do cartão"><i class="fas fa-times"></i></span>
                                 </div>
                                 {% endfor %}
                             {% endif %}
@@ -421,13 +494,12 @@
                     </div>
                 </div>
             </div>
-
             <div class="form-actions">
                 <button type="submit" class="btn-save">
-                    <i class="fas fa-save"></i> Salvar Alterações
+                    <i class="fas fa-save"></i> Salvar Todas as Alterações
                 </button>
                 <a href="{{ url_for('logout') }}" class="btn-logout">
-                    <i class="fas fa-sign-out-alt"></i> Sair
+                    <i class="fas fa-sign-out-alt"></i> Sair do Painel
                 </a>
             </div>
         </form>
@@ -435,12 +507,27 @@
     <script>
         // Passando constantes do Flask para o JavaScript
         const DEFAULT_FONT_JS = "{{ DEFAULT_FONT | e }}";
+        const DEFAULT_TEXT_COLOR_PAGE_JS = "{{ DEFAULT_TEXT_COLOR_PAGE | e }}";
+        const DEFAULT_BIO_COLOR_PAGE_JS = "{{ DEFAULT_BIO_COLOR_PAGE | e }}";
         const DEFAULT_TEXT_COLOR_CARD_JS = "{{ DEFAULT_TEXT_COLOR_CARD | e }}";
-        const DEFAULT_CARD_ENDERECO_COLOR_JS = "{{ DEFAULT_CARD_ENDERECO_COLOR | e }}"; // Nova constante para JS
+        const DEFAULT_TITLE_COLOR_CARD_JS = "{{ DEFAULT_TITLE_COLOR_CARD | e }}";
+        const DEFAULT_REG_COLOR_CARD_JS = "{{ DEFAULT_REG_COLOR_CARD | e }}";
+        const DEFAULT_CARD_BG_COLOR_JS = "{{ DEFAULT_CARD_BG_COLOR | e }}";
+        const DEFAULT_CARD_LINK_TEXT_COLOR_JS = "{{ DEFAULT_CARD_LINK_TEXT_COLOR | e }}";
+        const DEFAULT_CARD_ENDERECO_COLOR_JS = "{{ DEFAULT_CARD_ENDERECO_COLOR | e }}";
+
+        // Novas constantes globais para JS para defaults de botões
+        const DEFAULT_BUTTON_OPACITY_JS = parseFloat("{{ DEFAULT_BUTTON_OPACITY }}");
+        const DEFAULT_BUTTON_ICON_URL_JS = "{{ DEFAULT_BUTTON_ICON_URL | e }}"; // Será usado para URL externa ou nome do ícone da lib.
+        const DEFAULT_BUTTON_ICON_TYPE_JS = "{{ DEFAULT_BUTTON_ICON_TYPE | e }}"; // none, image_url_external, image_upload_new, library_icon
+        const DEFAULT_BUTTON_ICON_ROUNDED_JS = "{{ 'true' if DEFAULT_BUTTON_ICON_ROUNDED else 'false' }}" === 'true';
+        const DEFAULT_BUTTON_STYLE_JS = "{{ DEFAULT_BUTTON_STYLE | e }}";
+        const STATIC_ICONS_PATH = "{{ url_for('static', filename='icons/') }}"; // Caminho base para ícones da biblioteca
+        const UPLOAD_BUTTON_IMAGE_URL = "{{ url_for('upload_button_temp_image') }}";
     </script>
-    <script src="{{ url_for('static', filename='js/admin.js') }}" defer></script>
-    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
-    <a href="/{{ dados.profile }}" class="preview-float-btn" target="_blank">
+    <script src="{{ url_for('static', filename='js/admin.js') }}?v={{ range(1, 100000) | random }}" defer></script>
+    <script src="{{ url_for('static', filename='js/dark-mode.js') }}?v={{ range(1, 100000) | random }}"></script>
+    <a href="/{{ dados.profile }}" class="preview-float-btn" target="_blank" title="Visualizar sua página em uma nova aba">
         <i class="fas fa-eye"></i>
         <span class="preview-float-tooltip">Visualizar Página</span>
     </a>

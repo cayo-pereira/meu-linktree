@@ -1,8 +1,48 @@
 // Função para obter valor de um elemento
 function getValue(elementId) {
     const el = document.getElementById(elementId);
-    return el ? el.value : '';
+    if (el) {
+        if (el.type === 'checkbox') {
+            return el.checked;
+        }
+        return el.value;
+    }
+    return '';
 }
+
+// Função para converter HEX para RGBA para aplicar opacidade
+function hexToRgba(hex, alpha) {
+    if (typeof hex !== 'string') hex = '#000000'; // Cor padrão se indefinida
+
+    hex = hex.replace(/^#/, '');
+
+    if (hex.toLowerCase().startsWith('rgba')) {
+        return hex.replace(/[\d\.]+\)$/g, alpha + ')');
+    }
+    if (hex.toLowerCase().startsWith('rgb')) {
+        return hex.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
+    }
+
+    let r = 0, g = 0, b = 0;
+    if (hex.length === 3) {
+        r = parseInt(hex[0] + hex[0], 16);
+        g = parseInt(hex[1] + hex[1], 16);
+        b = parseInt(hex[2] + hex[2], 16);
+    } else if (hex.length === 6) {
+        r = parseInt(hex.substring(0, 2), 16);
+        g = parseInt(hex.substring(2, 4), 16);
+        b = parseInt(hex.substring(4, 6), 16);
+    } else {
+        console.warn("Cor HEX inválida fornecida para hexToRgba:", hex, ". Usando preto como fallback.");
+        return `rgba(0, 0, 0, ${alpha})`;
+    }
+
+    if (isNaN(r) || isNaN(g) || isNaN(b)) {
+        return `rgba(0, 0, 0, ${alpha})`;
+    }
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 
 // Função para atualizar preview de texto genérico
 function updateTextPreview(previewElementId, text, font, color) {
@@ -11,7 +51,6 @@ function updateTextPreview(previewElementId, text, font, color) {
         previewEl.textContent = text || 'Prévia...';
         previewEl.style.fontFamily = font || 'Inter, sans-serif';
 
-        // Ajuste para diferenciar previews de página e previews de cartão
         if (previewElementId.includes('card_')) {
             previewEl.style.backgroundColor = '#444';
             previewEl.style.color = color || '#FFFFFF';
@@ -22,11 +61,10 @@ function updateTextPreview(previewElementId, text, font, color) {
     }
 }
 
-// Função específica para atualizar o preview do texto de um item de link do cartão
 function updateCardLinkItemPreview(itemElement) {
     const atTextInput = itemElement.querySelector('.card-link-item-at-text');
-    const fontSelect = itemElement.querySelector('.card-link-item-font'); // O select visível
-    const colorInput = itemElement.querySelector('.card-link-item-color'); // O input color visível
+    const fontSelect = itemElement.querySelector('.card-link-item-font');
+    const colorInput = itemElement.querySelector('.card-link-item-color');
     const previewDiv = itemElement.querySelector('.card-link-item-preview');
 
     if (!atTextInput || !fontSelect || !colorInput || !previewDiv) {
@@ -34,14 +72,14 @@ function updateCardLinkItemPreview(itemElement) {
     }
 
     const text = atTextInput.value.trim() || '@texto';
-    const font = fontSelect.value || DEFAULT_FONT_JS; // DEFAULT_FONT_JS vindo do HTML
-    const color = colorInput.value || DEFAULT_TEXT_COLOR_CARD_JS; // DEFAULT_TEXT_COLOR_CARD_JS vindo do HTML
+    const font = fontSelect.value || DEFAULT_FONT_JS;
+    const color = colorInput.value || DEFAULT_TEXT_COLOR_CARD_JS;
 
     previewDiv.textContent = text;
     previewDiv.style.fontFamily = font;
     previewDiv.style.color = color;
-    previewDiv.style.backgroundColor = '#555'; // Fundo escuro para contraste com texto claro
-    previewDiv.style.borderColor = color; // Borda com a cor do texto
+    previewDiv.style.backgroundColor = '#555';
+    previewDiv.style.borderColor = color;
 }
 
 
@@ -50,39 +88,53 @@ function previewImage(input, previewId, fileInfoId) {
     const previewImageEl = document.getElementById(previewId);
     const fileInfoEl = document.getElementById(fileInfoId);
     const fileWrapper = input.closest('.file-upload-wrapper');
-    const removeBtn = document.getElementById('remove_card_background_image_btn');
+    const removeCardBgImageBtn = document.getElementById('remove_card_background_image_btn');
 
     if (input.files && input.files[0]) {
         const reader = new FileReader();
         reader.onload = function (e) {
-            previewImageEl.src = e.target.result;
-            previewImageEl.style.display = 'block';
-            if (previewContainer) previewContainer.style.display = 'block';
-            if (previewContainer) previewContainer.classList.add('preview-active');
+            if (previewImageEl) {
+                previewImageEl.src = e.target.result;
+                previewImageEl.style.display = 'block';
+            }
+            if (previewContainer) {
+                previewContainer.style.display = 'block';
+                previewContainer.classList.add('preview-active');
+            }
             if (fileInfoEl) fileInfoEl.textContent = input.files[0].name;
             if (fileWrapper) fileWrapper.classList.add('has-file');
-            if (previewId === 'card_background_image_preview' && removeBtn) {
-                removeBtn.style.display = 'inline-flex';
-                document.getElementById('remove_card_background_image').value = 'false';
+
+            if (previewId === 'card_background_image_preview' && removeCardBgImageBtn) {
+                removeCardBgImageBtn.style.display = 'inline-flex';
+                const hiddenRemoveInput = document.getElementById('remove_card_background_image');
+                if (hiddenRemoveInput) hiddenRemoveInput.value = 'false';
             }
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
 
+function escapeHtml(text) {
+    if (typeof text !== 'string') {
+        return '';
+    }
+    const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+    return text.replace(/[&<>"']/g, function (m) { return map[m]; });
+}
+
+// Variáveis globais para o modal de botões
+let editingButtonData = null; 
+let currentButtonModalPurpose = 'add'; 
+
 
 document.addEventListener('DOMContentLoaded', function () {
-    // Inicializar previews de texto genéricos
     updateTextPreview('nome_preview', getValue('nome'), getValue('nome_font'), getValue('nome_color'));
     updateTextPreview('bio_preview', getValue('bio'), getValue('bio_font'), getValue('bio_color'));
     updateTextPreview('card_nome_preview', getValue('card_nome'), getValue('card_nome_font'), getValue('card_nome_color'));
     updateTextPreview('card_titulo_preview', getValue('card_titulo'), getValue('card_titulo_font'), getValue('card_titulo_color'));
     updateTextPreview('card_registro_preview', getValue('card_registro_profissional'), getValue('card_registro_font'), getValue('card_registro_color'));
-    // NOVO: Inicializar preview do endereço do cartão
     updateTextPreview('card_endereco_preview', getValue('card_endereco'), getValue('card_endereco_font'), getValue('card_endereco_color'));
 
-
-    // Inicializar previews de imagem
     const fotosParaPreview = [
         { id: 'foto_preview', infoId: 'foto_info', uploadId: 'foto_upload' },
         { id: 'background_preview', infoId: 'background_info', uploadId: 'background_upload' },
@@ -97,8 +149,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const fileWrapper = uploadInput ? uploadInput.closest('.file-upload-wrapper') : null;
 
         if (previewElement && previewElement.src && previewElement.src !== window.location.href && !previewElement.src.includes('blob:') && previewElement.src.trim() !== '') {
-            if (containerElement) containerElement.style.display = 'block';
-            if (containerElement) containerElement.classList.add('preview-active');
+            if (containerElement) {
+                containerElement.style.display = 'block';
+                containerElement.classList.add('preview-active');
+            }
             if (infoElement) {
                 try {
                     const urlParts = previewElement.src.split('/');
@@ -106,7 +160,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     const fileName = fileNameWithQuery.split('?')[0];
                     infoElement.textContent = `Atual: ${decodeURIComponent(fileName)}`;
                 } catch (e) {
-                    infoElement.textContent = 'Imagem atual';
+                    infoElement.textContent = 'Imagem atual carregada';
                 }
             }
             if (fileWrapper) fileWrapper.classList.add('has-file');
@@ -124,7 +178,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Lógica para o botão de remover imagem de fundo do cartão
     const removeCardBgBtn = document.getElementById('remove_card_background_image_btn');
     const cardBgUploadInput = document.getElementById('card_background_upload');
     const cardBgImagePreview = document.getElementById('card_background_image_preview');
@@ -135,579 +188,781 @@ document.addEventListener('DOMContentLoaded', function () {
     if (removeCardBgBtn) {
         removeCardBgBtn.addEventListener('click', () => {
             if (cardBgUploadInput) cardBgUploadInput.value = '';
-            if (cardBgImagePreview) cardBgImagePreview.src = '';
-            if (cardBgImagePreview) cardBgImagePreview.style.display = 'none';
-            if (cardBgImagePreviewContainer) cardBgImagePreviewContainer.classList.remove('preview-active');
-            if (cardBgImagePreviewContainer) cardBgImagePreviewContainer.style.display = 'none';
+            if (cardBgImagePreview) {
+                cardBgImagePreview.src = '';
+                cardBgImagePreview.style.display = 'none';
+            }
+            if (cardBgImagePreviewContainer) {
+                cardBgImagePreviewContainer.classList.remove('preview-active');
+                cardBgImagePreviewContainer.style.display = 'none';
+            }
             if (cardBgInfo) cardBgInfo.textContent = 'Nenhum arquivo selecionado';
+
             const cardBgUploadWrapper = cardBgUploadInput ? cardBgUploadInput.closest('.file-upload-wrapper') : null;
             if (cardBgUploadWrapper) cardBgUploadWrapper.classList.remove('has-file');
+
             if (removeCardBgHiddenInput) removeCardBgHiddenInput.value = 'true';
             removeCardBgBtn.style.display = 'none';
         });
     }
 
-    function escapeHtml(text) {
-        if (typeof text !== 'string') {
-            return '';
-        }
-        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-        return text.replace(/[&<>"']/g, function (m) { return map[m]; });
-    }
+    const iconModal = document.getElementById('icon-modal');
+    const buttonModal = document.getElementById('button-modal');
+    const iconModalContent = iconModal ? iconModal.querySelector('.modal-content') : null;
+    const buttonModalContent = buttonModal ? buttonModal.querySelector('.modal-content') : null;
 
-    function renderCustomButton(buttonData) {
-        const customButtonsContainer = document.getElementById('custom-buttons-container');
-        const buttonField = document.createElement('div');
-        buttonField.className = 'custom-button-item';
-
-        const textColor = buttonData.textColor || '#FFFFFF';
-        const bold = buttonData.bold || false;
-        const italic = buttonData.italic || false;
-        const fontSize = buttonData.fontSize || 16;
-        const hasBorder = buttonData.hasBorder || false;
-        const borderColor = buttonData.borderColor || '#000000';
-        const borderWidth = buttonData.borderWidth || 2;
-        const hasHoverEffect = buttonData.hasHoverEffect || false;
-        const shadowType = buttonData.shadowType || 'none';
-        let borderStyle = '';
-        let buttonPreviewClasses = ['button-preview'];
-        if (hasBorder) {
-            borderStyle = `border: ${borderWidth}px solid ${borderColor};`;
-            buttonPreviewClasses.push('has-border-preview');
-        }
-        if (hasHoverEffect) buttonPreviewClasses.push('hover-effect-preview');
-        if (shadowType && shadowType !== 'none') buttonPreviewClasses.push(`shadow-${shadowType}`);
-
-        buttonField.innerHTML = `
-            <i class="fas fa-grip-vertical drag-handle"></i> <div style="flex-grow: 1;">
-                <div class="${buttonPreviewClasses.join(' ')}"
-                    style="background: ${buttonData.color}; border-radius: ${buttonData.radius}px; padding: 8px; margin-bottom: 8px; color: ${textColor}; font-weight: ${bold ? 'bold' : 'normal'}; font-style: ${italic ? 'italic' : 'normal'}; font-size: ${fontSize}px; ${borderStyle}">
-                    ${escapeHtml(buttonData.text)}
-                </div>
-                <input type="hidden" name="custom_button_text[]" value="${escapeHtml(buttonData.text)}">
-                <input type="hidden" name="custom_button_link[]" value="${escapeHtml(buttonData.link)}">
-                <input type="hidden" name="custom_button_color[]" value="${escapeHtml(buttonData.color)}">
-                <input type="hidden" name="custom_button_radius[]" value="${escapeHtml(String(buttonData.radius))}">
-                <input type="hidden" name="custom_button_text_color[]" value="${escapeHtml(textColor)}">
-                <input type="hidden" name="custom_button_text_bold[]" value="${bold}">
-                <input type="hidden" name="custom_button_text_italic[]" value="${italic}">
-                <input type="hidden" name="custom_button_font_size[]" value="${fontSize}">
-                <input type="hidden" name="custom_button_has_border[]" value="${hasBorder}">
-                <input type="hidden" name="custom_button_border_color[]" value="${escapeHtml(borderColor)}">
-                <input type="hidden" name="custom_button_border_width[]" value="${escapeHtml(String(borderWidth))}">
-                <input type="hidden" name="custom_button_has_hover[]" value="${hasHoverEffect}">
-                <input type="hidden" name="custom_button_shadow_type[]" value="${escapeHtml(shadowType)}">
-            </div>
-            <span class="remove-item"><i class="fas fa-times"></i></span>
-        `;
-        if (customButtonsContainer) customButtonsContainer.appendChild(buttonField);
-        buttonField.querySelector('.remove-item').addEventListener('click', function () {
-            this.closest('.custom-button-item').remove();
-        });
-    }
-
-    const iconModalContent = document.querySelector('#icon-modal .modal-content');
     if (iconModalContent) iconModalContent.addEventListener('click', (e) => e.stopPropagation());
-    const buttonModalContent = document.querySelector('#button-modal .modal-content');
     if (buttonModalContent) buttonModalContent.addEventListener('click', (e) => e.stopPropagation());
 
     const socialIconsContainer = document.getElementById('social-icons-container');
     const customButtonsContainer = document.getElementById('custom-buttons-container');
     const cardLinksContainer = document.getElementById('card-links-container');
 
-    if (socialIconsContainer) new Sortable(socialIconsContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle', });
-    if (customButtonsContainer) new Sortable(customButtonsContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle', });
-    if (cardLinksContainer) new Sortable(cardLinksContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle', });
+    if (socialIconsContainer) new Sortable(socialIconsContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle' });
+    if (customButtonsContainer) new Sortable(customButtonsContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle' });
+    if (cardLinksContainer) new Sortable(cardLinksContainer, { animation: 150, ghostClass: 'sortable-ghost', chosenClass: 'sortable-chosen', handle: '.drag-handle' });
 
-    const iconModal = document.getElementById('icon-modal');
-    const buttonModal = document.getElementById('button-modal');
     const addIconBtn = document.getElementById('add-icon-btn');
-    const addButtonBtn = document.getElementById('add-button-btn');
     const addCardLinkBtn = document.getElementById('add-card-link-btn');
-    const iconModalCloseBtn = document.querySelector('.icon-modal-close');
-    const buttonModalCloseBtn = document.querySelector('.button-modal-close');
-    const iconsGrid = document.querySelector('#icon-modal .icons-grid');
+    const iconModalCloseBtn = iconModal ? iconModal.querySelector('.icon-modal-close') : null;
+    const iconsGrid = iconModal ? iconModal.querySelector('.icons-grid') : null;
     const iconSearchInput = document.getElementById('icon-search');
     const prevIconPageBtn = document.getElementById('prev-icon-page');
     const nextIconPageBtn = document.getElementById('next-icon-page');
     const currentPageSpan = document.getElementById('current-page');
-    let currentModalPurpose = '';
+    let currentIconModalPurpose = ''; 
+    let selectedIconNameForButtonModal = ''; 
 
     const allSocialIcons = [
-        { name: 'instagram', path: '/static/icons/instagram.png' },
-        { name: 'instagram-redondo', path: '/static/icons/instagram-redondo.png' },
-        { name: 'linkedin', path: '/static/icons/linkedin.png' },
-        { name: 'linkedin-redondo', path: '/static/icons/linkedin-redondo.png' },
-        { name: 'linkedin-p', path: '/static/icons/linkedin-p.png' },
-        { name: 'github', path: '/static/icons/github.png' },
-        { name: 'github-redondo', path: '/static/icons/github-redondo.png' },
-        { name: 'email', path: '/static/icons/email.png' },
-        { name: 'email-preto', path: '/static/icons/email-preto.png' },
-        { name: 'gmail', path: '/static/icons/gmail.png' },
-        { name: 'gmail-redondo', path: '/static/icons/gmail-redondo.png' },
-        { name: 'gmail-preto', path: '/static/icons/gmail-redondo.png' }, // Note: Duplicated path for gmail-preto, using gmail-redondo
-        { name: 'whatsapp', path: '/static/icons/whatsapp.png' },
-        { name: 'whatsapp-v-p', path: '/static/icons/whatsapp-v-p.png' },
-        { name: 'whatsapp-preto', path: '/static/icons/whatsapp-preto.png' },
-        { name: 'facebook', path: '/static/icons/facebook.png' },
-        { name: 'youtube', path: '/static/icons/youtube.png' },
-        { name: 'telegram', path: '/static/icons/telegram.png' },
-        { name: 'tiktok', path: '/static/icons/tiktok.png' },
-        { name: 'pinterest', path: '/static/icons/pinterest.png' },
-        { name: 'twitch', path: '/static/icons/twitch.png' },
-        { name: 'discord', path: '/static/icons/discord.png' },
-        { name: 'snapchat', path: '/static/icons/snapchat.png' },
-        { name: 'reddit', path: '/static/icons/reddit.png' },
-        { name: 'vimeo', path: '/static/icons/vimeo.png' },
-        { name: 'spotify', path: '/static/icons/spotify.png' },
-        { name: 'soundcloud', path: '/static/icons/soundcloud.png' },
-        { name: 'behance', path: '/static/icons/behance.png' },
-        { name: 'flickr', path: '/static/icons/flickr.png' },
-        { name: 'paypal', path: '/static/icons/paypal.png' },
-        { name: 'google-drive', path: '/static/icons/google-drive.png' },
-        { name: 'dropbox', path: '/static/icons/dropbox.png' },
-        { name: 'link', path: '/static/icons/link.png' },
-        { name: 'website', path: '/static/icons/website.png' },
-        { name: 'gitlab', path: '/static/icons/gitlab.png' },
-        { name: 'codepen', path: '/static/icons/codepen.png' },
-        { name: 'patreon', path: '/static/icons/patreon.png' },
-        { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' },
-        { name: 'ko-fi', path: '/static/icons/ko-fi.png' },
-        { name: 'slack', path: '/static/icons/slack.png' },
-        { name: 'teams', path: '/static/icons/teams.png' },
-        { name: 'skype', path: '/static/icons/skype.png' },
-        { name: 'academia-edu', path: '/static/icons/academia-edu.png' },
-        // { name: 'academia-edu', path: '/static/icons/academia-edu.png' }, // Duplicate
-        // { name: 'behance', path: '/static/icons/behance.png' }, // Duplicate
-        { name: 'behance-p', path: '/static/icons/behance-p.png' },
-        { name: 'bluesky-r-p', path: '/static/icons/bluesky-r-p.png' },
-        // { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' }, // Duplicate
-        { name: 'buymeacoffee-p', path: '/static/icons/buymeacoffee-p.png' },
-        { name: 'closefans-r', path: '/static/icons/closefans-r.png' },
-        // { name: 'codepen', path: '/static/icons/codepen.png' }, // Duplicate
-        { name: 'codepen-p-r', path: '/static/icons/codepen-p-r.png' },
-        { name: 'codepen-r-b', path: '/static/icons/codepen-r-b.png' },
-        { name: 'colsefans-r-p', path: '/static/icons/colsefans-r-p.png' },
-        // { name: 'discord', path: '/static/icons/discord.png' }, // Duplicate
-        { name: 'discord-p', path: '/static/icons/discord-p.png' },
-        { name: 'discord-p-r', path: '/static/icons/discord-p-r.png' },
-        { name: 'discord-r', path: '/static/icons/discord-r.png' },
-        // { name: 'dropbox', path: '/static/icons/dropbox.png' }, // Duplicate
-        { name: 'dropbox-p', path: '/static/icons/dropbox-p.png' },
-        // { name: 'facebook', path: '/static/icons/facebook.png' }, // Duplicate
-        { name: 'facebook-redondo', path: '/static/icons/facebook-redondo.png' },
-        // { name: 'flickr', path: '/static/icons/flickr.png' }, // Duplicate
-        // { name: 'gitlab', path: '/static/icons/gitlab.png' }, // Duplicate
-        { name: 'gitlab-p-r', path: '/static/icons/gitlab-p-r.png' },
-        { name: 'gitlab-r', path: '/static/icons/gitlab-r.png' },
-        { name: 'gitlab-rv-p', path: '/static/icons/gitlab-rv-p.png' },
-        // { name: 'google-drive', path: '/static/icons/google-drive.png' }, // Duplicate
-        { name: 'google-drive-r', path: '/static/icons/google-drive-r.png' },
-        { name: 'google-drive-r-p', path: '/static/icons/google-drive-r-p.png' },
-        // { name: 'ko-fi', path: '/static/icons/ko-fi.png' }, // Duplicate
-        { name: 'ko-fi-p', path: '/static/icons/ko-fi-p.png' },
-        { name: 'kwai', path: '/static/icons/kwai.png' },
-        { name: 'kwai-p', path: '/static/icons/kwai-p.png' },
-        { name: 'kwai-r', path: '/static/icons/kwai-r.png' },
-        { name: 'kwai-r-p', path: '/static/icons/kwai-r-p.png' },
-        { name: 'kwai-rb-p', path: '/static/icons/kwai-rb-p.png' },
-        { name: 'kwai-vr-p', path: '/static/icons/kwai-vr-p.png' },
-        // { name: 'link', path: '/static/icons/link.png' }, // Duplicate
-        { name: 'link-1', path: '/static/icons/link-1.png' },
-        { name: 'link-2', path: '/static/icons/link-2.png' },
-        { name: 'onlyfans', path: '/static/icons/onlyfans.png' },
-        { name: 'onlyfans-r', path: '/static/icons/onlyfans-r.png' },
-        { name: 'onlyfans-r-p', path: '/static/icons/onlyfans-r-p.png' },
-        { name: 'onlyfans-rv-p', path: '/static/icons/onlyfans-rv-p.png' },
-        // { name: 'patreon', path: '/static/icons/patreon.png' }, // Duplicate
-        { name: 'patreon-c', path: '/static/icons/patreon-c.png' },
-        { name: 'patreon-r', path: '/static/icons/patreon-r.png' },
-        { name: 'patreon-r-p', path: '/static/icons/patreon-r-p.png' },
-        // { name: 'paypal', path: '/static/icons/paypal.png' }, // Duplicate
-        { name: 'paypal-p', path: '/static/icons/paypal-p.png' },
-        { name: 'paypal-p-r', path: '/static/icons/paypal-p-r.png' },
-        { name: 'paypal-r', path: '/static/icons/paypal-r.png' },
-        // { name: 'pinterest', path: '/static/icons/pinterest.png' }, // Duplicate
-        { name: 'pinterest-p', path: '/static/icons/pinterest-p.png' },
-        { name: 'privacy', path: '/static/icons/privacy.png' },
-        { name: 'privacy-r', path: '/static/icons/privacy-r.png' },
-        { name: 'privacy-r-p', path: '/static/icons/privacy-r-p.png' },
-        { name: 'privacy-rv-p', path: '/static/icons/privacy-rv-p.png' },
-        // { name: 'reddit', path: '/static/icons/reddit.png' }, // Duplicate
-        { name: 'reddit-p', path: '/static/icons/reddit-p.png' },
-        // { name: 'skype', path: '/static/icons/skype.png' }, // Duplicate
-        { name: 'skype-o', path: '/static/icons/skype-o.png' },
-        { name: 'skype-o-p', path: '/static/icons/skype-o-p.png' },
-        { name: 'skype-p', path: '/static/icons/skype-p.png' },
-        // { name: 'slack', path: '/static/icons/slack.png' }, // Duplicate
-        { name: 'slack-r', path: '/static/icons/slack-r.png' },
-        { name: 'slack-r-p', path: '/static/icons/slack-r-p.png' },
-        // { name: 'snapchat', path: '/static/icons/snapchat.png' }, // Duplicate
-        { name: 'snapchat-r', path: '/static/icons/snapchat-r.png' },
-        // { name: 'soundcloud', path: '/static/icons/soundcloud.png' }, // Duplicate
-        { name: 'soundcloud-p', path: '/static/icons/soundcloud-p.png' },
-        // { name: 'spotify', path: '/static/icons/spotify.png' }, // Duplicate
-        { name: 'spotify-p', path: '/static/icons/spotify-p.png' },
-        // { name: 'teams', path: '/static/icons/teams.png' }, // Duplicate
-        { name: 'teams-r', path: '/static/icons/teams-r.png' },
-        { name: 'teams-r-p', path: '/static/icons/teams-r-p.png' },
-        // { name: 'telegram', path: '/static/icons/telegram.png' }, // Duplicate
-        { name: 'telegrama-p', path: '/static/icons/telegrama-p.png' },
-        // { name: 'tiktok', path: '/static/icons/tiktok.png' }, // Duplicate
-        { name: 'tiktok-r', path: '/static/icons/tiktok-r.png' },
-        // { name: 'twitch', path: '/static/icons/twitch.png' }, // Duplicate
-        { name: 'twitch-r', path: '/static/icons/twitch-r.png' },
-        // { name: 'vimeo', path: '/static/icons/vimeo.png' }, // Duplicate
-        // { name: 'website', path: '/static/icons/website.png' }, // Duplicate
-        { name: 'website-p', path: '/static/icons/website-p.png' },
-        { name: 'x-twitter', path: '/static/icons/x-twitter.png' },
-        { name: 'x-twitter-r', path: '/static/icons/x-twitter-r.png' },
-        // { name: 'youtube', path: '/static/icons/youtube.png' }, // Duplicate
-        { name: 'youtube-p-r', path: '/static/icons/youtube-p-r.png' },
-        { name: 'youtube-preto', path: '/static/icons/youtube-preto.png' },
-        { name: 'youtube-r', path: '/static/icons/youtube-r.png' },
-        { name: 'bluesky R.V', path: '/static/icons/bluesky-r-v.png' },
-        { name: 'bluesky R.B.P', path: '/static/icons/bluesky-rb-p.png' },
-        { name: 'bluesky R', path: '/static/icons/bluesky-r.png' },
-        { name: 'bluesky P', path: '/static/icons/bluesky-p.png' },
-        { name: 'bluesky', path: '/static/icons/bluesky.png' },
-        { name: 'presente-p', path: '/static/icons/presente-p.png' },
-        { name: 'presente', path: '/static/icons/presente.png' }
-    ];
-    let filteredIcons = [];
+        { name: '500px', path: '500px.png' }, { name: 'behance', path: 'behance.png' },
+        { name: 'blogger', path: 'blogger.png' }, { name: 'codepen', path: 'codepen.png' },
+        { name: 'discord', path: 'discord.png' }, { name: 'dribbble', path: 'dribbble.png' },
+        { name: 'email', path: 'email.png' }, { name: 'email-preto', path: 'email-preto.png' },
+        { name: 'facebook', path: 'facebook.png' }, { name: 'figma', path: 'figma.png' },
+        { name: 'github', path: 'github.png' }, { name: 'github-redondo', path: 'github-redondo.png' },
+        { name: 'gitlab', path: 'gitlab.png' }, { name: 'gmail', path: 'gmail.png' },
+        { name: 'gmail-redondo', path: 'gmail-redondo.png' }, { name: 'google-play', path: 'google-play.png' },
+        { name: 'instagram', path: 'instagram.png' }, { name: 'instagram-redondo', path: 'instagram-redondo.png' },
+        { name: 'linkedin', path: 'linkedin.png' }, { name: 'linkedin-redondo', path: 'linkedin-redondo.png' },
+        { name: 'linkedin-p', path: 'linkedin-p.png' }, { name: 'medium', path: 'medium.png' },
+        { name: 'messenger', path: 'messenger.png' }, { name: 'paypal', path: 'paypal.png' },
+        { name: 'pinterest', path: 'pinterest.png' }, { name: 'presente', path: 'presente.png' },
+        { name: 'presente-p', path: 'presente-p.png' }, { name: 'quora', path: 'quora.png' },
+        { name: 'reddit', path: 'reddit.png' }, { name: 'skype', path: 'skype.png' },
+        { name: 'snapchat', path: 'snapchat.png' }, { name: 'soundcloud', path: 'soundcloud.png' },
+        { name: 'spotify', path: 'spotify.png' }, { name: 'stackoverflow', path: 'stackoverflow.png' },
+        { name: 'telegram', path: 'telegram.png' }, { name: 'tiktok', path: 'tiktok.png' },
+        { name: 'tumblr', path: 'tumblr.png' }, { name: 'twitch', path: 'twitch.png' },
+        { name: 'twitter', path: 'twitter.png' }, { name: 'twitter-x', path: 'twitter-x.png' },
+        { name: 'vimeo', path: 'vimeo.png' }, { name: 'whatsapp', path: 'whatsapp.png' },
+        { name: 'whatsapp-preto', path: 'whatsapp-preto.png' }, { name: 'whatsapp-v-p', path: 'whatsapp-v-p.png' },
+        { name: 'wordpress', path: 'wordpress.png' }, { name: 'youtube', path: 'youtube.png' },
+        { name: 'zoom', path: 'zoom.png' }
+    ].sort((a, b) => a.name.localeCompare(b.name)); 
+
+    let filteredIcons = [...allSocialIcons];
     let currentPage = 1;
-    const iconsPerPage = 9; // Alterado para 9 para uma grade 3x3
+    const iconsPerPage = 9;
 
     function renderIcons() {
-        if (!iconsGrid) return;
+        if (!iconsGrid || !currentPageSpan) return;
         iconsGrid.innerHTML = '';
         const start = (currentPage - 1) * iconsPerPage;
         const end = start + iconsPerPage;
-        const iconsToRender = filteredIcons.slice(start, end);
-        if (iconsToRender.length === 0 && filteredIcons.length > 0 && currentPage > 1) {
-            currentPage--;
-            renderIcons();
-            return;
-        }
-        iconsToRender.forEach(icon => {
-            const iconElement = document.createElement('div');
-            iconElement.className = 'icon-option';
-            iconElement.innerHTML = `<img src="${icon.path}" alt="${icon.name}"><p>${icon.name.replace(/-/g, ' ')}</p>`;
-            iconElement.addEventListener('click', function () {
-                document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
+        const paginatedIcons = filteredIcons.slice(start, end);
+
+        paginatedIcons.forEach(icon => {
+            const iconDiv = document.createElement('div');
+            iconDiv.className = 'icon-option';
+            iconDiv.dataset.iconName = icon.name; 
+            iconDiv.innerHTML = `
+                <img src="${STATIC_ICONS_PATH}${icon.path}" alt="${icon.name.replace(/-/g, ' ')}">
+                <p>${icon.name.replace(/-/g, ' ')}</p>
+            `;
+            iconDiv.addEventListener('click', function () {
+                document.querySelectorAll('.icon-option.selected').forEach(sel => sel.classList.remove('selected'));
                 this.classList.add('selected');
             });
-            iconsGrid.appendChild(iconElement);
+            iconsGrid.appendChild(iconDiv);
         });
+        currentPageSpan.textContent = currentPage;
         updatePaginationControls();
     }
 
     function updatePaginationControls() {
-        if (!currentPageSpan || !prevIconPageBtn || !nextIconPageBtn) return;
+        if (!prevIconPageBtn || !nextIconPageBtn) return;
         const totalPages = Math.ceil(filteredIcons.length / iconsPerPage);
-        currentPageSpan.textContent = currentPage;
         prevIconPageBtn.disabled = currentPage === 1;
-        nextIconPageBtn.disabled = currentPage >= totalPages || filteredIcons.length === 0;
+        nextIconPageBtn.disabled = currentPage === totalPages || totalPages === 0;
     }
 
     function filterAndRenderIcons() {
         if (!iconSearchInput) return;
-        const searchTerm = iconSearchInput.value.toLowerCase().trim();
-        filteredIcons = searchTerm === '' ? [...allSocialIcons] : allSocialIcons.filter(icon => icon.name.toLowerCase().includes(searchTerm));
+        const searchTerm = iconSearchInput.value.toLowerCase();
+        filteredIcons = allSocialIcons.filter(icon => icon.name.toLowerCase().includes(searchTerm));
         currentPage = 1;
         renderIcons();
     }
 
     function closeModals() {
-        if (iconModal) iconModal.classList.remove('active', 'show');
-        if (buttonModal) buttonModal.classList.remove('active', 'show');
+        if (iconModal) {
+            iconModal.classList.remove('active', 'show', 'modal-on-top'); 
+        }
+        if (buttonModal) {
+            buttonModal.classList.remove('active', 'show');
+        }
         document.body.classList.remove('modal-open');
-        currentModalPurpose = '';
+        currentIconModalPurpose = '';
+        selectedIconNameForButtonModal = '';
     }
 
     if (iconSearchInput) iconSearchInput.addEventListener('input', filterAndRenderIcons);
     if (prevIconPageBtn) prevIconPageBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderIcons(); } });
     if (nextIconPageBtn) nextIconPageBtn.addEventListener('click', () => { const totalPages = Math.ceil(filteredIcons.length / iconsPerPage); if (currentPage < totalPages) { currentPage++; renderIcons(); } });
 
-    if (addIconBtn) addIconBtn.addEventListener('click', () => {
-        currentModalPurpose = 'social';
-        filterAndRenderIcons();
-        iconModal.classList.add('show');
-        document.body.classList.add('modal-open');
-        setTimeout(() => iconModal.classList.add('active'), 50);
-    });
-
-    if (addCardLinkBtn) addCardLinkBtn.addEventListener('click', () => {
-        const currentCardLinksCount = document.querySelectorAll('#card-links-container .card-link-item').length;
-        if (currentCardLinksCount >= 3) {
-            alert('Você pode adicionar no máximo 3 links ao cartão de visitas.');
-            return;
+    function openIconModal(purpose) {
+        currentIconModalPurpose = purpose;
+        if (iconSearchInput) iconSearchInput.value = '';
+        filterAndRenderIcons(); 
+        if (iconModal) {
+            if (purpose === 'button_icon_selector') {
+                iconModal.classList.add('modal-on-top');
+            }
+            iconModal.classList.add('show');
+            document.body.classList.add('modal-open');
+            setTimeout(() => iconModal.classList.add('active'), 50);
         }
-        currentModalPurpose = 'card_link';
-        filterAndRenderIcons();
-        iconModal.classList.add('show');
-        document.body.classList.add('modal-open');
-        setTimeout(() => iconModal.classList.add('active'), 50);
-    });
+    }
 
+    if (addIconBtn) {
+        addIconBtn.addEventListener('click', () => openIconModal('social'));
+    }
+    if (addCardLinkBtn) {
+        addCardLinkBtn.addEventListener('click', () => {
+            if (document.querySelectorAll('#card-links-container .card-link-item').length < 3) {
+                openIconModal('card_link');
+            } else {
+                alert('Você pode adicionar no máximo 3 links ao cartão.');
+            }
+        });
+    }
 
     const saveIconBtn = document.getElementById('save-icon');
-    if (saveIconBtn) saveIconBtn.addEventListener('click', function (event) {
-        event.preventDefault();
-        const selectedIcon = document.querySelector('.icon-option.selected');
-        if (selectedIcon) {
-            const iconName = selectedIcon.querySelector('p').textContent.toLowerCase().replace(/ /g, '-');
-            const iconPath = `/static/icons/${iconName}.png`;
-            let targetContainer, itemClass, inputNameForCheck;
+    if (saveIconBtn) {
+        saveIconBtn.addEventListener('click', function () {
+            const selectedIconDiv = iconModal.querySelector('.icon-option.selected');
+            if (!selectedIconDiv) {
+                alert('Por favor, selecione um ícone.');
+                return;
+            }
+            const iconNameFromDataset = selectedIconDiv.dataset.iconName; // Ex: 'instagram' (nome amigável/chave)
 
-            const newItemField = document.createElement('div');
-
-            if (currentModalPurpose === 'social') {
-                targetContainer = socialIconsContainer;
-                itemClass = 'social-item';
-                inputNameForCheck = 'social_icon_name[]';
-                // Guardar o HTML do item social para evitar redefinição acidental
-                const socialItemHTML = `
-                    <i class="fas fa-grip-vertical drag-handle"></i> <img src="${iconPath}" alt="${iconName}" width="24">
-                    <input type="hidden" name="social_icon_name[]" value="${escapeHtml(iconName)}">
-                    <input type="text" name="social_icon_url[]"
-                                placeholder="Insira o link para ${iconName.replace(/-/g, ' ')}"
-                                class="form-input" required>
-                    <span class="remove-item"><i class="fas fa-times"></i></span>`;
-                newItemField.innerHTML = socialItemHTML; // Definir o HTML aqui para o social_item
-            } else if (currentModalPurpose === 'card_link') {
-                targetContainer = cardLinksContainer;
-                itemClass = 'card-link-item';
-                inputNameForCheck = 'card_icon_name[]';
-
-                newItemField.className = itemClass;
-
-                const dragHandle = document.createElement('i');
-                dragHandle.className = 'fas fa-grip-vertical drag-handle';
-                newItemField.appendChild(dragHandle);
-
-                const imgIcon = document.createElement('img');
-                imgIcon.src = iconPath; imgIcon.alt = iconName; imgIcon.width = 24;
-                newItemField.appendChild(imgIcon);
-
-                const hiddenIconNameInput = document.createElement('input');
-                hiddenIconNameInput.type = 'hidden'; hiddenIconNameInput.name = 'card_icon_name[]'; hiddenIconNameInput.value = escapeHtml(iconName);
-                newItemField.appendChild(hiddenIconNameInput);
-
-                const inputGroupDiv = document.createElement('div');
-                inputGroupDiv.className = 'input-group';
-                const urlInput = document.createElement('input');
-                urlInput.type = 'text'; urlInput.name = 'card_icon_url[]'; urlInput.placeholder = 'URL (Opcional)'; urlInput.className = 'form-input';
-                inputGroupDiv.appendChild(urlInput);
-                const atTextInput = document.createElement('input');
-                atTextInput.type = 'text'; atTextInput.name = 'card_icon_at_text[]'; atTextInput.placeholder = '@texto'; atTextInput.className = 'form-input card-link-item-at-text';
-                inputGroupDiv.appendChild(atTextInput);
-                newItemField.appendChild(inputGroupDiv);
-
-                const styleControlsDiv = document.createElement('div');
-                styleControlsDiv.className = 'card-link-style-controls';
-
-                const hiddenFontInput = document.createElement('input');
-                hiddenFontInput.type = 'hidden'; hiddenFontInput.name = 'card_icon_font[]'; hiddenFontInput.value = DEFAULT_FONT_JS;
-                styleControlsDiv.appendChild(hiddenFontInput);
-
-                const fontSelect = document.createElement('select');
-                fontSelect.className = 'form-input card-link-item-font';
-                const fonts = [{ name: 'Padrão (Inter)', value: 'Inter, sans-serif' }, { name: 'Arial', value: 'Arial, sans-serif' }, { name: 'Verdana', value: 'Verdana, sans-serif' }, { name: 'Georgia', value: 'Georgia, serif' }, { name: 'Times New Roman', value: "'Times New Roman', Times, serif" }, { name: 'Courier New', value: "'Courier New', Courier, monospace" }, { name: 'Roboto', value: 'Roboto, sans-serif' }, { name: 'Open Sans', value: "'Open Sans', sans-serif" }, { name: 'Lato', value: 'Lato, sans-serif' }, { name: 'Montserrat', value: 'Montserrat, sans-serif' }];
-                fonts.forEach(font => {
-                    const option = document.createElement('option');
-                    option.value = font.value; option.textContent = font.name;
-                    if (font.value === DEFAULT_FONT_JS) option.selected = true;
-                    fontSelect.appendChild(option);
-                });
-                styleControlsDiv.appendChild(fontSelect);
-
-                const hiddenColorInput = document.createElement('input');
-                hiddenColorInput.type = 'hidden'; hiddenColorInput.name = 'card_icon_color[]'; hiddenColorInput.value = DEFAULT_TEXT_COLOR_CARD_JS;
-                styleControlsDiv.appendChild(hiddenColorInput);
-
-                const colorInput = document.createElement('input');
-                colorInput.type = 'color'; colorInput.className = 'card-link-item-color'; colorInput.value = DEFAULT_TEXT_COLOR_CARD_JS;
-                styleControlsDiv.appendChild(colorInput);
-                newItemField.appendChild(styleControlsDiv);
-
-                const previewDiv = document.createElement('div');
-                previewDiv.className = 'card-link-item-preview';
-                newItemField.appendChild(previewDiv);
-
-                atTextInput.addEventListener('input', () => updateCardLinkItemPreview(newItemField));
-                fontSelect.addEventListener('change', () => {
-                    hiddenFontInput.value = fontSelect.value;
-                    updateCardLinkItemPreview(newItemField);
-                });
-                colorInput.addEventListener('input', () => {
-                    hiddenColorInput.value = colorInput.value;
-                    updateCardLinkItemPreview(newItemField);
-                });
-                // Adiciona o botão de remover para card_link
-                const removeSpanCard = document.createElement('span');
-                removeSpanCard.className = 'remove-item';
-                removeSpanCard.innerHTML = '<i class="fas fa-times"></i>';
-                newItemField.appendChild(removeSpanCard); // Adiciona ao final do newItemField
-
-            } else { return; }
-
-            let iconExists = false;
-            if (targetContainer) {
-                targetContainer.querySelectorAll(`input[name="${inputNameForCheck}"]`).forEach(input => {
-                    if (input.value === iconName) iconExists = true;
-                });
+            let iconFileName = ''; // Irá armazenar o nome do arquivo, ex: 'instagram.png'
+            const iconData = allSocialIcons.find(iconObj => iconObj.name === iconNameFromDataset);
+            if (iconData && iconData.path) {
+                iconFileName = iconData.path;
+            } else {
+                console.warn(`Dados do ícone não encontrados para: ${iconNameFromDataset}. Usando fallback para nome do arquivo.`);
+                iconFileName = `${iconNameFromDataset}.png`; // Fallback, caso o ícone não esteja no array allSocialIcons (improvável)
             }
 
-            if (iconExists) { alert('Este ícone já foi adicionado!'); closeModals(); return; }
+            if (currentIconModalPurpose === 'social') {
+                const socialItem = document.createElement('div');
+                socialItem.className = 'social-item';
+                socialItem.innerHTML = `
+                    <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
+                    <img src="${STATIC_ICONS_PATH}${iconFileName}" alt="${iconNameFromDataset}" width="24" height="24">
+                    <input type="hidden" name="social_icon_name[]" value="${iconFileName}"> {/* Salva o NOME DO ARQUIVO */}
+                    <input type="text" name="social_icon_url[]" placeholder="Insira o link para ${iconNameFromDataset.replace(/-/g, ' ')}" class="form-input" required>
+                    <span class="remove-item" title="Remover este ícone"><i class="fas fa-times"></i></span>
+                `;
+                socialIconsContainer.appendChild(socialItem);
+                socialItem.querySelector('.remove-item').addEventListener('click', function () { this.closest('.social-item').remove(); });
+                closeModals(); 
+            } else if (currentIconModalPurpose === 'card_link') {
+                const cardLinkItem = document.createElement('div');
+                cardLinkItem.className = 'card-link-item';
+                cardLinkItem.innerHTML = `
+                    <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
+                    <img src="${STATIC_ICONS_PATH}${iconFileName}" alt="${iconNameFromDataset}" width="24" height="24">
+                    <input type="hidden" name="card_icon_name[]" value="${iconFileName}"> {/* Salva o NOME DO ARQUIVO */}
+                    <div class="input-group">
+                        <input type="url" name="card_icon_url[]" placeholder="URL do Link (Opcional)" class="form-input">
+                        <input type="text" name="card_icon_at_text[]" placeholder="Texto exibido (ex: @usuario)" class="form-input card-link-item-at-text">
+                    </div>
+                    <div class="card-link-style-controls">
+                        <input type="hidden" name="card_icon_font[]" value="${DEFAULT_FONT_JS}">
+                        <select class="form-input card-link-item-font" title="Fonte do texto do link">
+                            <option value="Inter, sans-serif" ${DEFAULT_FONT_JS === 'Inter, sans-serif' ? 'selected' : ''}>Padrão (Inter)</option>
+                            <option value="Arial, sans-serif" ${DEFAULT_FONT_JS === 'Arial, sans-serif' ? 'selected' : ''}>Arial</option>
+                            <option value="Verdana, sans-serif" ${DEFAULT_FONT_JS === 'Verdana, sans-serif' ? 'selected' : ''}>Verdana</option>
+                            <option value="Georgia, serif" ${DEFAULT_FONT_JS === 'Georgia, serif' ? 'selected' : ''}>Georgia</option>
+                            <option value="'Times New Roman', Times, serif" ${DEFAULT_FONT_JS === "'Times New Roman', Times, serif" ? 'selected' : ''}>Times New Roman</option>
+                            <option value="'Courier New', Courier, monospace" ${DEFAULT_FONT_JS === "'Courier New', Courier, monospace" ? 'selected' : ''}>Courier New</option>
+                            <option value="Roboto, sans-serif" ${DEFAULT_FONT_JS === 'Roboto, sans-serif' ? 'selected' : ''}>Roboto</option>
+                            <option value="'Open Sans', sans-serif" ${DEFAULT_FONT_JS === "'Open Sans', sans-serif" ? 'selected' : ''}>Open Sans</option>
+                            <option value="Lato, sans-serif" ${DEFAULT_FONT_JS === 'Lato, sans-serif' ? 'selected' : ''}>Lato</option>
+                            <option value="Montserrat, sans-serif" ${DEFAULT_FONT_JS === 'Montserrat, sans-serif' ? 'selected' : ''}>Montserrat</option>
+                        </select>
+                        <input type="hidden" name="card_icon_color[]" value="${getValue('card_link_text_color') || DEFAULT_TEXT_COLOR_CARD_JS}">
+                        <input type="color" class="card-link-item-color" title="Cor do texto do link" value="${getValue('card_link_text_color') || DEFAULT_TEXT_COLOR_CARD_JS}">
+                    </div>
+                    <div class="card-link-item-preview" title="Prévia do texto do link"></div>
+                    <span class="remove-item" title="Remover este link do cartão"><i class="fas fa-times"></i></span>
+                `;
+                cardLinksContainer.appendChild(cardLinkItem);
+                updateCardLinkItemPreview(cardLinkItem);
+                cardLinkItem.querySelector('.remove-item').addEventListener('click', function () { this.closest('.card-link-item').remove(); });
+                
+                const atTextInputNew = cardLinkItem.querySelector('.card-link-item-at-text');
+                const fontSelectNew = cardLinkItem.querySelector('.card-link-item-font');
+                const colorInputNew = cardLinkItem.querySelector('.card-link-item-color');
+                const hiddenFontInputNew = cardLinkItem.querySelector('input[name="card_icon_font[]"]');
+                const hiddenColorInputNew = cardLinkItem.querySelector('input[name="card_icon_color[]"]');
 
-            // Definir classe aqui se não for card_link (já que socialItemHTML foi definido antes)
-            if (currentModalPurpose === 'social') {
-                newItemField.className = itemClass;
+                if (atTextInputNew) atTextInputNew.addEventListener('input', () => updateCardLinkItemPreview(cardLinkItem));
+                if (fontSelectNew && hiddenFontInputNew) fontSelectNew.addEventListener('change', () => { hiddenFontInputNew.value = fontSelectNew.value; updateCardLinkItemPreview(cardLinkItem); });
+                if (colorInputNew && hiddenColorInputNew) colorInputNew.addEventListener('input', () => { hiddenColorInputNew.value = colorInputNew.value; updateCardLinkItemPreview(cardLinkItem); });
+                closeModals(); 
+            } else if (currentIconModalPurpose === 'button_icon_selector') {
+                selectedIconNameForButtonModal = iconFileName; // Salva o NOME DO ARQUIVO (ex: 'instagram.png')
+                
+                const buttonModalActualIconType = document.getElementById('button-modal-actual-icon-type');
+                const buttonModalActualIconValue = document.getElementById('button-modal-actual-icon-value');
+                const libraryIconNamePreview = document.getElementById('button-library-icon-name-preview');
+
+                if (buttonModalActualIconType) buttonModalActualIconType.value = 'library_icon';
+                if (buttonModalActualIconValue) buttonModalActualIconValue.value = selectedIconNameForButtonModal; // Salva o NOME DO ARQUIVO
+                if (libraryIconNamePreview) libraryIconNamePreview.textContent = `Ícone selecionado: ${iconNameFromDataset.replace(/-/g, ' ')}`; // Exibe o nome amigável
+
+                updateButtonPreview(); 
+                
+                // MODIFICAÇÃO: Fechar APENAS o iconModal
+                if (iconModal) {
+                    iconModal.classList.remove('active', 'show', 'modal-on-top');
+                }
+                // Manter a classe 'modal-open' no body se o buttonModal ainda estiver visível.
+                // A função closeModals() cuidaria de remover 'modal-open' do body,
+                // mas como não a chamamos aqui, o body continua com overflow:hidden,
+                // o que é bom enquanto o buttonModal estiver aberto.
+                currentIconModalPurpose = ''; // Resetar o propósito para o próximo uso
+            } else {
+                closeModals(); 
             }
-
-            if (targetContainer) targetContainer.appendChild(newItemField);
-
-            // Adicionar listener de remoção após o item ser adicionado ao DOM
-            // O listener para card_link já é adicionado acima dinamicamente
-            // O listener para social_item precisa ser adicionado aqui, pois o HTML é setado via innerHTML
-            const removeButton = newItemField.querySelector('.remove-item');
-            if (removeButton) {
-                removeButton.addEventListener('click', function () {
-                    this.closest(`.${itemClass}`).remove();
-                });
-            }
-
-
-            if (currentModalPurpose === 'card_link') {
-                updateCardLinkItemPreview(newItemField);
-            }
-
-            const firstInput = newItemField.querySelector('input[type="text"]');
-            if (firstInput) firstInput.focus();
-
-            closeModals();
-        } else {
-            alert('Por favor, selecione um ícone primeiro!');
-        }
-    });
+        });
+    }
 
     document.querySelectorAll('#card-links-container .card-link-item').forEach(item => {
         updateCardLinkItemPreview(item);
-
         const atTextInput = item.querySelector('.card-link-item-at-text');
         const fontSelect = item.querySelector('.card-link-item-font');
         const colorInput = item.querySelector('.card-link-item-color');
         const hiddenFontInput = item.querySelector('input[name="card_icon_font[]"]');
         const hiddenColorInput = item.querySelector('input[name="card_icon_color[]"]');
 
-        if (atTextInput) {
-            atTextInput.addEventListener('input', () => updateCardLinkItemPreview(item));
-        }
-        if (fontSelect && hiddenFontInput) {
-            fontSelect.addEventListener('change', () => {
-                hiddenFontInput.value = fontSelect.value;
-                updateCardLinkItemPreview(item);
-            });
-        }
-        if (colorInput && hiddenColorInput) {
-            colorInput.addEventListener('input', () => {
-                hiddenColorInput.value = colorInput.value;
-                updateCardLinkItemPreview(item);
-            });
-        }
+        if (atTextInput) atTextInput.addEventListener('input', () => updateCardLinkItemPreview(item));
+        if (fontSelect && hiddenFontInput) fontSelect.addEventListener('change', () => { hiddenFontInput.value = fontSelect.value; updateCardLinkItemPreview(item); });
+        if (colorInput && hiddenColorInput) colorInput.addEventListener('input', () => { hiddenColorInput.value = colorInput.value; updateCardLinkItemPreview(item); });
     });
 
-
-    const buttonHasBorderCheckbox = document.getElementById('button-has-border');
-    const borderOptionsGroup = document.getElementById('border-options-group');
-    if (buttonHasBorderCheckbox) buttonHasBorderCheckbox.addEventListener('change', function () {
-        if (borderOptionsGroup) borderOptionsGroup.style.display = this.checked ? 'flex' : 'none';
-        updateButtonPreview();
-    });
+    const addButtonBtn = document.getElementById('add-button-btn');
+    const buttonModalCloseBtn = buttonModal ? buttonModal.querySelector('.button-modal-close') : null;
 
     const liveButtonPreview = document.getElementById('live-button-preview');
+    const liveButtonTextPreview = liveButtonPreview ? liveButtonPreview.querySelector('.button-text-preview') : null;
+    const liveButtonIconPreview = liveButtonPreview ? liveButtonPreview.querySelector('.button-icon-preview') : null;
+
     const buttonTextInput = document.getElementById('button-text');
+    const buttonLinkInput = document.getElementById('button-link');
+    const buttonStyleSelect = document.getElementById('button-style-select');
+    const buttonIconTypeSelect = document.getElementById('button-icon-type-select');
+
+    const buttonIconUrlExternalGroup = document.getElementById('button-icon-url-external-group');
+    const buttonIconUrlExternalInput = document.getElementById('button-icon-url-external-input');
+    const buttonNewImageFileGroup = document.getElementById('button-new-image-file-group');
+    const buttonNewImageFileInput = document.getElementById('button-new-image-file-input');
+    const buttonNewImageFileInfo = document.getElementById('button-new-image-file-info');
+    const buttonSelectLibraryIconGroup = document.getElementById('button-select-library-icon-group');
+    const buttonSelectLibraryIconBtn = document.getElementById('button-select-library-icon-btn');
+    const libraryIconNamePreview = document.getElementById('button-library-icon-name-preview');
+    const buttonIconRoundedGroup = document.getElementById('button-icon-rounded-group');
+    const buttonIconRoundedCheckbox = document.getElementById('button-icon-rounded');
+
     const buttonColorInput = document.getElementById('button-color');
+    const buttonOpacitySlider = document.getElementById('button-opacity');
+    const opacityValueSpan = document.getElementById('opacity-value');
     const buttonRadiusInput = document.getElementById('button-radius');
     const radiusValueSpan = document.getElementById('radius-value');
     const buttonTextColorInput = document.getElementById('button-text-color');
     const buttonTextBoldCheckbox = document.getElementById('button-text-bold');
     const buttonTextItalicCheckbox = document.getElementById('button-text-italic');
     const buttonFontSizeInput = document.getElementById('button-font-size');
+    const buttonHasBorderCheckbox = document.getElementById('button-has-border');
+    const borderOptionsGroup = document.getElementById('border-options-group');
     const buttonBorderColorInput = document.getElementById('button-border-color');
     const buttonBorderWidthInput = document.getElementById('button-border-width');
     const buttonHasHoverCheckbox = document.getElementById('button-has-hover');
     const buttonShadowTypeSelect = document.getElementById('button-shadow-type');
 
+    const buttonModalActualIconType = document.getElementById('button-modal-actual-icon-type');
+    const buttonModalActualIconValue = document.getElementById('button-modal-actual-icon-value');
+
+
+    function manageButtonIconFieldsVisibility() {
+        const selectedType = buttonIconTypeSelect.value;
+
+        buttonIconUrlExternalGroup.style.display = selectedType === 'image_url_external' ? 'block' : 'none';
+        buttonNewImageFileGroup.style.display = selectedType === 'image_upload_new' ? 'block' : 'none';
+        buttonSelectLibraryIconGroup.style.display = selectedType === 'library_icon' ? 'block' : 'none';
+        buttonIconRoundedGroup.style.display = (selectedType === 'image_url_external' || selectedType === 'image_upload_new') ? 'flex' : 'none';
+
+        if (selectedType !== 'image_url_external') buttonIconUrlExternalInput.value = '';
+        if (selectedType !== 'image_upload_new') {
+            buttonNewImageFileInput.value = ''; 
+            if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = 'Nenhum arquivo selecionado';
+        }
+        if (selectedType !== 'library_icon') {
+            if (libraryIconNamePreview) libraryIconNamePreview.textContent = '';
+            selectedIconNameForButtonModal = ''; 
+        }
+        if (selectedType === 'none') {
+            if (buttonModalActualIconType) buttonModalActualIconType.value = 'none';
+            if (buttonModalActualIconValue) buttonModalActualIconValue.value = '';
+        }
+        
+        if (selectedType !== 'image_url_external' && selectedType !== 'image_upload_new') {
+            buttonIconRoundedCheckbox.checked = false;
+        }
+        updateButtonPreview();
+    }
+
+    if (buttonIconTypeSelect) {
+        buttonIconTypeSelect.addEventListener('change', manageButtonIconFieldsVisibility);
+    }
+
+    if (buttonSelectLibraryIconBtn) {
+        buttonSelectLibraryIconBtn.addEventListener('click', () => {
+            openIconModal('button_icon_selector');
+        });
+    }
+
+    async function uploadButtonImageAJAX(file) {
+        if (!file) return null;
+        const formData = new FormData();
+        formData.append('button_image', file);
+
+        if (liveButtonIconPreview) liveButtonIconPreview.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+
+        try {
+            const response = await fetch(UPLOAD_BUTTON_IMAGE_URL, {
+                method: 'POST',
+                body: formData,
+            });
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido no upload.' }));
+                throw new Error(errorData.error || `Erro ${response.status}`);
+            }
+            const data = await response.json();
+            if (data.url) {
+                return data.url;
+            } else {
+                throw new Error(data.error || 'URL da imagem não retornada.');
+            }
+        } catch (error) {
+            console.error('Erro no upload da imagem do botão:', error);
+            alert(`Erro ao enviar imagem: ${error.message}`);
+            if (liveButtonIconPreview) liveButtonIconPreview.innerHTML = ''; 
+            return null;
+        }
+    }
+
+
+    if (buttonNewImageFileInput) {
+        buttonNewImageFileInput.addEventListener('change', async function () {
+            if (this.files && this.files[0]) {
+                const file = this.files[0];
+                if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = file.name;
+
+                const uploadedUrl = await uploadButtonImageAJAX(file);
+                if (uploadedUrl) {
+                    if (buttonModalActualIconType) buttonModalActualIconType.value = 'image_uploaded'; 
+                    if (buttonModalActualIconValue) buttonModalActualIconValue.value = uploadedUrl;
+                    updateButtonPreview();
+                } else {
+                    this.value = '';
+                    if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = 'Falha no envio. Nenhum arquivo selecionado.';
+                    if (buttonModalActualIconType) buttonModalActualIconType.value = 'none'; 
+                    if (buttonModalActualIconValue) buttonModalActualIconValue.value = '';
+                    updateButtonPreview();
+                }
+            } else {
+                if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = 'Nenhum arquivo selecionado';
+                if (buttonModalActualIconType && buttonModalActualIconType.value === 'image_uploaded') { 
+                    buttonModalActualIconType.value = 'none';
+                    buttonModalActualIconValue.value = '';
+                }
+                updateButtonPreview();
+            }
+        });
+    }
+    if (buttonIconUrlExternalInput) {
+        buttonIconUrlExternalInput.addEventListener('input', function () {
+            if (buttonIconTypeSelect.value === 'image_url_external') {
+                if (buttonModalActualIconType) buttonModalActualIconType.value = 'image_url_external';
+                if (buttonModalActualIconValue) buttonModalActualIconValue.value = this.value;
+                updateButtonPreview();
+            }
+        });
+    }
+
+
     function updateButtonPreview() {
-        if (!liveButtonPreview || !buttonTextInput || !buttonColorInput || !buttonRadiusInput || !radiusValueSpan || !buttonTextColorInput || !buttonTextBoldCheckbox || !buttonTextItalicCheckbox || !buttonFontSizeInput || !buttonHasBorderCheckbox || !buttonBorderColorInput || !buttonBorderWidthInput || !buttonHasHoverCheckbox || !buttonShadowTypeSelect) return;
-        liveButtonPreview.textContent = buttonTextInput.value || 'Texto do Botão';
-        liveButtonPreview.style.backgroundColor = buttonColorInput.value;
+        if (!liveButtonPreview || !liveButtonTextPreview || !liveButtonIconPreview || !buttonTextInput || !buttonColorInput || !buttonRadiusInput || !radiusValueSpan || !buttonTextColorInput || !buttonTextBoldCheckbox || !buttonTextItalicCheckbox || !buttonFontSizeInput || !buttonHasBorderCheckbox || !buttonBorderColorInput || !buttonBorderWidthInput || !buttonHasHoverCheckbox || !buttonShadowTypeSelect || !buttonOpacitySlider || !opacityValueSpan || !buttonIconTypeSelect || !buttonIconUrlExternalInput || !buttonStyleSelect || !buttonIconRoundedCheckbox || !borderOptionsGroup || !buttonModalActualIconType || !buttonModalActualIconValue) {
+            return;
+        }
+
+        liveButtonTextPreview.textContent = buttonTextInput.value.trim() || 'Texto do Botão';
+
+        const bgColor = buttonColorInput.value;
+        const bgOpacity = parseFloat(buttonOpacitySlider.value);
+        opacityValueSpan.textContent = bgOpacity.toFixed(2);
+        liveButtonPreview.style.backgroundColor = hexToRgba(bgColor, bgOpacity);
+
         liveButtonPreview.style.borderRadius = `${buttonRadiusInput.value}px`;
-        radiusValueSpan.textContent = `${buttonRadiusInput.value}px`;
+        if (radiusValueSpan) radiusValueSpan.textContent = `${buttonRadiusInput.value}px`;
+
         liveButtonPreview.style.color = buttonTextColorInput.value;
         liveButtonPreview.style.fontWeight = buttonTextBoldCheckbox.checked ? 'bold' : 'normal';
         liveButtonPreview.style.fontStyle = buttonTextItalicCheckbox.checked ? 'italic' : 'normal';
         liveButtonPreview.style.fontSize = `${buttonFontSizeInput.value}px`;
-        liveButtonPreview.style.border = buttonHasBorderCheckbox.checked ? `${buttonBorderWidthInput.value}px solid ${buttonBorderColorInput.value}` : 'none';
-        ['shadow-soft', 'shadow-medium', 'shadow-hard', 'shadow-inset'].forEach(cls => liveButtonPreview.classList.remove(cls));
-        if (buttonShadowTypeSelect.value !== 'none') liveButtonPreview.classList.add(`shadow-${buttonShadowTypeSelect.value}`);
-        liveButtonPreview.classList.toggle('hover-effect-preview', buttonHasHoverCheckbox.checked);
+
+        if (buttonHasBorderCheckbox.checked) {
+            liveButtonPreview.style.border = `${buttonBorderWidthInput.value}px solid ${buttonBorderColorInput.value}`;
+        } else {
+            liveButtonPreview.style.border = 'none';
+        }
+
+        liveButtonPreview.classList.remove('shadow-soft', 'shadow-medium', 'shadow-hard', 'shadow-inset',
+            'button-style-default', 'button-style-solid_shadow',
+            'hover-effect-preview');
+
+        const selectedButtonStyle = buttonStyleSelect.value;
+        liveButtonPreview.classList.add(`button-style-${selectedButtonStyle}`);
+
+        const defaultStyleControls = [
+            buttonShadowTypeSelect.closest('.form-group'),
+            buttonHasHoverCheckbox.closest('.form-group-inline')
+        ];
+
+        if (selectedButtonStyle === 'default') {
+            if (buttonShadowTypeSelect.value !== 'none') {
+                liveButtonPreview.classList.add(`shadow-${buttonShadowTypeSelect.value}`);
+            }
+            if (buttonHasHoverCheckbox.checked) {
+                liveButtonPreview.classList.add('hover-effect-preview');
+            }
+            defaultStyleControls.forEach(el => el.style.display = el.tagName === 'DIV' && el.classList.contains('form-group-inline') ? 'flex' : 'block');
+        } else {
+            defaultStyleControls.forEach(el => el.style.display = 'none');
+        }
+
+        const actualIconType = buttonModalActualIconType.value;
+        const actualIconValue = buttonModalActualIconValue.value.trim();
+        const iconRounded = buttonIconRoundedCheckbox.checked;
+
+        liveButtonIconPreview.innerHTML = ''; 
+
+        if (actualIconType === 'image_url_external' && actualIconValue) {
+            const img = document.createElement('img');
+            img.src = actualIconValue;
+            img.alt = 'Ícone';
+            if (iconRounded) img.classList.add('rounded');
+            liveButtonIconPreview.appendChild(img);
+        } else if (actualIconType === 'image_uploaded' && actualIconValue) {
+            const img = document.createElement('img');
+            img.src = actualIconValue; 
+            img.alt = 'Ícone Enviado';
+            if (iconRounded) img.classList.add('rounded');
+            liveButtonIconPreview.appendChild(img);
+        } else if (actualIconType === 'library_icon' && actualIconValue) {
+            const img = document.createElement('img');
+            img.src = `${STATIC_ICONS_PATH}${actualIconValue}`; 
+            img.alt = actualIconValue.split('.')[0];
+            if (iconRounded) img.classList.add('rounded');
+            liveButtonIconPreview.appendChild(img);
+        }
     }
 
-    [buttonTextInput, buttonColorInput, buttonRadiusInput, buttonTextColorInput, buttonTextBoldCheckbox, buttonTextItalicCheckbox, buttonFontSizeInput, buttonBorderColorInput, buttonBorderWidthInput, buttonHasHoverCheckbox, buttonShadowTypeSelect].forEach(el => {
-        if (el) el.addEventListener(el.type === 'checkbox' || el.type === 'select-one' ? 'change' : 'input', updateButtonPreview);
+
+    if (buttonHasBorderCheckbox) {
+        buttonHasBorderCheckbox.addEventListener('change', function () {
+            if (borderOptionsGroup) borderOptionsGroup.style.display = this.checked ? 'flex' : 'none';
+            updateButtonPreview();
+        });
+    }
+
+    const elementsForButtonPreviewUpdate = [
+        buttonTextInput, buttonColorInput, buttonRadiusInput, buttonTextColorInput,
+        buttonTextBoldCheckbox, buttonTextItalicCheckbox, buttonFontSizeInput,
+        buttonHasBorderCheckbox, buttonBorderColorInput, buttonBorderWidthInput,
+        buttonHasHoverCheckbox, buttonShadowTypeSelect,
+        buttonOpacitySlider, buttonIconTypeSelect, buttonIconUrlExternalInput, 
+        buttonIconRoundedCheckbox, buttonStyleSelect
+    ];
+
+    elementsForButtonPreviewUpdate.forEach(el => {
+        if (el) {
+            const eventType = (el.type === 'checkbox' || el.tagName === 'SELECT' || el.type === 'range') ? 'change' : 'input';
+            el.addEventListener(eventType, updateButtonPreview);
+        }
     });
 
-    if (addButtonBtn) addButtonBtn.addEventListener('click', () => {
-        if (buttonTextInput) buttonTextInput.value = '';
-        const buttonLinkInput = document.getElementById('button-link');
-        if (buttonLinkInput) buttonLinkInput.value = '';
-        if (buttonColorInput) buttonColorInput.value = '#4CAF50';
-        if (buttonRadiusInput) buttonRadiusInput.value = '10';
-        if (radiusValueSpan) radiusValueSpan.textContent = '10px';
-        if (buttonTextColorInput) buttonTextColorInput.value = '#FFFFFF';
-        if (buttonTextBoldCheckbox) buttonTextBoldCheckbox.checked = false;
-        if (buttonTextItalicCheckbox) buttonTextItalicCheckbox.checked = false;
-        if (buttonFontSizeInput) buttonFontSizeInput.value = '16';
-        if (buttonHasBorderCheckbox) buttonHasBorderCheckbox.checked = false;
-        if (borderOptionsGroup) borderOptionsGroup.style.display = 'none';
-        if (buttonBorderColorInput) buttonBorderColorInput.value = '#000000';
-        if (buttonBorderWidthInput) buttonBorderWidthInput.value = '2';
-        if (buttonHasHoverCheckbox) buttonHasHoverCheckbox.checked = false;
-        if (buttonShadowTypeSelect) buttonShadowTypeSelect.value = 'none';
+    function openButtonModal(data = null, index = -1) {
+        currentButtonModalPurpose = data ? 'edit' : 'add';
+        editingButtonData = data; 
+        document.getElementById('button-modal-editing-index').value = index;
+
+
+        buttonTextInput.value = data ? data.text : '';
+        buttonLinkInput.value = data ? data.link : '';
+        buttonStyleSelect.value = data ? data.buttonStyle : DEFAULT_BUTTON_STYLE_JS;
+
+        const currentIconType = data ? data.iconType : DEFAULT_BUTTON_ICON_TYPE_JS;
+        const currentIconUrl = data ? data.iconUrl : DEFAULT_BUTTON_ICON_URL_JS; 
+        buttonModalActualIconType.value = currentIconType;
+        buttonModalActualIconValue.value = currentIconUrl;
+
+
+        if (currentIconType === 'image_url_external') {
+            buttonIconTypeSelect.value = 'image_url_external';
+            buttonIconUrlExternalInput.value = currentIconUrl;
+        } else if (currentIconType === 'image_uploaded') { 
+            buttonIconTypeSelect.value = 'image_upload_new'; 
+            if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = currentIconUrl.split('/').pop();
+        } else if (currentIconType === 'library_icon') {
+            buttonIconTypeSelect.value = 'library_icon';
+            selectedIconNameForButtonModal = currentIconUrl; 
+            if (libraryIconNamePreview) libraryIconNamePreview.textContent = `Ícone atual: ${currentIconUrl.split('.')[0].replace(/-/g, ' ')}`;
+        } else { 
+            buttonIconTypeSelect.value = 'none';
+        }
+        
+        manageButtonIconFieldsVisibility();
+
+        buttonIconRoundedCheckbox.checked = data ? data.iconRounded : DEFAULT_BUTTON_ICON_ROUNDED_JS;
+        buttonColorInput.value = data ? data.color : '#4CAF50';
+        buttonOpacitySlider.value = data ? data.opacity : DEFAULT_BUTTON_OPACITY_JS;
+        buttonRadiusInput.value = data ? data.radius : '10';
+        buttonTextColorInput.value = data ? data.textColor : '#FFFFFF';
+        buttonTextBoldCheckbox.checked = data ? data.bold : false;
+        buttonTextItalicCheckbox.checked = data ? data.italic : false;
+        buttonFontSizeInput.value = data ? data.fontSize : '16';
+        buttonHasBorderCheckbox.checked = data ? data.hasBorder : false;
+        borderOptionsGroup.style.display = buttonHasBorderCheckbox.checked ? 'flex' : 'none';
+        buttonBorderColorInput.value = data ? data.borderColor : '#000000';
+        buttonBorderWidthInput.value = data ? data.borderWidth : '2';
+        buttonHasHoverCheckbox.checked = data ? data.hasHoverEffect : false;
+        buttonShadowTypeSelect.value = data ? data.shadowType : 'none';
+
         updateButtonPreview();
         if (buttonModal) {
             buttonModal.classList.add('show');
             document.body.classList.add('modal-open');
             setTimeout(() => buttonModal.classList.add('active'), 50);
         }
-    });
+    }
 
-    const saveButtonBtn = document.getElementById('save-button');
-    if (saveButtonBtn) saveButtonBtn.addEventListener('click', function (event) {
-        event.preventDefault();
-        const btnText = buttonTextInput.value;
-        const btnLink = document.getElementById('button-link').value;
-        if (btnText && btnLink) {
+
+    if (addButtonBtn) {
+        addButtonBtn.addEventListener('click', () => openButtonModal());
+    }
+
+    const saveButtonModalBtn = document.getElementById('save-button'); 
+    if (saveButtonModalBtn) {
+        saveButtonModalBtn.addEventListener('click', function (event) {
+            event.preventDefault(); 
+
+            const btnText = buttonTextInput.value.trim();
+            const btnLinkValue = buttonLinkInput.value.trim(); 
+
+            if (!btnText) {
+                alert('Por favor, preencha o texto do botão!');
+                if (buttonTextInput) { 
+                    buttonTextInput.focus();
+                }
+                return; 
+            }
+
+            if (buttonLinkInput && !buttonLinkInput.checkValidity()) {
+                buttonLinkInput.reportValidity();
+                return; 
+            }
+            
+            const btnLink = btnLinkValue;
+
             const newButtonData = {
-                text: btnText, link: btnLink, color: buttonColorInput.value, radius: buttonRadiusInput.value,
-                textColor: buttonTextColorInput.value, bold: buttonTextBoldCheckbox.checked, italic: buttonTextItalicCheckbox.checked,
-                fontSize: buttonFontSizeInput.value, hasBorder: buttonHasBorderCheckbox.checked, borderColor: buttonBorderColorInput.value,
-                borderWidth: buttonBorderWidthInput.value, hasHoverEffect: buttonHasHoverCheckbox.checked, shadowType: buttonShadowTypeSelect.value
+                text: btnText,
+                link: btnLink,
+                buttonStyle: buttonStyleSelect.value,
+                iconType: buttonModalActualIconType.value,
+                iconUrl: buttonModalActualIconValue.value,
+                iconRounded: buttonIconRoundedCheckbox.checked,
+                color: buttonColorInput.value,
+                opacity: parseFloat(buttonOpacitySlider.value),
+                radius: parseInt(buttonRadiusInput.value),
+                textColor: buttonTextColorInput.value,
+                bold: buttonTextBoldCheckbox.checked,
+                italic: buttonTextItalicCheckbox.checked,
+                fontSize: parseInt(buttonFontSizeInput.value),
+                hasBorder: buttonHasBorderCheckbox.checked,
+                borderColor: buttonBorderColorInput.value,
+                borderWidth: parseInt(buttonBorderWidthInput.value),
+                hasHoverEffect: buttonHasHoverCheckbox.checked,
+                shadowType: buttonShadowTypeSelect.value,
             };
-            renderCustomButton(newButtonData);
+
+            const editingIndex = parseInt(document.getElementById('button-modal-editing-index').value);
+            if (editingIndex > -1) { 
+                const items = customButtonsContainer.querySelectorAll('.custom-button-item');
+                if (items[editingIndex]) {
+                    items[editingIndex].remove();
+                    renderCustomButton(newButtonData, editingIndex);
+                } else {
+                    renderCustomButton(newButtonData);
+                }
+            } else { 
+                renderCustomButton(newButtonData);
+            }
             closeModals();
-        } else {
-            alert('Por favor, preencha o texto e o link do botão!');
+        });
+    }
+
+    function renderCustomButton(buttonData, index = -1) {
+        const customButtonsContainer = document.getElementById('custom-buttons-container');
+        if (!customButtonsContainer) return;
+
+        const buttonField = document.createElement('div');
+        buttonField.className = 'custom-button-item';
+
+        const text = escapeHtml(buttonData.text || 'Botão');
+        const link = escapeHtml(buttonData.link || '#');
+        const buttonStyle = escapeHtml(buttonData.buttonStyle || DEFAULT_BUTTON_STYLE_JS);
+        const iconType = escapeHtml(buttonData.iconType || DEFAULT_BUTTON_ICON_TYPE_JS);
+        const iconUrl = escapeHtml(buttonData.iconUrl || DEFAULT_BUTTON_ICON_URL_JS); 
+        const iconRounded = buttonData.iconRounded || DEFAULT_BUTTON_ICON_ROUNDED_JS;
+        const color = escapeHtml(buttonData.color || '#4CAF50');
+        const opacity = typeof buttonData.opacity === 'number' ? buttonData.opacity : DEFAULT_BUTTON_OPACITY_JS;
+        const radius = parseInt(buttonData.radius) || 10;
+        const textColor = escapeHtml(buttonData.textColor || '#FFFFFF');
+        const bold = buttonData.bold || false;
+        const italic = buttonData.italic || false;
+        const fontSize = parseInt(buttonData.fontSize) || 16;
+        const hasBorder = buttonData.hasBorder || false;
+        const borderColor = escapeHtml(buttonData.borderColor || '#000000');
+        const borderWidth = parseInt(buttonData.borderWidth) || 2;
+        const hasHoverEffect = buttonData.hasHoverEffect || false; 
+        const shadowType = escapeHtml(buttonData.shadowType || 'none'); 
+
+
+        let borderStyleCSS = '';
+        let buttonPreviewClasses = ['button-preview', `button-style-${buttonStyle}`];
+        if (hasBorder) {
+            borderStyleCSS = `border: ${borderWidth}px solid ${borderColor};`;
+            buttonPreviewClasses.push('has-border-preview');
         }
-    });
+        if (buttonStyle === 'default') {
+            if (hasHoverEffect) buttonPreviewClasses.push('hover-effect-preview');
+            if (shadowType !== 'none') buttonPreviewClasses.push(`shadow-${shadowType}`);
+        }
+
+        let iconHtmlInList = '';
+        if (iconType === 'image_url_external' && iconUrl) {
+            iconHtmlInList = `<img src="${iconUrl}" alt="Ícone" class="button-embedded-icon ${iconRounded ? 'rounded' : ''}">`;
+        } else if (iconType === 'image_uploaded' && iconUrl) { 
+            iconHtmlInList = `<img src="${iconUrl}" alt="Ícone Enviado" class="button-embedded-icon ${iconRounded ? 'rounded' : ''}">`;
+        } else if (iconType === 'library_icon' && iconUrl) { 
+            iconHtmlInList = `<img src="${STATIC_ICONS_PATH}${iconUrl}" alt="${iconUrl.split('.')[0]}" class="button-embedded-icon ${iconRounded ? 'rounded' : ''}">`;
+        }
+
+        const finalButtonBgWithOpacity = hexToRgba(color, opacity);
+
+        buttonField.innerHTML = `
+            <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
+            <div style="flex-grow: 1;">
+                <div class="${buttonPreviewClasses.join(' ')}"
+                    style="background-color: ${finalButtonBgWithOpacity}; border-radius: ${radius}px; padding: 8px; margin-bottom: 8px; color: ${textColor}; font-weight: ${bold ? 'bold' : 'normal'}; font-style: ${italic ? 'italic' : 'normal'}; font-size: ${fontSize}px; ${borderStyleCSS}">
+                    ${iconHtmlInList}
+                    <span class="button-text-content">${text}</span>
+                </div>
+                <input type="hidden" name="custom_button_text[]" value="${text}">
+                <input type="hidden" name="custom_button_link[]" value="${link}">
+                <input type="hidden" name="custom_button_color[]" value="${color}">
+                <input type="hidden" name="custom_button_radius[]" value="${radius}">
+                <input type="hidden" name="custom_button_text_color[]" value="${textColor}">
+                <input type="hidden" name="custom_button_text_bold[]" value="${bold}">
+                <input type="hidden" name="custom_button_text_italic[]" value="${italic}">
+                <input type="hidden" name="custom_button_font_size[]" value="${fontSize}">
+                <input type="hidden" name="custom_button_has_border[]" value="${hasBorder}">
+                <input type="hidden" name="custom_button_border_color[]" value="${borderColor}">
+                <input type="hidden" name="custom_button_border_width[]" value="${borderWidth}">
+                <input type="hidden" name="custom_button_has_hover[]" value="${hasHoverEffect}">
+                <input type="hidden" name="custom_button_shadow_type[]" value="${shadowType}">
+                <input type="hidden" name="custom_button_opacity[]" value="${opacity}">
+                <input type="hidden" name="custom_button_icon_url[]" value="${iconUrl}">
+                <input type="hidden" name="custom_button_icon_type[]" value="${iconType}">
+                <input type="hidden" name="custom_button_icon_rounded[]" value="${iconRounded}">
+                <input type="hidden" name="custom_button_style[]" value="${buttonStyle}">
+            </div>
+            <button type="button" class="edit-item-btn" title="Editar este botão"><i class="fas fa-edit"></i></button>
+            <span class="remove-item" title="Remover este botão"><i class="fas fa-times"></i></span>
+        `;
+
+        if (index > -1 && customButtonsContainer.childNodes[index]) {
+            customButtonsContainer.insertBefore(buttonField, customButtonsContainer.childNodes[index]);
+        } else {
+            customButtonsContainer.appendChild(buttonField);
+        }
+
+        buttonField.querySelector('.remove-item').addEventListener('click', function () {
+            this.closest('.custom-button-item').remove();
+        });
+        buttonField.querySelector('.edit-item-btn').addEventListener('click', function () {
+            const currentItem = this.closest('.custom-button-item');
+            const parent = currentItem.parentNode;
+            const itemIndex = Array.prototype.indexOf.call(parent.children, currentItem);
+
+            const dataToEdit = {
+                text: currentItem.querySelector('input[name="custom_button_text[]"]').value,
+                link: currentItem.querySelector('input[name="custom_button_link[]"]').value,
+                buttonStyle: currentItem.querySelector('input[name="custom_button_style[]"]').value,
+                iconType: currentItem.querySelector('input[name="custom_button_icon_type[]"]').value,
+                iconUrl: currentItem.querySelector('input[name="custom_button_icon_url[]"]').value,
+                iconRounded: currentItem.querySelector('input[name="custom_button_icon_rounded[]"]').value === 'true',
+                color: currentItem.querySelector('input[name="custom_button_color[]"]').value,
+                opacity: parseFloat(currentItem.querySelector('input[name="custom_button_opacity[]"]').value),
+                radius: parseInt(currentItem.querySelector('input[name="custom_button_radius[]"]').value),
+                textColor: currentItem.querySelector('input[name="custom_button_text_color[]"]').value,
+                bold: currentItem.querySelector('input[name="custom_button_text_bold[]"]').value === 'true',
+                italic: currentItem.querySelector('input[name="custom_button_text_italic[]"]').value === 'true',
+                fontSize: parseInt(currentItem.querySelector('input[name="custom_button_font_size[]"]').value),
+                hasBorder: currentItem.querySelector('input[name="custom_button_has_border[]"]').value === 'true',
+                borderColor: currentItem.querySelector('input[name="custom_button_border_color[]"]').value,
+                borderWidth: parseInt(currentItem.querySelector('input[name="custom_button_border_width[]"]').value),
+                hasHoverEffect: currentItem.querySelector('input[name="custom_button_has_hover[]"]').value === 'true',
+                shadowType: currentItem.querySelector('input[name="custom_button_shadow_type[]"]').value
+            };
+            openButtonModal(dataToEdit, itemIndex);
+        });
+    }
+
 
     if (iconModalCloseBtn) iconModalCloseBtn.addEventListener('click', closeModals);
     if (buttonModalCloseBtn) buttonModalCloseBtn.addEventListener('click', closeModals);
     window.addEventListener('click', function (event) {
-        if (event.target === iconModal || event.target === buttonModal) closeModals();
+        if (event.target === iconModal || event.target === buttonModal) {
+            closeModals();
+        }
     });
 
     document.querySelectorAll('.social-item .remove-item, .custom-button-item .remove-item, .card-link-item .remove-item').forEach(item => {
@@ -715,6 +970,76 @@ document.addEventListener('DOMContentLoaded', function () {
             this.closest('.social-item, .custom-button-item, .card-link-item').remove();
         });
     });
+
+    document.querySelectorAll('#custom-buttons-container .custom-button-item').forEach((buttonItem, itemIndex) => {
+        const editBtn = buttonItem.querySelector('.edit-item-btn'); 
+        if (!editBtn) { 
+            const newEditBtn = document.createElement('button');
+            newEditBtn.type = 'button';
+            newEditBtn.className = 'edit-item-btn';
+            newEditBtn.title = 'Editar este botão';
+            newEditBtn.innerHTML = '<i class="fas fa-edit"></i>';
+            
+            const removeBtnSpan = buttonItem.querySelector('.remove-item');
+            if (removeBtnSpan) {
+                buttonItem.insertBefore(newEditBtn, removeBtnSpan);
+            } else {
+                buttonItem.appendChild(newEditBtn); 
+            }
+
+
+            newEditBtn.addEventListener('click', function () {
+                const currentItem = this.closest('.custom-button-item');
+                const dataToEdit = {
+                    text: currentItem.querySelector('input[name="custom_button_text[]"]').value,
+                    link: currentItem.querySelector('input[name="custom_button_link[]"]').value,
+                    buttonStyle: currentItem.querySelector('input[name="custom_button_style[]"]').value,
+                    iconType: currentItem.querySelector('input[name="custom_button_icon_type[]"]').value,
+                    iconUrl: currentItem.querySelector('input[name="custom_button_icon_url[]"]').value,
+                    iconRounded: currentItem.querySelector('input[name="custom_button_icon_rounded[]"]').value === 'true',
+                    color: currentItem.querySelector('input[name="custom_button_color[]"]').value,
+                    opacity: parseFloat(currentItem.querySelector('input[name="custom_button_opacity[]"]').value),
+                    radius: parseInt(currentItem.querySelector('input[name="custom_button_radius[]"]').value),
+                    textColor: currentItem.querySelector('input[name="custom_button_text_color[]"]').value,
+                    bold: currentItem.querySelector('input[name="custom_button_text_bold[]"]').value === 'true',
+                    italic: currentItem.querySelector('input[name="custom_button_text_italic[]"]').value === 'true',
+                    fontSize: parseInt(currentItem.querySelector('input[name="custom_button_font_size[]"]').value),
+                    hasBorder: currentItem.querySelector('input[name="custom_button_has_border[]"]').value === 'true',
+                    borderColor: currentItem.querySelector('input[name="custom_button_border_color[]"]').value,
+                    borderWidth: parseInt(currentItem.querySelector('input[name="custom_button_border_width[]"]').value),
+                    hasHoverEffect: currentItem.querySelector('input[name="custom_button_has_hover[]"]').value === 'true',
+                    shadowType: currentItem.querySelector('input[name="custom_button_shadow_type[]"]').value
+                };
+                openButtonModal(dataToEdit, itemIndex);
+            });
+        } else {
+            editBtn.addEventListener('click', function () {
+                const currentItem = this.closest('.custom-button-item');
+                const dataToEdit = {
+                    text: currentItem.querySelector('input[name="custom_button_text[]"]').value,
+                    link: currentItem.querySelector('input[name="custom_button_link[]"]').value,
+                    buttonStyle: currentItem.querySelector('input[name="custom_button_style[]"]').value,
+                    iconType: currentItem.querySelector('input[name="custom_button_icon_type[]"]').value,
+                    iconUrl: currentItem.querySelector('input[name="custom_button_icon_url[]"]').value,
+                    iconRounded: currentItem.querySelector('input[name="custom_button_icon_rounded[]"]').value === 'true',
+                    color: currentItem.querySelector('input[name="custom_button_color[]"]').value,
+                    opacity: parseFloat(currentItem.querySelector('input[name="custom_button_opacity[]"]').value),
+                    radius: parseInt(currentItem.querySelector('input[name="custom_button_radius[]"]').value),
+                    textColor: currentItem.querySelector('input[name="custom_button_text_color[]"]').value,
+                    bold: currentItem.querySelector('input[name="custom_button_text_bold[]"]').value === 'true',
+                    italic: currentItem.querySelector('input[name="custom_button_text_italic[]"]').value === 'true',
+                    fontSize: parseInt(currentItem.querySelector('input[name="custom_button_font_size[]"]').value),
+                    hasBorder: currentItem.querySelector('input[name="custom_button_has_border[]"]').value === 'true',
+                    borderColor: currentItem.querySelector('input[name="custom_button_border_color[]"]').value,
+                    borderWidth: parseInt(currentItem.querySelector('input[name="custom_button_border_width[]"]').value),
+                    hasHoverEffect: currentItem.querySelector('input[name="custom_button_has_hover[]"]').value === 'true',
+                    shadowType: currentItem.querySelector('input[name="custom_button_shadow_type[]"]').value
+                };
+                openButtonModal(dataToEdit, itemIndex);
+            });
+        }
+    });
+
 
     const cardBgTypeRadios = document.querySelectorAll('input[name="card_background_type"]');
     const cardBgColorPicker = document.getElementById('card_background_color_picker');
@@ -724,11 +1049,26 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!cardBgColorPicker || !cardBgImageUploadSection) return;
         const selectedTypeRadio = document.querySelector('input[name="card_background_type"]:checked');
         if (!selectedTypeRadio) return;
+
         const selectedType = selectedTypeRadio.value;
         cardBgColorPicker.style.display = selectedType === 'color' ? 'inline-block' : 'none';
+        if (cardBgColorPicker.parentElement.tagName === 'LABEL' && selectedType === 'color') {
+            cardBgColorPicker.parentElement.style.display = 'flex';
+        } else if (cardBgColorPicker.parentElement.tagName === 'LABEL') {
+            cardBgColorPicker.parentElement.style.display = 'flex';
+        }
         cardBgImageUploadSection.style.display = selectedType === 'image' ? 'block' : 'none';
     }
-    cardBgTypeRadios.forEach(radio => radio.addEventListener('change', updateCardBackgroundVisibility));
-    updateCardBackgroundVisibility();
-
-}); // Fim do DOMContentLoaded
+    if (cardBgTypeRadios.length > 0) {
+        cardBgTypeRadios.forEach(radio => radio.addEventListener('change', updateCardBackgroundVisibility));
+        updateCardBackgroundVisibility();
+    }
+    document.querySelectorAll('#custom-buttons-container .custom-button-item').forEach(buttonItem => {
+        const previewDiv = buttonItem.querySelector('.button-preview');
+        const bgColor = buttonItem.querySelector('input[name="custom_button_color[]"]').value;
+        const opacity = parseFloat(buttonItem.querySelector('input[name="custom_button_opacity[]"]').value);
+        if (previewDiv && bgColor && !isNaN(opacity)) {
+            previewDiv.style.backgroundColor = hexToRgba(bgColor, opacity);
+        }
+    });
+});
