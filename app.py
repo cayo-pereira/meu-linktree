@@ -30,7 +30,7 @@ supabase: Client = create_client(
         postgrest_client_timeout=10,
         storage_client_timeout=10,
         headers={
-            'Prefer': 'return=representation', 
+            'Prefer': 'return=representation',
         }
     )
 )
@@ -54,7 +54,8 @@ DEFAULT_BUTTON_ICON_URL = ""
 DEFAULT_BUTTON_ICON_TYPE = "none"
 DEFAULT_BUTTON_STYLE = "default"
 DEFAULT_BUTTON_ICON_ROUNDED = False
-DEFAULT_BUTTON_HOVER_EFFECT_TYPE = "none" # NOVO DEFAULT
+DEFAULT_BUTTON_HOVER_EFFECT_TYPE = "none"
+DEFAULT_BUTTON_SHADOW_DEPTH = 4 # NOVO: Profundidade padrão para o estilo "Sombra Destacada"
 
 DEFAULT_BACKGROUND_TYPE = "image"
 DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL = 0.0
@@ -76,7 +77,8 @@ app.config.update(
     DEFAULT_BUTTON_ICON_TYPE = DEFAULT_BUTTON_ICON_TYPE,
     DEFAULT_BUTTON_STYLE = DEFAULT_BUTTON_STYLE,
     DEFAULT_BUTTON_ICON_ROUNDED = DEFAULT_BUTTON_ICON_ROUNDED,
-    DEFAULT_BUTTON_HOVER_EFFECT_TYPE = DEFAULT_BUTTON_HOVER_EFFECT_TYPE, # NOVO DEFAULT
+    DEFAULT_BUTTON_HOVER_EFFECT_TYPE = DEFAULT_BUTTON_HOVER_EFFECT_TYPE,
+    DEFAULT_BUTTON_SHADOW_DEPTH = DEFAULT_BUTTON_SHADOW_DEPTH, # NOVO
     DEFAULT_BACKGROUND_TYPE = DEFAULT_BACKGROUND_TYPE,
     DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL = DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL,
     DEFAULT_BACKGROUND_COLOR_VALUE = DEFAULT_BACKGROUND_COLOR_VALUE
@@ -344,24 +346,23 @@ def user_page(profile):
 
                     if key_json == 'custom_buttons' and isinstance(user_data[key_json], list):
                         for button in user_data[key_json]:
-                            if isinstance(button, dict): 
+                            if isinstance(button, dict):
                                 button.setdefault('bold', False); button.setdefault('italic', False); button.setdefault('hasBorder', False)
-                                # Mapeamento de retrocompatibilidade para hoverEffectType
                                 if 'hoverEffectType' not in button:
-                                    if button.get('hasHoverEffect') is True: # Campo antigo
+                                    if button.get('hasHoverEffect') is True:
                                         button['hoverEffectType'] = 'elevate'
                                     else:
                                         button['hoverEffectType'] = app.config['DEFAULT_BUTTON_HOVER_EFFECT_TYPE']
-                                button.pop('hasHoverEffect', None) # Remove o campo antigo
+                                button.pop('hasHoverEffect', None)
 
                                 button.setdefault('fontSize', 16); button.setdefault('borderWidth', 2)
                                 button.setdefault('textColor', '#FFFFFF'); button.setdefault('borderColor', '#000000'); button.setdefault('shadowType', 'none')
                                 button.setdefault('opacity', app.config['DEFAULT_BUTTON_OPACITY'])
-                                button.setdefault('iconUrl', app.config['DEFAULT_BUTTON_ICON_URL']) 
-                                button.setdefault('iconType', app.config['DEFAULT_BUTTON_ICON_TYPE']) 
+                                button.setdefault('iconUrl', app.config['DEFAULT_BUTTON_ICON_URL'])
+                                button.setdefault('iconType', app.config['DEFAULT_BUTTON_ICON_TYPE'])
                                 button.setdefault('iconRounded', app.config['DEFAULT_BUTTON_ICON_ROUNDED'])
                                 button.setdefault('buttonStyle', app.config['DEFAULT_BUTTON_STYLE'])
-                                
+                                button.setdefault('shadowDepth', app.config['DEFAULT_BUTTON_SHADOW_DEPTH']) # NOVO: Garantir que existe
 
                     if key_json == 'card_links' and isinstance(user_data[key_json], list):
                         for link_item in user_data[key_json]:
@@ -387,6 +388,7 @@ def user_page(profile):
                                                 DEFAULT_BACKGROUND_TYPE=app.config['DEFAULT_BACKGROUND_TYPE'],
                                                 DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL=app.config['DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL'],
                                                 DEFAULT_BACKGROUND_COLOR_VALUE=app.config['DEFAULT_BACKGROUND_COLOR_VALUE'],
+                                                DEFAULT_BUTTON_SHADOW_DEPTH=app.config['DEFAULT_BUTTON_SHADOW_DEPTH'], # NOVO: Passar para o template
                                                 og_image=og_image_to_pass,
                                                 og_title=og_title_to_pass,
                                                 og_description=og_description_to_pass))
@@ -395,7 +397,7 @@ def user_page(profile):
         response.headers['Expires'] = '0'
         return response
     except Exception as e:
-        if hasattr(e, 'message') and "PGRST116" in e.message: 
+        if hasattr(e, 'message') and "PGRST116" in e.message:
             logger.warning(f"Perfil público não encontrado (PGRST116 Supabase): {profile}")
             abort(404)
         logger.error(f"Erro ao carregar perfil público {profile}: {str(e)}", exc_info=True)
@@ -408,7 +410,7 @@ def login_google():
         scheme = 'http'
         if request.headers.get('X-Forwarded-Proto') == 'https' or request.url.startswith('https'):
             scheme = 'https'
-        elif not app.debug and request.host not in ['localhost', '127.0.0.1']: 
+        elif not app.debug and request.host not in ['localhost', '127.0.0.1']:
              scheme = 'https'
 
         redirect_uri = url_for('callback_handler', _external=True, _scheme=scheme)
@@ -441,7 +443,7 @@ def callback():
         data = request.get_json()
         received_access_token = data.get('access_token')
         received_refresh_token = data.get('refresh_token')
-        auth_code = data.get('auth_code') 
+        auth_code = data.get('auth_code')
 
         user_supabase, access_token_to_store, refresh_token_to_store = None, None, None
 
@@ -461,20 +463,20 @@ def callback():
                 logger.error(f"Callback: Exceção ao trocar código de autorização: {str(e)}", exc_info=True)
                 return jsonify({"error": "Autenticação falhou durante a troca de código."}), 401
 
-        elif received_access_token: 
+        elif received_access_token:
             logger.info("Callback: Recebido access_token (fluxo implícito/hash). Tentando definir/verificar sessão.")
             try:
-                session_response = supabase.auth.set_session(received_access_token, received_refresh_token) 
+                session_response = supabase.auth.set_session(received_access_token, received_refresh_token)
                 if session_response and session_response.user:
                      user_supabase = session_response.user
-                else: 
-                    get_user_resp = supabase.auth.get_user(jwt=received_access_token) 
+                else:
+                    get_user_resp = supabase.auth.get_user(jwt=received_access_token)
                     if get_user_resp and get_user_resp.user:
                         user_supabase = get_user_resp.user
                     else:
                         logger.error("Callback: Falha ao definir sessão ou obter usuário com tokens recebidos.")
                         return jsonify({"error": "Falha ao validar sessão com tokens."}), 401
-                
+
                 access_token_to_store = received_access_token
                 refresh_token_to_store = received_refresh_token
                 logger.info(f"Callback: Sessão definida/verificada com tokens para usuário ID: {user_supabase.id}")
@@ -493,7 +495,7 @@ def callback():
 
         user_data_db = get_user_by_id(user_supabase.id)
 
-        if not user_data_db: 
+        if not user_data_db:
             logger.info(f"Callback: Novo usuário detectado com ID Supabase: {user_supabase.id}. Criando perfil...")
             base_for_slug = user_supabase.user_metadata.get('full_name', user_supabase.email.split('@')[0] if user_supabase.email else 'usuario')
             profile_slug = generate_unique_slug(base_for_slug)
@@ -507,7 +509,7 @@ def callback():
                 'active': True,
                 'bio': 'Olá! Bem-vindo(a) à minha página pessoal. Edite-me no painel de administração!',
                 'social_links': json.dumps([]),
-                'custom_buttons': json.dumps([]), # Incluir hoverEffectType como default
+                'custom_buttons': json.dumps([]),
                 'card_nome': user_supabase.user_metadata.get('full_name', user_supabase.email or 'Usuário Anônimo'),
                 'card_titulo': '', 'card_registro_profissional': '', 'card_links': json.dumps([]),
                 'card_background_type': 'color', 'card_background_value': app.config['DEFAULT_CARD_BG_COLOR'],
@@ -523,11 +525,9 @@ def callback():
                 'background_color_value': app.config['DEFAULT_BACKGROUND_COLOR_VALUE'],
                 'background': '',
             }
-            # Ao criar novo usuário, os botões customizados serão uma lista vazia, então não precisa se preocupar com hoverEffectType aqui.
-            # Os defaults para os campos de botão (incluindo hoverEffectType) serão aplicados quando o usuário adicionar o primeiro botão.
             try:
                 insert_response = supabase.table('usuarios').insert(new_user_payload).execute()
-                if not insert_response.data or len(insert_response.data) == 0: 
+                if not insert_response.data or len(insert_response.data) == 0:
                     logger.error(f"Callback: Falha ao inserir novo usuário no banco de dados 'usuarios'. Resposta Supabase: {insert_response}")
                     return jsonify({"error": "Falha ao criar perfil do usuário no banco de dados."}), 500
                 user_data_db = insert_response.data[0]
@@ -535,13 +535,13 @@ def callback():
             except Exception as e_insert:
                 logger.error(f"Callback: Exceção ao inserir novo usuário no banco de dados 'usuarios': {str(e_insert)}", exc_info=True)
                 return jsonify({"error": "Erro interno do servidor ao criar perfil."}), 500
-        else: 
+        else:
             logger.info(f"Callback: Usuário existente ID {user_data_db['id']} com perfil '{user_data_db['profile']}' logado.")
 
         session['user_id'] = user_supabase.id
         session['access_token'] = access_token_to_store
         session['refresh_token'] = refresh_token_to_store
-        session['profile'] = user_data_db['profile'] 
+        session['profile'] = user_data_db['profile']
         session['logado'] = True
 
         logger.info(f"Callback: Login bem-sucedido para usuário {user_supabase.id}. Redirecionando para admin/{user_data_db['profile']}.")
@@ -678,11 +678,11 @@ def admin_panel(username):
     user_data_db.setdefault('card_background_value', app.config['DEFAULT_CARD_BG_COLOR'])
     if user_data_db['card_background_type'] == 'color' and not re.match(r'^#(?:[0-9a-fA-F]{3,4}){1,2}$', str(user_data_db.get('card_background_value',''))):
         user_data_db['card_background_value'] = app.config['DEFAULT_CARD_BG_COLOR']
-    
+
     user_data_db.setdefault('background_type', app.config['DEFAULT_BACKGROUND_TYPE'])
     user_data_db.setdefault('background_image_darken_level', app.config['DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL'])
     user_data_db.setdefault('background_color_value', app.config['DEFAULT_BACKGROUND_COLOR_VALUE'])
-    if not user_data_db.get('background'): 
+    if not user_data_db.get('background'):
             user_data_db['background'] = ''
 
 
@@ -692,23 +692,22 @@ def admin_panel(username):
             try:
                 if isinstance(current_value_admin, str):
                     user_data_db[key_json] = json.loads(current_value_admin)
-                elif not isinstance(current_value_admin, list): 
+                elif not isinstance(current_value_admin, list):
                     user_data_db[key_json] = []
 
-                if isinstance(user_data_db[key_json], list): 
+                if isinstance(user_data_db[key_json], list):
                     if key_json == 'custom_buttons':
                         for button in user_data_db[key_json]:
                             if isinstance(button, dict):
                                 button.setdefault('bold', False); button.setdefault('italic', False); button.setdefault('hasBorder', False)
-                                
-                                # Mapeamento de retrocompatibilidade para hoverEffectType
-                                if 'hoverEffectType' not in button: # Se o novo campo não existe
-                                    if button.get('hasHoverEffect') is True: # Verifica o campo antigo
+
+                                if 'hoverEffectType' not in button:
+                                    if button.get('hasHoverEffect') is True:
                                         button['hoverEffectType'] = 'elevate'
-                                    else: # Se o antigo for false ou não existir
-                                        button['hoverEffectType'] = app.config['DEFAULT_BUTTON_HOVER_EFFECT_TYPE'] # Usa o default
-                                button.pop('hasHoverEffect', None) # Remove o campo antigo 'hasHoverEffect' se existir
-                                
+                                    else:
+                                        button['hoverEffectType'] = app.config['DEFAULT_BUTTON_HOVER_EFFECT_TYPE']
+                                button.pop('hasHoverEffect', None)
+
                                 button.setdefault('fontSize', 16); button.setdefault('borderWidth', 2)
                                 button.setdefault('textColor', '#FFFFFF'); button.setdefault('borderColor', '#000000'); button.setdefault('shadowType', 'none')
                                 button.setdefault('opacity', app.config['DEFAULT_BUTTON_OPACITY'])
@@ -716,15 +715,16 @@ def admin_panel(username):
                                 button.setdefault('iconType', app.config['DEFAULT_BUTTON_ICON_TYPE'])
                                 button.setdefault('iconRounded', app.config['DEFAULT_BUTTON_ICON_ROUNDED'])
                                 button.setdefault('buttonStyle', app.config['DEFAULT_BUTTON_STYLE'])
+                                button.setdefault('shadowDepth', app.config['DEFAULT_BUTTON_SHADOW_DEPTH']) # NOVO: Garantir que existe ao carregar
                     elif key_json == 'card_links':
                         for link_item in user_data_db[key_json]:
                             if isinstance(link_item, dict):
                                 link_item.setdefault('font', app.config['DEFAULT_FONT'])
                                 link_item.setdefault('color', user_data_db.get('card_link_text_color', app.config['DEFAULT_TEXT_COLOR_CARD']))
             except (json.JSONDecodeError, ValueError, TypeError) as e:
-                user_data_db[key_json] = [] 
+                user_data_db[key_json] = []
         else:
-            user_data_db[key_json] = [] 
+            user_data_db[key_json] = []
 
 
     if request.method == 'POST':
@@ -760,17 +760,17 @@ def admin_panel(username):
             if not novo_profile or not is_valid_slug(novo_profile):
                 flash("❌ URL de perfil inválida. Use apenas letras minúsculas (sem acentos), números e hífens. Não pode começar ou terminar com hífen.", "error")
                 form_data_for_repopulation = user_data_db.copy()
-                form_data_for_repopulation.update(request.form.to_dict(flat=True)) 
+                form_data_for_repopulation.update(request.form.to_dict(flat=True))
                 for key_json_repop in ['social_links', 'custom_buttons', 'card_links']:
-                     form_data_for_repopulation[key_json_repop] = json.loads(user_data_db.get(key_json_repop, '[]')) 
+                     form_data_for_repopulation[key_json_repop] = json.loads(user_data_db.get(key_json_repop, '[]'))
                 return render_template('admin.html', dados=form_data_for_repopulation, **app.config)
 
 
             if novo_profile != username and slug_exists(novo_profile, user_id_from_session):
                 flash(f"❌ A URL de perfil '{novo_profile}' já está em uso. Por favor, escolha outra.", "error")
-                update_data['profile'] = username 
+                update_data['profile'] = username
                 form_data_for_repopulation_slug_error = user_data_db.copy()
-                form_data_for_repopulation_slug_error.update(update_data) 
+                form_data_for_repopulation_slug_error.update(update_data)
                 for key_json_repop_slug in ['social_links', 'custom_buttons', 'card_links']:
                      form_data_for_repopulation_slug_error[key_json_repop_slug] = json.loads(user_data_db.get(key_json_repop_slug, '[]'))
                 return render_template('admin.html', dados=form_data_for_repopulation_slug_error, **app.config)
@@ -778,32 +778,32 @@ def admin_panel(username):
             if update_data['card_background_type'] == 'color':
                 update_data['card_background_value'] = request.form.get('card_background_value_color', app.config['DEFAULT_CARD_BG_COLOR'])
             elif update_data['card_background_type'] == 'image':
-                update_data['card_background_value'] = user_data_db.get('card_background_value', '') 
+                update_data['card_background_value'] = user_data_db.get('card_background_value', '')
 
             background_file = request.files.get('background_upload')
             if background_file and background_file.filename != '' and arquivo_permitido(background_file.filename):
                 file_url = upload_to_supabase(background_file, user_id_from_session, 'background')
                 if file_url:
-                    update_data['background'] = file_url 
+                    update_data['background'] = file_url
                 else:
                     flash("❌ Erro no upload da imagem de fundo da página.", "error")
                     update_data['background'] = user_data_db.get('background', '')
-            elif not user_data_db.get('background') and not background_file: 
-                 update_data['background'] = '' 
-            else: 
+            elif not user_data_db.get('background') and not background_file:
+                 update_data['background'] = ''
+            else:
                 update_data['background'] = user_data_db.get('background', '')
 
 
             if update_data['background_type'] == 'color':
-                if not update_data['background_color_value']: 
+                if not update_data['background_color_value']:
                     update_data['background_color_value'] = app.config['DEFAULT_BACKGROUND_COLOR_VALUE']
                 if not background_file or background_file.filename == '':
-                    update_data['background'] = '' 
+                    update_data['background'] = ''
             elif update_data['background_type'] == 'image':
                 if not update_data.get('background') and not user_data_db.get('background'):
-                     update_data['background_color_value'] = user_data_db.get('background_color_value', app.config['DEFAULT_BACKGROUND_COLOR_VALUE']) 
-                else: 
-                    update_data['background_color_value'] = user_data_db.get('background_color_value', app.config['DEFAULT_BACKGROUND_COLOR_VALUE']) 
+                     update_data['background_color_value'] = user_data_db.get('background_color_value', app.config['DEFAULT_BACKGROUND_COLOR_VALUE'])
+                else:
+                    update_data['background_color_value'] = user_data_db.get('background_color_value', app.config['DEFAULT_BACKGROUND_COLOR_VALUE'])
 
 
             social_links_list = []
@@ -825,14 +825,14 @@ def admin_panel(username):
             btn_has_borders = request.form.getlist('custom_button_has_border[]')
             btn_border_colors = request.form.getlist('custom_button_border_color[]')
             btn_border_widths = request.form.getlist('custom_button_border_width[]')
-            # Ler o novo campo hover_effect_type
             btn_hover_effect_types = request.form.getlist('custom_button_hover_effect_type[]')
             btn_shadow_types = request.form.getlist('custom_button_shadow_type[]')
             btn_opacities = request.form.getlist('custom_button_opacity[]')
-            btn_icon_urls = request.form.getlist('custom_button_icon_url[]') 
-            btn_icon_types = request.form.getlist('custom_button_icon_type[]') 
+            btn_icon_urls = request.form.getlist('custom_button_icon_url[]')
+            btn_icon_types = request.form.getlist('custom_button_icon_type[]')
             btn_icon_roundeds = request.form.getlist('custom_button_icon_rounded[]')
             btn_styles = request.form.getlist('custom_button_style[]')
+            btn_shadow_depths = request.form.getlist('custom_button_shadow_depth[]') # NOVO: Obter profundidades
 
             for i in range(len(btn_texts)):
                 custom_buttons_list.append({
@@ -847,13 +847,14 @@ def admin_panel(username):
                     'hasBorder': str(btn_has_borders[i] or 'false').lower() == 'true' if i < len(btn_has_borders) else False,
                     'borderColor': btn_border_colors[i] or '#000000' if i < len(btn_border_colors) else '#000000',
                     'borderWidth': int(btn_border_widths[i] or 2) if i < len(btn_border_widths) and btn_border_widths[i] else 2,
-                    'hoverEffectType': btn_hover_effect_types[i] if i < len(btn_hover_effect_types) else app.config['DEFAULT_BUTTON_HOVER_EFFECT_TYPE'], # NOVO
+                    'hoverEffectType': btn_hover_effect_types[i] if i < len(btn_hover_effect_types) else app.config['DEFAULT_BUTTON_HOVER_EFFECT_TYPE'],
                     'shadowType': btn_shadow_types[i] or 'none' if i < len(btn_shadow_types) else 'none',
                     'opacity': float(btn_opacities[i] or app.config['DEFAULT_BUTTON_OPACITY']) if i < len(btn_opacities) and btn_opacities[i] else app.config['DEFAULT_BUTTON_OPACITY'],
                     'iconUrl': btn_icon_urls[i].strip() if i < len(btn_icon_urls) else app.config['DEFAULT_BUTTON_ICON_URL'],
                     'iconType': btn_icon_types[i] if i < len(btn_icon_types) else app.config['DEFAULT_BUTTON_ICON_TYPE'],
                     'iconRounded': str(btn_icon_roundeds[i] or 'false').lower() == 'true' if i < len(btn_icon_roundeds) else app.config['DEFAULT_BUTTON_ICON_ROUNDED'],
                     'buttonStyle': btn_styles[i] if i < len(btn_styles) else app.config['DEFAULT_BUTTON_STYLE'],
+                    'shadowDepth': int(btn_shadow_depths[i] or app.config['DEFAULT_BUTTON_SHADOW_DEPTH']) if i < len(btn_shadow_depths) and btn_shadow_depths[i] else app.config['DEFAULT_BUTTON_SHADOW_DEPTH'] # NOVO: Salvar profundidade
                 })
             update_data['custom_buttons'] = json.dumps(custom_buttons_list)
 
@@ -906,8 +907,8 @@ def admin_panel(username):
             if db_response.data:
                 logger.info(f"Dados do usuário '{username}' (ID: {user_id_from_session}) atualizados com sucesso.")
                 if 'profile' in update_data and update_data['profile'] != username:
-                    session['profile'] = update_data['profile'] 
-                    username = update_data['profile'] 
+                    session['profile'] = update_data['profile']
+                    username = update_data['profile']
                 flash("✅ Alterações salvas com sucesso!", "success")
                 return redirect(url_for('admin_panel', username=username))
             else:
@@ -916,13 +917,13 @@ def admin_panel(username):
                     error_message_supabase = db_response.error.message
                 logger.error(f"Falha ao salvar dados para '{username}' no Supabase: {error_message_supabase}")
                 flash(f"❌ Erro ao salvar os dados no banco de dados: {error_message_supabase}", "error")
-                failed_form_data = user_data_db.copy() 
-                failed_form_data.update(update_data) 
+                failed_form_data = user_data_db.copy()
+                failed_form_data.update(update_data)
                 for key_json_fail in ['social_links', 'custom_buttons', 'card_links']:
-                    if isinstance(failed_form_data.get(key_json_fail), str): 
+                    if isinstance(failed_form_data.get(key_json_fail), str):
                         try:
                             failed_form_data[key_json_fail] = json.loads(failed_form_data[key_json_fail])
-                        except: failed_form_data[key_json_fail] = [] 
+                        except: failed_form_data[key_json_fail] = []
                     elif not isinstance(failed_form_data.get(key_json_fail), list):
                          failed_form_data[key_json_fail] = []
 
@@ -955,13 +956,13 @@ def admin_panel(username):
 def logout():
     user_id_logout = session.get('user_id', 'Desconhecido')
     try:
-        if 'access_token' in session: 
-            supabase.auth.sign_out() 
+        if 'access_token' in session:
+            supabase.auth.sign_out()
         logger.info(f"Usuário {user_id_logout} deslogado com sucesso do Supabase Auth.")
     except Exception as e_supabase_logout:
         logger.error(f"Erro durante o sign_out do Supabase para o usuário {user_id_logout}: {str(e_supabase_logout)}")
     finally:
-        session.clear() 
+        session.clear()
         flash("👋 Você foi desconectado com segurança.", "info")
     return redirect(url_for('index'))
 

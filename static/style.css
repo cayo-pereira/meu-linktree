@@ -9,8 +9,21 @@ body::before {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.35); /* Ajuste a opacidade conforme necessário */
-  z-index: -1; /* Mantido atrás do overlay da imagem de fundo da página, se houver */
+  z-index: -2; /* Mantido atrás do overlay da imagem de fundo da página, se houver, e do overlay da imagem de fundo */
+  pointer-events: none; /* Garante que não interfira com cliques */
 }
+
+#page-background-image-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0); /* Começa transparente, JS pode mudar */
+    z-index: -1; /* Acima do body::before, mas abaixo do conteúdo */
+    pointer-events: none; /* Não interfere com cliques */
+}
+
 
 html, body {
   margin: 0;
@@ -201,15 +214,10 @@ h1 {
     width: 0%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.2); /* Sobreposição escura sutil, ajustável */
-    /* Se quiser usar uma cor sólida mais escura que a cor do botão,
-       seria mais complexo sem JS, mas uma opção seria:
-       background-color: var(--btn-fill-hover-color, #someDefaultDarkerColor); */
     transition: all .3s;
     border-radius: inherit; /* Herda o border-radius do botão */
-    z-index: 0; /* Abaixo do conteúdo do botão, mas acima do fundo original se usarmos ::after para o fundo */
+    z-index: 0; /* Abaixo do conteúdo do botão */
 }
-/* Se o botão em si já tem a cor de fundo, o ::after não é estritamente necessário
-   para este efeito, o ::before pode simplesmente deslizar por cima. */
 
 .link-button-custom.hover-effect-fill-left:hover::before {
     width: 100%;
@@ -246,51 +254,42 @@ h1 {
     text-align: center;
 }
 
-/* ========= MODIFICAÇÕES PARA O BOTÃO "SOMBRA DESTACADA" (VERSÃO 5 - USANDO BOX-SHADOW) ========= */
+/* ========= MODIFICAÇÕES PARA O BOTÃO "SOMBRA DESTACADA" (DINÂMICO) ========= */
 .link-button-custom.button-style-solid_shadow {
-    position: relative; /* Pode ser útil para outros aspectos, mas não essencial para box-shadow */
-    border: 2px solid #000000; /* Sua borda preta principal, como no exemplo que você gostou */
-    
-    /* A cor de fundo do botão é aplicada inline pelo JavaScript (ex: branco, cinza, etc.) */
-    /* Se precisar de um fallback aqui caso o JS não aplique: background-color: white; */
+    position: relative;
+    border: 2px solid #000000; /* Borda preta principal */
+    /* A cor de fundo é aplicada inline pelo JavaScript/Flask */
 
-    /* Nova sombra usando box-shadow: */
-    /* offset-x | offset-y | blur-radius | spread-radius | color */
-    box-shadow: 4px 4px 0px 0px #000000; /* Sombra preta sólida, deslocada 4px para direita e 4px para baixo */
+    /* Usa a variável CSS --shadow-depth definida inline no HTML */
+    /* Fallback para 4px se a variável não estiver definida */
+    box-shadow: var(--shadow-depth, 4px) var(--shadow-depth, 4px) 0px 0px #000000;
 
-    transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), 
+    transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1),
                 box-shadow 0.15s cubic-bezier(0.22, 1, 0.36, 1);
-    
-    /* Não são mais necessários z-index complexos ou transform:translateZ(0) aqui para o efeito de sombra */
 }
 
-/* IMPORTANTE: Remover ou comentar toda a regra ::after anterior para este estilo de botão */
-.link-button-custom.button-style-solid_shadow::after {
-    content: none; /* Garante que o pseudo-elemento ::after não seja mais renderizado */
-}
-/* Também removemos o ::before que usei em uma das versões de teste. O default do projeto não o usava para este botão. */
+/* Remove pseudo-elementos desnecessários para este estilo */
+.link-button-custom.button-style-solid_shadow::after,
 .link-button-custom.button-style-solid_shadow::before {
     content: none;
 }
 
-
 /* Conteúdo do botão (texto e ícone) */
 .link-button-custom.button-style-solid_shadow .button-icon-wrapper,
 .link-button-custom.button-style-solid_shadow .button-text-content {
-    position: relative; /* Mantido para garantir o alinhamento interno, se necessário */
-    /* z-index não é mais crucial aqui para o efeito de sombra com box-shadow */
+    position: relative;
 }
 
-/* Efeito hover para o botão com box-shadow */
+/* Efeito hover para o botão com sombra destacada dinâmica */
 .link-button-custom.button-style-solid_shadow:hover {
-    transform: translate(2px, 2px); /* Botão "afunda" um pouco, movendo-se 2px na direção da sombra */
-    
-    /* A sombra acompanha o movimento, mas seu offset é reduzido para dar a sensação de profundidade.
-       Se o botão move 2px, e a sombra original tinha 4px de offset, uma nova sombra com 2px de offset
-       manterá a aparência de que o botão "entrou" na sombra. */
-    box-shadow: 2px 2px 0px 0px #000000; 
+    /* Botão "afunda" proporcionalmente à profundidade da sombra */
+    transform: translate(calc(var(--shadow-depth, 4px) / 2), calc(var(--shadow-depth, 4px) / 2));
+
+    /* Sombra acompanha o movimento, reduzindo seu offset */
+    box-shadow: calc(var(--shadow-depth, 4px) / 2) calc(var(--shadow-depth, 4px) / 2) 0px 0px #000000;
 }
 /* ========= FIM DAS MODIFICAÇÕES PARA O BOTÃO "SOMBRA DESTACADA" ========= */
+
 
 /* Ajuste para hover-effect-fill-left com button-style-solid_shadow: */
 .link-button-custom.button-style-solid_shadow.hover-effect-fill-left {

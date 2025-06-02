@@ -535,26 +535,12 @@ body.modal-open {
 }
 
 
-.remove-item {
-  color: var(--danger-color);
-  cursor: pointer;
-  padding: 0.5rem;
-  transition: color 0.2s ease;
-}
-.remove-item:hover {
-    color: #c81e68;
-}
-.remove-item i {
-    font-size: 1.1rem;
-}
-
-
 .custom-button-item .button-preview {
   padding: 8px 12px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid transparent; /* Mantido transparente por padrão, será sobrescrito se hasBorder for true ou para solid_shadow */
+  border: 1px solid transparent;
 }
 .custom-button-item .button-preview .button-embedded-icon {
     margin-right: 8px;
@@ -570,28 +556,19 @@ body.modal-open {
 /* ========= AJUSTE DA PRÉVIA DO BOTÃO "SOMBRA DESTACADA" NO ADMIN ========= */
 .button-preview.button-style-solid_shadow,
 #live-button-preview.button-style-solid_shadow {
-    position: relative; /* Necessário para que box-shadow pareça "atrás" */
-    border: 2px solid #000000 !important; /* Borda preta, !important para garantir prioridade sobre '.has-border-preview' se ambos estiverem presentes */
-    
-    /* Nova sombra usando box-shadow */
-    box-shadow: 4px 4px 0px 0px #000000 !important; /* !important para garantir prioridade */
-
+    position: relative;
+    border: 2px solid #000000 !important;
     transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-    /* z-index não é mais usado para este efeito de sombra */
-    /* A cor de fundo é aplicada inline pelo JavaScript */
 }
 
-/* Remover completamente o ::after para este estilo, pois usaremos box-shadow */
 .button-preview.button-style-solid_shadow::after,
 #live-button-preview.button-style-solid_shadow::after {
     content: none;
 }
 
-/* Ajustar o hover para a prévia do botão "Sombra Destacada" */
-.button-preview.button-style-solid_shadow:hover,
-#live-button-preview.button-style-solid_shadow:hover {
-    transform: translate(2px, 2px); /* Botão "afunda" um pouco */
-    box-shadow: 2px 2px 0px 0px #000000 !important; /* Sombra se ajusta */
+.custom-button-item .button-preview.button-style-solid_shadow:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px 0px #000000 !important;
 }
 /* ========= FIM DO AJUSTE DA PRÉVIA DO BOTÃO "SOMBRA DESTACADA" ========= */
 
@@ -607,6 +584,8 @@ body.modal-open {
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+    overflow: hidden;
 }
 #live-button-preview {
     padding: 10px 20px;
@@ -614,11 +593,14 @@ body.modal-open {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.1s ease-out; /* Transição mais rápida para a prévia */
+    /* A transição principal é para transform e box-shadow (para Elevar e Sombra Destacada) */
+    transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 90%;
+    position: relative;
+    z-index: 1;
 }
 #live-button-preview .button-icon-preview img,
 #live-button-preview .button-icon-preview i {
@@ -631,13 +613,105 @@ body.modal-open {
 #live-button-preview .button-icon-preview img.rounded {
     border-radius: 50%;
 }
+
+/* --- Efeitos Hover para #live-button-preview NO MODAL --- */
+
+/* Efeito Elevar: Ativado no hover quando a classe .hover-effect-preview está presente */
+#live-button-preview.hover-effect-preview {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    will-change: transform, box-shadow;
+}
+
+#live-button-preview.hover-effect-preview:hover {
+    transform: translateY(-5px) scale(1.03) !important;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2) !important;
+}
+
+/* Efeito Brilho Pulsante: Base e Hover */
+#live-button-preview.hover-effect-glow-preview {
+    position: relative;
+    overflow: visible;
+    z-index: 0;
+    background-color: transparent !important;
+}
+#live-button-preview.hover-effect-glow-preview::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    animation: adminGlowingPreview 20s linear infinite;
+}
+#live-button-preview.hover-effect-glow-preview::after { /* Camada do fundo do botão */
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--btn-bg-color); /* Usa variável JS para cor */
+    opacity: var(--btn-opacity);       /* Usa variável JS para opacidade */
+    border-radius: inherit; /* Herda border-radius do #live-button-preview */
+    z-index: -1; /* Acima do brilho (::before), abaixo do conteúdo */
+}
+#live-button-preview.hover-effect-glow-preview:hover::before {
+    opacity: 0.8; /* Mostra o brilho no hover */
+}
+/* Conteúdo do botão (texto e ícone) deve estar na frente */
+#live-button-preview.hover-effect-glow-preview .button-icon-preview,
+#live-button-preview.hover-effect-glow-preview .button-text-preview {
+    position: relative; /* Ou static, se não precisar de z-index explícito aqui */
+    z-index: 1; /* Garante que esteja acima do ::after */
+}
+@keyframes adminGlowingPreview {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+}
+
+/* Efeito Preenchimento Esquerda: Base e Hover */
+#live-button-preview.hover-effect-fill-left-preview {
+    position: relative;
+    overflow: hidden;
+    z-index: 0; /* Para ::before z-index -1 funcionar corretamente */
+}
+#live-button-preview.hover-effect-fill-left-preview::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.2);
+    transition: width 0.3s ease-in-out; /* Transição na largura */
+    border-radius: inherit;
+    z-index: -1; /* Atrás do conteúdo */
+}
+#live-button-preview.hover-effect-fill-left-preview:hover::before {
+    width: 100%;
+}
+#live-button-preview.hover-effect-fill-left-preview .button-icon-preview,
+#live-button-preview.hover-effect-fill-left-preview .button-text-preview {
+    position: relative;
+    z-index: 1; /* Garante que esteja acima do ::before */
+}
+/* --- Fim dos Efeitos Hover para #live-button-preview --- */
+
+
 input[type="range"].form-input {
     padding: 0;
     height: auto;
     vertical-align: middle;
     margin-right: 10px;
 }
-#radius-value, #opacity-value {
+#radius-value, #opacity-value, #shadow-depth-value {
     display: inline-block;
     min-width: 40px;
     text-align: right;
@@ -666,6 +740,12 @@ input[type="range"].form-input {
 .border-options-group .form-group-inline {
     margin-bottom: 0;
 }
+
+#button-shadow-depth-group {
+    display: none;
+    margin-top: 10px;
+}
+
 
 #button-icon-url-external-group,
 #button-new-image-file-group,

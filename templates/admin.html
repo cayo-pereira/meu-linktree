@@ -219,11 +219,13 @@
                                 <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
                                 <div style="flex-grow: 1;">
                                     <div class="button-preview
-                                        {# A classe hover-effect-preview será gerenciada dinamicamente por JS se necessário, ou omitida aqui #}
                                         {% if button.hasBorder %}has-border-preview{% endif %}
                                         {% if button.shadowType and button.shadowType != 'none' and button.buttonStyle == 'default' %}shadow-{{ button.shadowType }}{% endif %}
                                         button-style-{{ button.buttonStyle | default(DEFAULT_BUTTON_STYLE) }}"
-                                        style="--btn-bg-color: {{ button.color | style_safe }}; --btn-opacity: {{ button.opacity | default(DEFAULT_BUTTON_OPACITY) }}; border-radius: {{ button.radius }}px; padding: 8px; margin-bottom: 8px; color: {{ button.textColor | style_safe }}; font-weight: {{ 'bold' if button.bold else 'normal' }}; font-style: {{ 'italic' if button.italic else 'normal' }}; font-size: {{ button.fontSize }}px; {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor | style_safe }};{% endif %}">
+                                        style="--btn-bg-color: {{ button.color | style_safe }}; --btn-opacity: {{ button.opacity | default(DEFAULT_BUTTON_OPACITY) }}; border-radius: {{ button.radius }}px; padding: 8px; margin-bottom: 8px; color: {{ button.textColor | style_safe }}; font-weight: {{ 'bold' if button.bold else 'normal' }}; font-style: {{ 'italic' if button.italic else 'normal' }}; font-size: {{ button.fontSize }}px; {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor | style_safe }};{% endif %}
+                                        {% if button.buttonStyle == 'solid_shadow' %}
+                                            box-shadow: {{ button.shadowDepth | default(4) }}px {{ button.shadowDepth | default(4) }}px 0px 0px #000000 !important;
+                                        {% endif %}">
 
                                         {% if button.iconUrl and button.iconType != 'none' %}
                                             {% if button.iconType == 'image_url_external' or button.iconType == 'image_uploaded' %}
@@ -252,6 +254,7 @@
                                     <input type="hidden" name="custom_button_icon_type[]" value="{{ button.iconType | default(DEFAULT_BUTTON_ICON_TYPE) | e }}">
                                     <input type="hidden" name="custom_button_icon_rounded[]" value="{{ 'true' if button.iconRounded else 'false' }}">
                                     <input type="hidden" name="custom_button_style[]" value="{{ button.buttonStyle | default(DEFAULT_BUTTON_STYLE) | e }}">
+                                    <input type="hidden" name="custom_button_shadow_depth[]" value="{{ button.shadowDepth | default(DEFAULT_BUTTON_SHADOW_DEPTH) }}">
                                 </div>
                                 <button type="button" class="edit-item-btn" title="Editar este botão"><i class="fas fa-edit"></i></button>
                                 <span class="remove-item" title="Remover este botão"><i class="fas fa-times"></i></span>
@@ -302,6 +305,11 @@
                                 </select>
                             </div>
 
+                            <div class="form-group" id="button-shadow-depth-group" style="display: none;">
+                                <label for="button-shadow-depth">Profundidade da Sombra (Sombra Destacada): <span id="shadow-depth-value">4px</span></label>
+                                <input type="range" id="button-shadow-depth" min="1" max="10" value="4" class="form-input">
+                            </div>
+
                             <div class="form-group">
                                 <label for="button-icon-type-select">Ícone/Imagem no Botão:</label>
                                 <select id="button-icon-type-select" class="form-input">
@@ -346,7 +354,7 @@
                             <div class="form-group-inline"><label>Estilo do Texto:</label><input type="checkbox" id="button-text-bold" name="button-text-bold"><label for="button-text-bold">Negrito</label><input type="checkbox" id="button-text-italic" name="button-text-italic"><label for="button-text-italic">Itálico</label></div>
                             <div class="form-group"><label for="button-font-size">Tamanho da Fonte (px):</label><input type="number" id="button-font-size" min="10" max="30" value="16" class="form-input" style="width: 80px;"></div>
 
-                            <div data-style-target="default"> 
+                            <div data-style-target="default">
                                 <div class="form-group-inline">
                                     <input type="checkbox" id="button-has-border">
                                     <label for="button-has-border">Adicionar Borda</label>
@@ -377,7 +385,7 @@
                                         <option value="medium">Média</option><option value="hard">Forte</option><option value="inset">Interna</option>
                                     </select>
                                 </div>
-                            </div> 
+                            </div>
                             <button type="button" id="save-button" class="btn-save"><i class="fas fa-check"></i> Salvar Botão</button>
                         </div>
                     </div>
@@ -581,11 +589,12 @@
 
         // Novas constantes globais para JS para defaults de botões
         const DEFAULT_BUTTON_OPACITY_JS = parseFloat("{{ DEFAULT_BUTTON_OPACITY }}");
-        const DEFAULT_BUTTON_ICON_URL_JS = "{{ DEFAULT_BUTTON_ICON_URL | e }}"; 
-        const DEFAULT_BUTTON_ICON_TYPE_JS = "{{ DEFAULT_BUTTON_ICON_TYPE | e }}"; 
+        const DEFAULT_BUTTON_ICON_URL_JS = "{{ DEFAULT_BUTTON_ICON_URL | e }}";
+        const DEFAULT_BUTTON_ICON_TYPE_JS = "{{ DEFAULT_BUTTON_ICON_TYPE | e }}";
         const DEFAULT_BUTTON_ICON_ROUNDED_JS = "{{ 'true' if DEFAULT_BUTTON_ICON_ROUNDED else 'false' }}" === 'true';
         const DEFAULT_BUTTON_STYLE_JS = "{{ DEFAULT_BUTTON_STYLE | e }}";
-        const STATIC_ICONS_PATH = "{{ url_for('static', filename='icons/') }}"; 
+        const DEFAULT_BUTTON_SHADOW_DEPTH_JS = parseInt("{{ DEFAULT_BUTTON_SHADOW_DEPTH | default(4) }}"); // NOVO: Default para profundidade da sombra
+        const STATIC_ICONS_PATH = "{{ url_for('static', filename='icons/') }}";
         const UPLOAD_BUTTON_IMAGE_URL = "{{ url_for('upload_button_temp_image') }}";
 
         // Novas constantes para o fundo da página principal

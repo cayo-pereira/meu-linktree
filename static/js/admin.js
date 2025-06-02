@@ -54,10 +54,9 @@ function updateTextPreview(previewElementId, text, font, color) {
         previewEl.style.fontFamily = font || 'Inter, sans-serif';
 
         if (previewElementId.includes('card_')) {
-            previewEl.style.backgroundColor = '#444'; // Cor de fundo específica para prévias do cartão
-            previewEl.style.color = color || '#FFFFFF'; // Cor de texto específica para prévias do cartão
+            previewEl.style.backgroundColor = '#444';
+            previewEl.style.color = color || '#FFFFFF';
         } else {
-            // Para outras prévias (nome, bio), usa as variáveis CSS do modo atual (light/dark)
             previewEl.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--input-bg-light').trim();
             previewEl.style.color = color || getComputedStyle(document.documentElement).getPropertyValue('--text-color-light').trim();
         }
@@ -71,7 +70,6 @@ function updateCardLinkItemPreview(itemElement) {
     const previewDiv = itemElement.querySelector('.card-link-item-preview');
 
     if (!atTextInput || !fontSelect || !colorInput || !previewDiv) {
-        // console.warn("Elementos faltando para preview do link do cartão:", itemElement);
         return;
     }
 
@@ -82,8 +80,8 @@ function updateCardLinkItemPreview(itemElement) {
     previewDiv.textContent = text;
     previewDiv.style.fontFamily = font;
     previewDiv.style.color = color;
-    previewDiv.style.backgroundColor = '#555'; // Fundo fixo para a prévia do link no admin
-    previewDiv.style.borderColor = color; // Borda com a cor do texto para destaque
+    previewDiv.style.backgroundColor = '#555';
+    previewDiv.style.borderColor = color;
 }
 
 
@@ -103,7 +101,7 @@ function previewImage(input, previewId, fileInfoId) {
                 previewImageEl.style.display = 'block';
             }
             if (previewContainer) {
-                previewContainer.style.display = 'block'; // Ou 'flex' se for para centralizar
+                previewContainer.style.display = 'block';
                 previewContainer.classList.add('preview-active');
             }
             if (fileInfoEl) fileInfoEl.textContent = input.files[0].name;
@@ -146,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const fotosParaPreviewInicial = [
         { id: 'foto_preview', infoId: 'foto_info', uploadId: 'foto_upload' },
         { id: 'card_background_image_preview', infoId: 'card_background_info', uploadId: 'card_background_upload' },
-        { id: 'background_preview_page', infoId: 'background_info_page', uploadId: 'background_upload'}
+        { id: 'background_preview_page', infoId: 'background_info_page', uploadId: 'background_upload' }
     ];
 
     fotosParaPreviewInicial.forEach(item => {
@@ -159,11 +157,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (previewElement && previewElement.src && previewElement.src !== window.location.href && !previewElement.src.includes('blob:') && previewElement.src.trim() !== '') {
             if (containerElement) {
                 containerElement.style.display = containerElement.id === 'background_preview_page_container' && !previewElement.src ? 'none' : 'block';
-                 if (previewElement.src && previewElement.src !== window.location.href && !previewElement.src.includes('blob:')) {
+                if (previewElement.src && previewElement.src !== window.location.href && !previewElement.src.includes('blob:')) {
                     containerElement.classList.add('preview-active');
-                 } else {
+                } else {
                     containerElement.classList.remove('preview-active');
-                 }
+                }
             }
             if (infoElement) {
                 try {
@@ -364,7 +362,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <input type="text" name="social_icon_url[]" placeholder="Insira o link para ${iconNameFromDataset.replace(/-/g, ' ')}" class="form-input" required>
                     <span class="remove-item" title="Remover este ícone"><i class="fas fa-times"></i></span>
                 `;
-                if(socialIconsContainer) socialIconsContainer.appendChild(socialItem);
+                if (socialIconsContainer) socialIconsContainer.appendChild(socialItem);
                 socialItem.querySelector('.remove-item').addEventListener('click', function () { this.closest('.social-item').remove(); });
                 closeModals();
             } else if (currentIconModalPurpose === 'card_link') {
@@ -398,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     <div class="card-link-item-preview" title="Prévia do texto do link"></div>
                     <span class="remove-item" title="Remover este link do cartão"><i class="fas fa-times"></i></span>
                 `;
-                if(cardLinksContainer) cardLinksContainer.appendChild(cardLinkItem);
+                if (cardLinksContainer) cardLinksContainer.appendChild(cardLinkItem);
                 updateCardLinkItemPreview(cardLinkItem);
                 cardLinkItem.querySelector('.remove-item').addEventListener('click', function () { this.closest('.card-link-item').remove(); });
 
@@ -462,6 +460,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const buttonTextInput = document.getElementById('button-text');
     const buttonLinkInput = document.getElementById('button-link');
     const buttonStyleSelect = document.getElementById('button-style-select');
+
+    const buttonShadowDepthGroup = document.getElementById('button-shadow-depth-group');
+    const buttonShadowDepthSlider = document.getElementById('button-shadow-depth');
+    const shadowDepthValueSpan = document.getElementById('shadow-depth-value');
+
     const buttonIconTypeSelect = document.getElementById('button-icon-type-select');
 
     const buttonIconUrlExternalGroup = document.getElementById('button-icon-url-external-group');
@@ -488,16 +491,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const borderOptionsGroup = document.getElementById('border-options-group');
     const buttonBorderColorInput = document.getElementById('button-border-color');
     const buttonBorderWidthInput = document.getElementById('button-border-width');
-    
-    // NOVO: Seletor para o tipo de efeito hover
+
     const buttonHoverEffectTypeSelect = document.getElementById('button-hover-effect-type');
-    
+
     const buttonShadowTypeSelect = document.getElementById('button-shadow-type');
     const buttonModalActualIconType = document.getElementById('button-modal-actual-icon-type');
     const buttonModalActualIconValue = document.getElementById('button-modal-actual-icon-value');
 
     function manageButtonIconFieldsVisibility() {
-        if(!buttonIconTypeSelect || !buttonIconUrlExternalGroup || !buttonNewImageFileGroup || !buttonSelectLibraryIconGroup || !buttonIconRoundedGroup || !buttonIconUrlExternalInput || !buttonNewImageFileInput || !libraryIconNamePreview || !buttonIconRoundedCheckbox) return;
+        if (!buttonIconTypeSelect || !buttonIconUrlExternalGroup || !buttonNewImageFileGroup || !buttonSelectLibraryIconGroup || !buttonIconRoundedGroup || !buttonIconUrlExternalInput || !buttonNewImageFileInput || !libraryIconNamePreview || !buttonIconRoundedCheckbox) return;
         const selectedType = buttonIconTypeSelect.value;
         buttonIconUrlExternalGroup.style.display = selectedType === 'image_url_external' ? 'block' : 'none';
         buttonNewImageFileGroup.style.display = selectedType === 'image_upload_new' ? 'block' : 'none';
@@ -515,18 +517,18 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (buttonModalActualIconType && buttonModalActualIconType.value !== selectedType) {
-            if(buttonModalActualIconValue) buttonModalActualIconValue.value = '';
+            if (buttonModalActualIconValue) buttonModalActualIconValue.value = '';
         }
         if (selectedType === 'none') {
-            if(buttonModalActualIconType) buttonModalActualIconType.value = 'none';
-            if(buttonModalActualIconValue) buttonModalActualIconValue.value = '';
+            if (buttonModalActualIconType) buttonModalActualIconType.value = 'none';
+            if (buttonModalActualIconValue) buttonModalActualIconValue.value = '';
             buttonIconRoundedCheckbox.checked = false;
         } else if (selectedType === 'library_icon' && selectedIconNameForButtonModal) {
-            if(buttonModalActualIconType) buttonModalActualIconType.value = 'library_icon';
-            if(buttonModalActualIconValue) buttonModalActualIconValue.value = selectedIconNameForButtonModal;
+            if (buttonModalActualIconType) buttonModalActualIconType.value = 'library_icon';
+            if (buttonModalActualIconValue) buttonModalActualIconValue.value = selectedIconNameForButtonModal;
         } else if (selectedType === 'image_url_external') {
-            if(buttonModalActualIconType) buttonModalActualIconType.value = 'image_url_external';
-            if(buttonModalActualIconValue) buttonModalActualIconValue.value = buttonIconUrlExternalInput.value;
+            if (buttonModalActualIconType) buttonModalActualIconType.value = 'image_url_external';
+            if (buttonModalActualIconValue) buttonModalActualIconValue.value = buttonIconUrlExternalInput.value;
         }
         updateButtonPreview();
     }
@@ -584,7 +586,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = 'Falha no envio. Nenhum arquivo selecionado.';
                     if (buttonModalActualIconType && buttonModalActualIconType.value === 'image_uploaded') {
                         buttonModalActualIconType.value = 'none';
-                        if(buttonModalActualIconValue) buttonModalActualIconValue.value = '';
+                        if (buttonModalActualIconValue) buttonModalActualIconValue.value = '';
                     }
                     updateButtonPreview();
                 }
@@ -592,7 +594,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = 'Nenhum arquivo selecionado';
                 if (buttonModalActualIconType && buttonModalActualIconType.value === 'image_uploaded') {
                     buttonModalActualIconType.value = 'none';
-                    if(buttonModalActualIconValue) buttonModalActualIconValue.value = '';
+                    if (buttonModalActualIconValue) buttonModalActualIconValue.value = '';
                 }
                 updateButtonPreview();
             }
@@ -608,8 +610,38 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    function manageButtonModalFieldsBasedOnStyle() {
+        if (!buttonStyleSelect || !buttonShadowDepthGroup || !buttonHoverEffectTypeSelect || !buttonShadowTypeSelect) return;
+        const selectedStyle = buttonStyleSelect.value;
+        const defaultStyleControlsElements = document.querySelectorAll('[data-style-target="default"]');
+
+        if (selectedStyle === 'solid_shadow') {
+            buttonShadowDepthGroup.style.display = 'block';
+            defaultStyleControlsElements.forEach(el => el.style.display = 'none');
+        } else if (selectedStyle === 'default') {
+            buttonShadowDepthGroup.style.display = 'none';
+            defaultStyleControlsElements.forEach(el => el.style.display = 'block');
+        } else {
+            buttonShadowDepthGroup.style.display = 'none';
+            defaultStyleControlsElements.forEach(el => el.style.display = 'none');
+        }
+        updateButtonPreview();
+    }
+
+    if (buttonStyleSelect) {
+        buttonStyleSelect.addEventListener('change', manageButtonModalFieldsBasedOnStyle);
+    }
+
+
     function updateButtonPreview() {
-        if (!liveButtonPreview || !liveButtonTextPreview || !liveButtonIconPreview || !buttonTextInput || !buttonColorInput || !buttonRadiusInput || !radiusValueSpan || !buttonTextColorInput || !buttonTextBoldCheckbox || !buttonTextItalicCheckbox || !buttonFontSizeInput || !buttonHasBorderCheckbox || !buttonBorderColorInput || !buttonBorderWidthInput || !buttonHoverEffectTypeSelect || !buttonShadowTypeSelect || !buttonOpacitySlider || !opacityValueSpan || !buttonIconTypeSelect || !buttonStyleSelect || !buttonIconRoundedCheckbox || !borderOptionsGroup || !buttonModalActualIconType || !buttonModalActualIconValue) {
+        if (!liveButtonPreview || !liveButtonTextPreview || !liveButtonIconPreview || !buttonTextInput ||
+            !buttonColorInput || !buttonRadiusInput || !radiusValueSpan || !buttonTextColorInput ||
+            !buttonTextBoldCheckbox || !buttonTextItalicCheckbox || !buttonFontSizeInput ||
+            !buttonHasBorderCheckbox || !buttonBorderColorInput || !buttonBorderWidthInput ||
+            !buttonHoverEffectTypeSelect || !buttonShadowTypeSelect || !buttonOpacitySlider ||
+            !opacityValueSpan || !buttonIconTypeSelect || !buttonStyleSelect ||
+            !buttonIconRoundedCheckbox || !borderOptionsGroup || !buttonModalActualIconType ||
+            !buttonModalActualIconValue || !buttonShadowDepthGroup || !buttonShadowDepthSlider || !shadowDepthValueSpan) {
             console.warn("updateButtonPreview: Elementos de preview ou controle não encontrados.");
             return;
         }
@@ -619,7 +651,11 @@ document.addEventListener('DOMContentLoaded', function () {
         const bgColor = buttonColorInput.value;
         const bgOpacity = parseFloat(buttonOpacitySlider.value);
         if (opacityValueSpan) opacityValueSpan.textContent = bgOpacity.toFixed(2);
+
+        liveButtonPreview.style.setProperty('--btn-bg-color', bgColor);
+        liveButtonPreview.style.setProperty('--btn-opacity', bgOpacity.toString());
         liveButtonPreview.style.backgroundColor = hexToRgba(bgColor, bgOpacity);
+
 
         const borderRadiusPx = `${buttonRadiusInput.value}px`;
         liveButtonPreview.style.borderRadius = borderRadiusPx;
@@ -630,42 +666,64 @@ document.addEventListener('DOMContentLoaded', function () {
         liveButtonPreview.style.fontStyle = buttonTextItalicCheckbox.checked ? 'italic' : 'normal';
         liveButtonPreview.style.fontSize = `${buttonFontSizeInput.value}px`;
 
-        if (buttonHasBorderCheckbox.checked) {
-            liveButtonPreview.style.border = `${buttonBorderWidthInput.value}px solid ${buttonBorderColorInput.value}`;
-        } else {
-            liveButtonPreview.style.border = 'none';
-        }
+        // Limpeza mais controlada de classes
+        const hoverClasses = ['hover-effect-preview', 'hover-effect-glow-preview', 'hover-effect-fill-left-preview'];
+        const styleClasses = ['button-style-default', 'button-style-solid_shadow'];
+        const shadowUtilClasses = ['shadow-none', 'shadow-soft', 'shadow-medium', 'shadow-hard', 'shadow-inset'];
 
-        liveButtonPreview.className = 'button-style-default'; // Reset
+        liveButtonPreview.classList.remove(...hoverClasses, ...styleClasses, ...shadowUtilClasses);
+        liveButtonPreview.style.position = 'relative';
+        liveButtonPreview.style.overflow = 'hidden';
+        liveButtonPreview.style.zIndex = '0';
+
         const selectedButtonStyle = buttonStyleSelect.value;
         liveButtonPreview.classList.add(`button-style-${selectedButtonStyle}`);
 
-        // Remover classes de efeito hover anteriores
-        liveButtonPreview.classList.remove('hover-effect-preview', 'hover-effect-glow-preview', 'hover-effect-fill-left-preview');
 
-        const defaultStyleControlsElements = document.querySelectorAll('[data-style-target="default"]');
+        // Reset de estilos que podem interferir
+        liveButtonPreview.style.transform = 'none';
+        liveButtonPreview.style.boxShadow = 'none';
+        liveButtonPreview.style.border = 'none';
+        liveButtonPreview.style.overflow = 'visible';
+        liveButtonPreview.style.position = 'relative';
+        liveButtonPreview.style.zIndex = '0';
+
+
         if (selectedButtonStyle === 'default') {
-            defaultStyleControlsElements.forEach(el => el.style.display = 'block');
-            
-            // Aplicar sombra se estilo for 'default'
+            if (buttonHasBorderCheckbox.checked) {
+                liveButtonPreview.style.border = `${buttonBorderWidthInput.value}px solid ${buttonBorderColorInput.value}`;
+            }
             if (buttonShadowTypeSelect.value !== 'none') {
                 liveButtonPreview.classList.add(`shadow-${buttonShadowTypeSelect.value}`);
             }
-            
-            // Aplicar classe de preview de efeito hover se estilo for 'default'
             const selectedHoverEffect = buttonHoverEffectTypeSelect.value;
             if (selectedHoverEffect === 'elevate') {
-                liveButtonPreview.classList.add('hover-effect-preview'); // Efeito de elevação
+                liveButtonPreview.classList.add('hover-effect-preview');
+                liveButtonPreview.style.willChange = 'transform, box-shadow';
             } else if (selectedHoverEffect === 'glow') {
-                liveButtonPreview.classList.add('hover-effect-glow-preview'); // Para futura estilização da prévia admin
+                liveButtonPreview.classList.add('hover-effect-glow-preview');
+                liveButtonPreview.style.backgroundColor = 'transparent !important';
+                liveButtonPreview.style.position = 'relative';
+                liveButtonPreview.style.zIndex = '0';
             } else if (selectedHoverEffect === 'fill_left') {
-                liveButtonPreview.classList.add('hover-effect-fill-left-preview'); // Para futura estilização da prévia admin
+                liveButtonPreview.classList.add('hover-effect-fill-left-preview');
             }
-            // Outros efeitos podem ter suas classes de prévia aqui...
+        } else if (selectedButtonStyle === 'solid_shadow') {
+            const depth = buttonShadowDepthSlider.value;
+            if (shadowDepthValueSpan) shadowDepthValueSpan.textContent = `${depth}px`;
+            liveButtonPreview.style.border = '2px solid #000000';
+            liveButtonPreview.style.boxShadow = `${depth}px ${depth}px 0px 0px #000000`;
 
-        } else {
-            defaultStyleControlsElements.forEach(el => el.style.display = 'none');
+            liveButtonPreview.onmouseenter = function () {
+                this.style.transform = `translate(${depth / 2}px, ${depth / 2}px)`;
+                this.style.boxShadow = `${depth / 2}px ${depth / 2}px 0px 0px #000000`;
+            };
+            liveButtonPreview.onmouseleave = function () {
+                this.style.transform = 'none';
+                this.style.boxShadow = `${depth}px ${depth}px 0px 0px #000000`;
+            };
         }
+
 
         const actualIconType = buttonModalActualIconType.value;
         const actualIconValue = buttonModalActualIconValue.value.trim();
@@ -701,10 +759,9 @@ document.addEventListener('DOMContentLoaded', function () {
         buttonTextInput, buttonColorInput, buttonRadiusInput, buttonTextColorInput,
         buttonTextBoldCheckbox, buttonTextItalicCheckbox, buttonFontSizeInput,
         buttonHasBorderCheckbox, buttonBorderColorInput, buttonBorderWidthInput,
-        buttonHoverEffectTypeSelect, // NOVO: Adicionado o select de efeito hover
-        buttonShadowTypeSelect, buttonStyleSelect,
+        buttonHoverEffectTypeSelect, buttonShadowTypeSelect, buttonStyleSelect,
         buttonOpacitySlider, buttonIconTypeSelect, buttonIconUrlExternalInput,
-        buttonIconRoundedCheckbox
+        buttonIconRoundedCheckbox, buttonShadowDepthSlider
     ];
 
     elementsForButtonPreviewUpdate.forEach(el => {
@@ -725,7 +782,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const currentIconType = data ? data.iconType : DEFAULT_BUTTON_ICON_TYPE_JS;
         const currentIconUrl = data ? data.iconUrl : DEFAULT_BUTTON_ICON_URL_JS;
-        
+
         buttonModalActualIconType.value = currentIconType;
         buttonModalActualIconValue.value = currentIconUrl;
         buttonIconTypeSelect.value = currentIconType;
@@ -734,13 +791,13 @@ document.addEventListener('DOMContentLoaded', function () {
             buttonIconUrlExternalInput.value = currentIconUrl;
         } else if (currentIconType === 'library_icon') {
             selectedIconNameForButtonModal = currentIconUrl;
-            if(libraryIconNamePreview) libraryIconNamePreview.textContent = `Ícone atual: ${currentIconUrl.split('.')[0].replace(/-/g, ' ')}`;
+            if (libraryIconNamePreview) libraryIconNamePreview.textContent = `Ícone atual: ${currentIconUrl.split('.')[0].replace(/-/g, ' ')}`;
         } else if (currentIconType === 'image_uploaded') {
             if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = `Atual: ${currentIconUrl.split('/').pop().split('?')[0]}`;
         } else {
             buttonIconTypeSelect.value = 'none';
         }
-        manageButtonIconFieldsVisibility();
+        manageButtonIconFieldsVisibility(); // Chama antes de setar os valores dos campos dependentes
 
         buttonIconRoundedCheckbox.checked = data ? data.iconRounded : DEFAULT_BUTTON_ICON_ROUNDED_JS;
         buttonColorInput.value = data ? data.color : '#4CAF50';
@@ -750,27 +807,34 @@ document.addEventListener('DOMContentLoaded', function () {
         buttonTextBoldCheckbox.checked = data ? data.bold : false;
         buttonTextItalicCheckbox.checked = data ? data.italic : false;
         buttonFontSizeInput.value = data ? data.fontSize : '16';
-        buttonHasBorderCheckbox.checked = data ? data.hasBorder : false;
+
+        const isDefaultStyle = (data ? data.buttonStyle : DEFAULT_BUTTON_STYLE_JS) === 'default';
+        buttonHasBorderCheckbox.checked = isDefaultStyle && (data ? data.hasBorder : false);
         if (borderOptionsGroup) borderOptionsGroup.style.display = buttonHasBorderCheckbox.checked ? 'flex' : 'none';
+
         buttonBorderColorInput.value = data ? data.borderColor : '#000000';
         buttonBorderWidthInput.value = data ? data.borderWidth : '2';
-        
-        // Lógica para o novo seletor de efeito hover
+
+        buttonShadowDepthSlider.value = data && typeof data.shadowDepth !== 'undefined' ? data.shadowDepth : DEFAULT_BUTTON_SHADOW_DEPTH_JS;
+        if (shadowDepthValueSpan) shadowDepthValueSpan.textContent = `${buttonShadowDepthSlider.value}px`;
+
+
         if (data) {
-            if (data.hoverEffectType) { // Se o novo campo existir
-                buttonHoverEffectTypeSelect.value = data.buttonStyle === 'default' ? data.hoverEffectType : 'none';
-            } else if (typeof data.hasHoverEffect !== 'undefined') { // Se o campo antigo (booleano) existir (retrocompatibilidade)
-                buttonHoverEffectTypeSelect.value = data.buttonStyle === 'default' ? (data.hasHoverEffect ? 'elevate' : 'none') : 'none';
-            } else { // Default para botões muito antigos sem nenhum dos campos
+            if (data.hoverEffectType) {
+                buttonHoverEffectTypeSelect.value = isDefaultStyle ? data.hoverEffectType : 'none';
+            } else if (typeof data.hasHoverEffect !== 'undefined') { // Retrocompatibilidade
+                buttonHoverEffectTypeSelect.value = isDefaultStyle ? (data.hasHoverEffect ? 'elevate' : 'none') : 'none';
+            } else {
                 buttonHoverEffectTypeSelect.value = 'none';
             }
-        } else { // Adicionando novo botão
-            buttonHoverEffectTypeSelect.value = 'none'; // Ou 'elevate' se quiser que seja o padrão
+        } else {
+            buttonHoverEffectTypeSelect.value = 'none';
         }
 
-        buttonShadowTypeSelect.value = data ? (data.buttonStyle === 'default' ? data.shadowType : 'none') : 'none';
+        buttonShadowTypeSelect.value = data ? (isDefaultStyle ? data.shadowType : 'none') : 'none';
 
-        updateButtonPreview();
+        manageButtonModalFieldsBasedOnStyle(); // Garante que a visibilidade dos campos está correta ao abrir
+
         if (buttonModal) {
             buttonModal.classList.add('show');
             document.body.classList.add('modal-open');
@@ -800,11 +864,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
             const btnLink = btnLinkValue;
+            const currentButtonStyle = buttonStyleSelect.value;
 
             const newButtonData = {
                 text: btnText,
                 link: btnLink,
-                buttonStyle: buttonStyleSelect.value,
+                buttonStyle: currentButtonStyle,
                 iconType: buttonModalActualIconType.value,
                 iconUrl: buttonModalActualIconValue.value,
                 iconRounded: buttonIconRoundedCheckbox.checked,
@@ -815,12 +880,12 @@ document.addEventListener('DOMContentLoaded', function () {
                 bold: buttonTextBoldCheckbox.checked,
                 italic: buttonTextItalicCheckbox.checked,
                 fontSize: parseInt(buttonFontSizeInput.value),
-                hasBorder: buttonHasBorderCheckbox.checked,
+                hasBorder: currentButtonStyle === 'default' && buttonHasBorderCheckbox.checked,
                 borderColor: buttonBorderColorInput.value,
                 borderWidth: parseInt(buttonBorderWidthInput.value),
-                // NOVO: Salvar o tipo de efeito hover
-                hoverEffectType: buttonStyleSelect.value === 'default' ? buttonHoverEffectTypeSelect.value : 'none',
-                shadowType: buttonStyleSelect.value === 'default' ? buttonShadowTypeSelect.value : 'none',
+                hoverEffectType: currentButtonStyle === 'default' ? buttonHoverEffectTypeSelect.value : 'none',
+                shadowType: currentButtonStyle === 'default' ? buttonShadowTypeSelect.value : 'none',
+                shadowDepth: currentButtonStyle === 'solid_shadow' ? parseInt(buttonShadowDepthSlider.value) : DEFAULT_BUTTON_SHADOW_DEPTH_JS
             };
 
             const editingIndex = parseInt(document.getElementById('button-modal-editing-index').value);
@@ -858,24 +923,29 @@ document.addEventListener('DOMContentLoaded', function () {
         const hasBorder = buttonData.hasBorder || false;
         const borderColor = escapeHtml(buttonData.borderColor || '#000000');
         const borderWidth = parseInt(buttonData.borderWidth) || 2;
-        // NOVO: Ler o hoverEffectType
         const hoverEffectType = escapeHtml(buttonData.hoverEffectType || 'none');
         const shadowType = buttonStyle === 'default' ? (escapeHtml(buttonData.shadowType || 'none')) : 'none';
+        const shadowDepth = buttonData.shadowDepth || DEFAULT_BUTTON_SHADOW_DEPTH_JS;
+
 
         let borderStyleCSS = '';
         let buttonPreviewClasses = ['button-preview', `button-style-${buttonStyle}`];
-        if (hasBorder) {
-            borderStyleCSS = `border: ${borderWidth}px solid ${borderColor};`;
-            buttonPreviewClasses.push('has-border-preview');
-        }
+        let boxShadowCSS = '';
+
         if (buttonStyle === 'default') {
-            // Adicionar classe de preview de hover na lista do admin (simples)
-            if (hoverEffectType === 'elevate') buttonPreviewClasses.push('hover-effect-preview'); // Usa a classe antiga para elevação
-            else if (hoverEffectType === 'glow') buttonPreviewClasses.push('hover-effect-glow-preview-adminlist'); // Nova classe para admin
-            else if (hoverEffectType === 'fill_left') buttonPreviewClasses.push('hover-effect-fill-left-preview-adminlist'); // Nova classe para admin
-            // Adicionar sombra
+            if (hasBorder) {
+                borderStyleCSS = `border: ${borderWidth}px solid ${borderColor};`;
+            }
+            if (hoverEffectType === 'elevate') buttonPreviewClasses.push('hover-effect-preview-adminlist');
+            else if (hoverEffectType === 'glow') buttonPreviewClasses.push('hover-effect-glow-preview-adminlist');
+            else if (hoverEffectType === 'fill_left') buttonPreviewClasses.push('hover-effect-fill-left-preview-adminlist');
+
             if (shadowType !== 'none') buttonPreviewClasses.push(`shadow-${shadowType}`);
+        } else if (buttonStyle === 'solid_shadow') {
+            borderStyleCSS = 'border: 2px solid #000000;';
+            boxShadowCSS = `box-shadow: ${shadowDepth}px ${shadowDepth}px 0px 0px #000000 !important;`;
         }
+
 
         let iconHtmlInList = '';
         if (iconType !== 'none' && iconUrl) {
@@ -898,7 +968,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
             <div style="flex-grow: 1;">
                 <div class="${buttonPreviewClasses.join(' ')}"
-                    style="background-color: ${finalButtonBgWithOpacity}; border-radius: ${radius}px; padding: 8px; margin-bottom: 8px; color: ${textColor}; font-weight: ${bold ? 'bold' : 'normal'}; font-style: ${italic ? 'italic' : 'normal'}; font-size: ${fontSize}px; ${borderStyleCSS}">
+                    style="background-color: ${finalButtonBgWithOpacity}; border-radius: ${radius}px; padding: 8px; margin-bottom: 8px; color: ${textColor}; font-weight: ${bold ? 'bold' : 'normal'}; font-style: ${italic ? 'italic' : 'normal'}; font-size: ${fontSize}px; ${borderStyleCSS} ${boxShadowCSS}">
                     ${iconHtmlInList}
                     <span class="button-text-content">${text}</span>
                 </div>
@@ -913,13 +983,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 <input type="hidden" name="custom_button_has_border[]" value="${hasBorder}">
                 <input type="hidden" name="custom_button_border_color[]" value="${borderColor}">
                 <input type="hidden" name="custom_button_border_width[]" value="${borderWidth}">
-                <input type="hidden" name="custom_button_hover_effect_type[]" value="${hoverEffectType}"> {/* NOVO campo */}
+                <input type="hidden" name="custom_button_hover_effect_type[]" value="${hoverEffectType}">
                 <input type="hidden" name="custom_button_shadow_type[]" value="${shadowType}">
                 <input type="hidden" name="custom_button_opacity[]" value="${opacity}">
                 <input type="hidden" name="custom_button_icon_url[]" value="${iconUrl}">
                 <input type="hidden" name="custom_button_icon_type[]" value="${iconType}">
                 <input type="hidden" name="custom_button_icon_rounded[]" value="${iconRounded}">
                 <input type="hidden" name="custom_button_style[]" value="${buttonStyle}">
+                <input type="hidden" name="custom_button_shadow_depth[]" value="${shadowDepth}">
             </div>
             <button type="button" class="edit-item-btn" title="Editar este botão"><i class="fas fa-edit"></i></button>
             <span class="remove-item" title="Remover este botão"><i class="fas fa-times"></i></span>
@@ -956,9 +1027,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 hasBorder: currentItem.querySelector('input[name="custom_button_has_border[]"]').value === 'true',
                 borderColor: currentItem.querySelector('input[name="custom_button_border_color[]"]').value,
                 borderWidth: parseInt(currentItem.querySelector('input[name="custom_button_border_width[]"]').value),
-                // NOVO: Ler o hoverEffectType
                 hoverEffectType: currentItem.querySelector('input[name="custom_button_hover_effect_type[]"]').value,
-                shadowType: currentItem.querySelector('input[name="custom_button_shadow_type[]"]').value
+                shadowType: currentItem.querySelector('input[name="custom_button_shadow_type[]"]').value,
+                shadowDepth: parseInt(currentItem.querySelector('input[name="custom_button_shadow_depth[]"]').value) || DEFAULT_BUTTON_SHADOW_DEPTH_JS
             };
             openButtonModal(dataToEdit, itemIndex);
         });
@@ -975,10 +1046,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (event.key === 'Escape') {
             if (iconModal && iconModal.classList.contains('active')) {
                 if (iconModal.classList.contains('modal-on-top')) {
-                     iconModal.classList.remove('active', 'show', 'modal-on-top');
-                     currentIconModalPurpose = '';
-                     const selectedIconInGrid = iconModal.querySelector('.icon-option.selected');
-                     if (selectedIconInGrid) selectedIconInGrid.classList.remove('selected');
+                    iconModal.classList.remove('active', 'show', 'modal-on-top');
+                    currentIconModalPurpose = '';
+                    const selectedIconInGrid = iconModal.querySelector('.icon-option.selected');
+                    if (selectedIconInGrid) selectedIconInGrid.classList.remove('selected');
                 } else {
                     closeModals();
                 }
@@ -1018,9 +1089,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     hasBorder: currentItem.querySelector('input[name="custom_button_has_border[]"]').value === 'true',
                     borderColor: currentItem.querySelector('input[name="custom_button_border_color[]"]').value,
                     borderWidth: parseInt(currentItem.querySelector('input[name="custom_button_border_width[]"]').value),
-                    // NOVO: Ler o hoverEffectType de botões existentes
-                    hoverEffectType: currentItem.querySelector('input[name="custom_button_hover_effect_type[]"]') ? currentItem.querySelector('input[name="custom_button_hover_effect_type[]"]').value : (currentItem.querySelector('input[name="custom_button_has_hover[]"]') && currentItem.querySelector('input[name="custom_button_has_hover[]"]').value === 'true' ? 'elevate' : 'none'), // Retrocompatibilidade
-                    shadowType: currentItem.querySelector('input[name="custom_button_shadow_type[]"]').value
+                    hoverEffectType: currentItem.querySelector('input[name="custom_button_hover_effect_type[]"]') ? currentItem.querySelector('input[name="custom_button_hover_effect_type[]"]').value : (currentItem.querySelector('input[name="custom_button_has_hover[]"]') && currentItem.querySelector('input[name="custom_button_has_hover[]"]').value === 'true' ? 'elevate' : 'none'),
+                    shadowType: currentItem.querySelector('input[name="custom_button_shadow_type[]"]').value,
+                    shadowDepth: parseInt(currentItem.querySelector('input[name="custom_button_shadow_depth[]"]').value) || DEFAULT_BUTTON_SHADOW_DEPTH_JS
                 };
                 openButtonModal(dataToEdit, itemIndex);
             });
@@ -1095,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', function () {
         updatePageBackgroundControlsVisibility();
     }
 
-    window.updatePageBackgroundDarkenPreview = function() {
+    window.updatePageBackgroundDarkenPreview = function () {
         if (!backgroundPreviewPageOverlay || !darkenEnabledCheckboxPage || !darkenSliderPage || !darkenValueSpanPage) return;
         if (darkenEnabledCheckboxPage.checked) {
             const level = parseFloat(darkenSliderPage.value);
@@ -1119,7 +1190,7 @@ document.addEventListener('DOMContentLoaded', function () {
             updatePageBackgroundDarkenPreview();
         });
         if (darkenControlsPage) {
-             darkenControlsPage.style.display = darkenEnabledCheckboxPage.checked ? 'block' : 'none';
+            darkenControlsPage.style.display = darkenEnabledCheckboxPage.checked ? 'block' : 'none';
         }
     }
 
@@ -1127,18 +1198,21 @@ document.addEventListener('DOMContentLoaded', function () {
         darkenSliderPage.addEventListener('input', updatePageBackgroundDarkenPreview);
         if (darkenValueSpanPage) darkenValueSpanPage.textContent = parseFloat(darkenSliderPage.value).toFixed(2);
     }
-    
+
     if (backgroundPreviewPage && backgroundPreviewPage.src && backgroundPreviewPage.src !== window.location.href && !backgroundPreviewPage.src.includes('blob:')) {
         updatePageBackgroundDarkenPreview();
     }
 
     if (colorPickerPage && colorHexSpanPage) {
-        colorPickerPage.addEventListener('input', function() {
+        colorPickerPage.addEventListener('input', function () {
             colorHexSpanPage.textContent = this.value.toUpperCase();
         });
         if (colorPickerPage.value) {
             colorHexSpanPage.textContent = colorPickerPage.value.toUpperCase();
         }
     }
+
+    // Inicializa a visibilidade dos campos do modal de botão ao carregar a página
+    manageButtonModalFieldsBasedOnStyle();
 
 }); // Fim do DOMContentLoaded
