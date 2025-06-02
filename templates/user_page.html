@@ -64,7 +64,6 @@
         .card-address-area { flex-shrink: 0; text-align: right; max-width: 40%; align-self: flex-end; }
         .card-address-text { font-size: clamp(9px, 2.3vw, 11px); margin: 0; word-break: break-word; overflow-wrap: break-word; line-height: 1.25; padding-bottom: 1px; /* Cor e fonte inline */ }
 
-        /* Escurecimento padrão da página do style.css ajustado */
         body::before {
           content: '';
           position: fixed;
@@ -72,21 +71,20 @@
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.35); /* Este é o escurecimento GLOBAL padrão */
-          z-index: -2; /* Coloca atrás do overlay de escurecimento da IMAGEM */
+          background: rgba(0, 0, 0, 0.35); 
+          z-index: -2; 
           pointer-events: none;
         }
 
-        /* NOVO ESTILO PARA O OVERLAY DE ESCURECIMENTO DA IMAGEM DE FUNDO DA PÁGINA */
         #page-background-image-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0); /* Cor inicial transparente, será alterada por JS se necessário */
-            z-index: -1; /* Fica entre o fundo (imagem/cor) e o conteúdo (body::before global fica atrás) */
-            pointer-events: none; /* Permite cliques através dele */
+            background-color: rgba(0, 0, 0, 0); 
+            z-index: -1; 
+            pointer-events: none; 
         }
     </style>
 </head>
@@ -102,11 +100,11 @@
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
-        background-color: #000; /* Fallback caso a imagem não carregue */
+        background-color: #000; 
     {% elif bg_page_type == 'color' and bg_page_color_value %}
         background-color: {{ bg_page_color_value | style_safe }};
     {% else %}
-        background-color: #000; /* Fallback padrão geral se nada estiver configurado */
+        background-color: #000; 
     {% endif %}
 ">
     {% if bg_page_type == 'image' and bg_page_image_url and bg_page_darken_level > 0 %}
@@ -167,7 +165,7 @@
                     {% endif %}
 
                     <div class="social-icons">
-                        {% for link_item in dados.social_links %} {# Renomeado para link_item para evitar conflito com escopo externo se houver #}
+                        {% for link_item in dados.social_links %}
                         <a href="{{ link_item.url | e if link_item.url else '#' }}" target="_blank" rel="noopener noreferrer" title="{{ link_item.icon | replace('-', ' ') | title | e }}">
                             <img src="{{ url_for('static', filename='icons/' + link_item.icon + '.png') | e }}" class="icon"
                                 alt="{{ link_item.icon | replace('-', ' ') | title | e }}">
@@ -184,12 +182,15 @@
                         {% set btn_icon_url = button.iconUrl | default('') %}
                         {% set btn_icon_rounded = button.iconRounded | default(false) %}
                         {% set btn_style_class = button.buttonStyle | default('default') %}
+                        {% set btn_hover_effect = button.hoverEffectType | default('none') %}
 
                         <a href="{{ button.link | e if button.link else '#' }}"
                             class="link-button-custom
-                                   {% if button.hasHoverEffect and btn_style_class == 'default' %}has-hover-effect{% endif %}
-                                   {% if button.shadowType and button.shadowType != 'none' and btn_style_class == 'default' %}shadow-{{ button.shadowType }}{% endif %}
-                                   button-style-{{ btn_style_class }}"
+                                   button-style-{{ btn_style_class }}
+                                   {% if btn_style_class == 'default' and btn_hover_effect == 'elevate' %}hover-effect-elevate{% endif %}
+                                   {% if btn_style_class == 'default' and btn_hover_effect == 'glow' %}hover-effect-glow{% endif %}
+                                   {% if btn_style_class == 'default' and btn_hover_effect == 'fill_left' %}hover-effect-fill-left{% endif %}
+                                   {% if button.shadowType and button.shadowType != 'none' and btn_style_class == 'default' %}shadow-{{ button.shadowType }}{% endif %}"
                             style="--btn-bg-color: {{ btn_bg_color | style_safe }}; --btn-opacity: {{ btn_opacity }}; border-radius: {{ button.radius }}px; color: {{ button.textColor | style_safe }}; font-weight: {{ 'bold' if button.bold else 'normal' }}; font-style: {{ 'italic' if button.italic else 'normal' }}; font-size: {{ button.fontSize }}px; {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor | style_safe }};{% else %}border: none;{% endif %}"
                             target="_blank" rel="noopener noreferrer">
 
@@ -237,7 +238,7 @@
 
                         <div class="card-bottom-section">
                             <div class="card-links">
-                                {% for link_card_item in dados.card_links %} {# Renomeado para link_card_item #}
+                                {% for link_card_item in dados.card_links %}
                                 <a href="{{ (link_card_item.url if link_card_item.url else '#') | e }}" target="_blank" rel="noopener noreferrer" class="card-link-item"
                                     title="{{ (link_card_item.at_text if link_card_item.at_text else (link_card_item.icon | replace('-', ' ') | title)) | e }}">
                                     <img src="{{ url_for('static', filename='icons/' + link_card_item.icon + '.png') | e }}" class="card-icon"
@@ -279,56 +280,41 @@
     </div>
 
 <script>
-    // Função para converter HEX para RGBA (para uso no frontend se necessário)
     function hexToRgbaFrontend(hex, alpha) {
-        if (typeof hex !== 'string') return `rgba(0,0,0,${alpha})`; // Fallback
+        if (typeof hex !== 'string') return `rgba(0,0,0,${alpha})`; 
         hex = hex.replace(/^#/, '');
-
         if (hex.toLowerCase().startsWith('rgba')) { return hex.replace(/[\d\.]+\)$/g, alpha + ')'); }
         if (hex.toLowerCase().startsWith('rgb')) { return hex.replace('rgb', 'rgba').replace(')', `, ${alpha})`); }
-
         let r = 0, g = 0, b = 0;
-        if (hex.length === 3) { // #RGB
+        if (hex.length === 3) { 
             r = parseInt(hex[0] + hex[0], 16); g = parseInt(hex[1] + hex[1], 16); b = parseInt(hex[2] + hex[2], 16);
-        } else if (hex.length === 6) { // #RRGGBB
+        } else if (hex.length === 6) { 
             r = parseInt(hex.substring(0, 2), 16); g = parseInt(hex.substring(2, 4), 16); b = parseInt(hex.substring(4, 6), 16);
-        } else { return `rgba(0,0,0,${alpha})`; } // Fallback para cor inválida
-
+        } else { return `rgba(0,0,0,${alpha})`; } 
         if (isNaN(r) || isNaN(g) || isNaN(b)) return `rgba(0,0,0,${alpha})`;
         return `rgba(${r},${g},${b},${alpha})`;
     }
 
     console.log("DEBUG: Script user_page.html principal iniciado.");
-    document.body.style.opacity = 0; // Começa invisível para fade-in
+    document.body.style.opacity = 0;
 
     window.addEventListener('DOMContentLoaded', () => {
         console.log("DEBUG: DOMContentLoaded acionado.");
         setTimeout(() => {
             document.body.style.opacity = 1;
             console.log("DEBUG: Opacidade do body definida para 1.");
+        }, 100); 
 
-            // Se uma imagem de fundo da página estiver ativa, o body::before (escurecimento global)
-            // pode ser desnecessário ou precisar de ajuste.
-            // A lógica de z-index no CSS inline tenta lidar com isso.
-            // Se o body tem um background-image ou background-color customizado, o body::before
-            // (que tem z-index: -2) ficará atrás. O #page-background-image-overlay (z-index: -1)
-            // ficará sobre a imagem/cor de fundo, mas atrás do conteúdo principal.
-
-        }, 100); // Pequeno delay para garantir que o CSS foi aplicado
-
-        // Aplicar cor de fundo com opacidade aos botões customizados (já existente)
         const customButtons = document.querySelectorAll('.link-button-custom');
         customButtons.forEach(button => {
             const bgColorFromVar = button.style.getPropertyValue('--btn-bg-color').trim();
             const opacityFromVar = parseFloat(button.style.getPropertyValue('--btn-opacity').trim());
-
             if (bgColorFromVar && !isNaN(opacityFromVar)) {
                 button.style.backgroundColor = hexToRgbaFrontend(bgColorFromVar, opacityFromVar);
-            } else if (bgColorFromVar) { // Se opacidade não definida, usa a cor como está
+            } else if (bgColorFromVar) { 
                  button.style.backgroundColor = bgColorFromVar;
             }
         });
-
 
         const userPageSlide = document.querySelector('.user-page-slide');
         if (userPageSlide) {
@@ -336,7 +322,6 @@
                 const el = this; const scrollHeight = el.scrollHeight; const clientHeight = el.clientHeight;
                 const scrollTop = el.scrollTop; const deltaY = event.deltaY;
                 if (scrollHeight <= clientHeight) { return; } 
-
                 const atTop = scrollTop <= 0; const atBottom = scrollTop >= (scrollHeight - clientHeight -1);
                 if ((deltaY < 0 && !atTop) || (deltaY > 0 && !atBottom)) {
                      event.stopPropagation();
@@ -352,9 +337,7 @@
                 if (!currentSwiper || !currentSwiper.navigation) { console.warn("DEBUG_WARN: Instância Swiper ou navegação indefinida em applyArrowAnimation."); return; }
                 const prevEl = currentSwiper.navigation.prevEl; const nextEl = currentSwiper.navigation.nextEl;
                 if (!prevEl || !nextEl) { console.warn("DEBUG_WARN: Elementos de seta Swiper não encontrados."); return; }
-
                 prevEl.classList.remove('swiper-arrow-animated'); nextEl.classList.remove('swiper-arrow-animated');
-
                 if (!currentSwiper.isEnd && currentSwiper.slides.length > 1) { nextEl.classList.add('swiper-arrow-animated'); }
                 if (!currentSwiper.isBeginning && currentSwiper.slides.length > 1) { prevEl.classList.add('swiper-arrow-animated'); }
             }
@@ -379,7 +362,7 @@
                         applyArrowAnimation(this);
                         const currentUrlParams = new URLSearchParams(window.location.search);
                         if (currentUrlParams.has('view') && currentUrlParams.get('view') === 'card') {
-                            this.slideTo(1, 0, false); // Slide 1 é o cartão (índice 0 é o perfil)
+                            this.slideTo(1, 0, false); 
                             console.log("DEBUG: Swiper direcionado para o slide do cartão na inicialização via ?view=card.");
                         }
                     },
@@ -391,7 +374,6 @@
             console.error("DEBUG_ERROR: ERRO CRÍTICO AO INICIALIZAR O SWIPER:", e);
         }
 
-        // Lógica de Compartilhamento (já existente)
         try {
             const shareButton = document.getElementById('share-button-container');
             if (shareButton) {
@@ -403,10 +385,10 @@
                     const pageUrlForSharing = {{ (request.url_root.rstrip('/') + url_for('user_page', profile=dados.profile)) | tojson | safe }};
                     let shareData = { title: '', text: '', url: pageUrlForSharing };
 
-                    if (currentSlideIndex === 0) { // Slide do Perfil
+                    if (currentSlideIndex === 0) { 
                         shareData.title = {{ og_title | default(dados.nome if dados.nome else 'Perfil Pessoal', true) | tojson | safe }};
                         shareData.text = {{ og_description | default((dados.bio | striptags | truncate(150)) if dados.bio else 'Confira esta página!', true) | tojson | safe }};
-                    } else { // Slide do Cartão
+                    } else { 
                         const cardNameForShare = {{ (dados.card_nome if dados.card_nome else dados.nome if dados.nome else 'Usuário') | tojson | safe }};
                         shareData.title = `Cartão de Visita Digital: ${cardNameForShare}`;
                         let cardTextParts = [];
@@ -421,7 +403,7 @@
                             cardDynamicDescriptionForShare = `Acesse o cartão de visita de ${cardNameForShare}.`;
                         }
                         shareData.text = cardDynamicDescriptionForShare;
-                        shareData.url = `${pageUrlForSharing}?view=card`; // Adiciona ?view=card para link direto
+                        shareData.url = `${pageUrlForSharing}?view=card`; 
                     }
                     console.log("DEBUG: Dados para partilha (navigator.share ou fallback):", JSON.stringify(shareData));
 
@@ -430,14 +412,14 @@
                             await navigator.share(shareData);
                             console.log("DEBUG: Conteúdo compartilhado com sucesso via navigator.share.");
                         } catch (err) {
-                            if (err.name !== 'AbortError') { // Não mostra fallback se o usuário apenas cancelou
+                            if (err.name !== 'AbortError') { 
                                 console.error("DEBUG_ERROR: Erro ao usar navigator.share:", err);
                                 showShareFallbackModal(shareData.url, shareData.title, shareData.text);
                             } else {
                                 console.log("DEBUG: Compartilhamento cancelado pelo usuário.");
                             }
                         }
-                    } else { // navigator.share não disponível
+                    } else { 
                         console.log("DEBUG: navigator.share não disponível. Usando modal de fallback.");
                         showShareFallbackModal(shareData.url, shareData.title, shareData.text);
                     }
@@ -458,14 +440,14 @@
                 console.error("DEBUG_ERROR: Elementos do modal de fallback não encontrados.");
                 return;
             }
-            const displayText = `${title}\n${text.replace(/\\n/g, '\n')}`; // Garante que quebras de linha funcionem
+            const displayText = `${title}\n${text.replace(/\\n/g, '\n')}`; 
             textContentElement.innerText = displayText;
             urlInput.value = url;
             copyButton.onclick = async () => {
                 try {
                     await navigator.clipboard.writeText(url);
                     alert('URL copiada para a área de transferência!');
-                } catch (err) { // Fallback para método antigo se clipboard API falhar (raro em contextos seguros)
+                } catch (err) { 
                     try {
                         urlInput.select(); document.execCommand('copy');
                         alert('URL copiada (método antigo)!');
@@ -476,80 +458,68 @@
                 }};
             const whatsappMessage = encodeURIComponent(`${title}\n${text.replace(/\\n/g, '\n')}\n${url}`);
             whatsappLink.href = `https://wa.me/?text=${whatsappMessage}`;
-
-            modal.style.display = 'flex'; // Mostra o modal
-            closeModalButton.onclick = () => { modal.style.display = 'none'; }; // Fecha ao clicar no botão
-            modal.onclick = (event) => { if (event.target === modal) { modal.style.display = 'none'; } }; // Fecha ao clicar fora
-            document.querySelector('.share-fallback-content').onclick = (event) => { event.stopPropagation(); }; // Previne fechar ao clicar dentro
+            modal.style.display = 'flex'; 
+            closeModalButton.onclick = () => { modal.style.display = 'none'; }; 
+            modal.onclick = (event) => { if (event.target === modal) { modal.style.display = 'none'; } }; 
+            document.querySelector('.share-fallback-content').onclick = (event) => { event.stopPropagation(); }; 
         }
 
-        // Lógica para "Salvar Contato" (VCF) - (já existente, manter)
         try {
             const cardLinksData = {{ dados.card_links | tojson | safe }};
             const cardEnderecoVCF = {{ (dados.card_endereco if dados.card_endereco else '') | tojson | safe }};
-
-            if (typeof addToContacts !== 'function') { // Garante que não seja redefinida se já existir
+            if (typeof addToContacts !== 'function') { 
                 window.addToContacts = function() {
                     try {
                         const sanitizeVCardString = (str) => {
                             if (typeof str !== 'string') return '';
-                            let cleanedStr = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''); // Remove caracteres de controle inválidos
+                            let cleanedStr = str.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, ''); 
                             cleanedStr = cleanedStr.replace(/\\/g, '\\\\').replace(/,/g, '\\,').replace(/;/g, '\\;').replace(/\n/g, '\\n');
                             return cleanedStr;
                         };
                         const sanitizeForFilename = (str) => {
                             if (typeof str !== 'string') return 'contato';
-                            let filename = str.replace(/[^a-z0-9_\-.]/ig, '_'); // Mantém apenas alfanuméricos, _, -, .
-                            return filename.substring(0, 50); // Limita o tamanho
+                            let filename = str.replace(/[^a-z0-9_\-.]/ig, '_'); 
+                            return filename.substring(0, 50); 
                         };
 
                         const cardNome = sanitizeVCardString({{ (dados.card_nome if dados.card_nome else dados.nome if dados.nome else 'Contato') | tojson | safe }});
                         const cardTitulo = sanitizeVCardString({{ (dados.card_titulo if dados.card_titulo else '') | tojson | safe }});
                         const cardRegistro = sanitizeVCardString({{ (dados.card_registro_profissional if dados.card_registro_profissional else '') | tojson | safe }});
-                        const email = sanitizeVCardString({{ (dados.email if dados.email else '') | tojson | safe }}); // Email principal do usuário
+                        const email = sanitizeVCardString({{ (dados.email if dados.email else '') | tojson | safe }}); 
 
                         let vCardData = `BEGIN:VCARD\nVERSION:3.0\nN:${cardNome};;;;\nFN:${cardNome}`;
                         if (cardTitulo) vCardData += `\nTITLE:${cardTitulo}`;
-                        if (cardRegistro) vCardData += `\nORG:${cardRegistro}`; // Usando ORG para registro, pode ser ajustado
-                        if (email) vCardData += `\nEMAIL;TYPE=INTERNET,PREF:${email}`; // Email principal como preferencial
-                        if (cardEnderecoVCF) vCardData += `\nADR;TYPE=WORK,PREF:;;${sanitizeVCardString(cardEnderecoVCF)};;;;`; // Endereço
+                        if (cardRegistro) vCardData += `\nORG:${cardRegistro}`; 
+                        if (email) vCardData += `\nEMAIL;TYPE=INTERNET,PREF:${email}`; 
+                        if (cardEnderecoVCF) vCardData += `\nADR;TYPE=WORK,PREF:;;${sanitizeVCardString(cardEnderecoVCF)};;;;`; 
 
-                        // Adicionar links do cartão (telefone, email secundário, URLs, redes sociais)
                         if (Array.isArray(cardLinksData)) {
                             cardLinksData.forEach(link => {
-                                if (typeof link !== 'object' || link === null) { return; } // Pula se não for objeto
+                                if (typeof link !== 'object' || link === null) { return; } 
                                 const icon_type = link.icon ? String(link.icon).toLowerCase() : "";
                                 const link_url_original = link.url || "";
                                 const link_at_text_original = link.at_text || "";
-
                                 const link_url_sanitized = sanitizeVCardString(link_url_original);
                                 const link_at_text_sanitized = sanitizeVCardString(link_at_text_original);
-
                                 let iconNameForNote = link.icon ? String(link.icon).replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : "Contato";
 
-
                                 if (icon_type.includes('whatsapp') || icon_type.includes('phone') || String(link_url_original).startsWith('tel:')) {
-                                    let phone_number = String(link_url_original).replace('tel:', '').replace(/https?:\/\/wa\.me\//, '').replace(/\D/g,''); // Limpa para apenas números
-                                    if (phone_number) { vCardData += `\nTEL;TYPE=CELL:${sanitizeVCardString(phone_number.split('?')[0])}`; } // Remove query params
+                                    let phone_number = String(link_url_original).replace('tel:', '').replace(/https?:\/\/wa\.me\//, '').replace(/\D/g,''); 
+                                    if (phone_number) { vCardData += `\nTEL;TYPE=CELL:${sanitizeVCardString(phone_number.split('?')[0])}`; } 
                                 }
-                                // Adicionar email secundário se diferente do principal
                                 else if (icon_type.includes('mail') || icon_type.includes('email') || String(link_url_original).startsWith('mailto:')) {
                                     let email_address = String(link_url_original).replace('mailto:', '');
-                                    if (email_address && email_address.includes('@') && email_address.toLowerCase() !== (email || "").toLowerCase()) { // Verifica se é diferente do email principal
-                                        vCardData += `\nEMAIL;TYPE=INTERNET:${sanitizeVCardString(email_address.split('?')[0])}`; // Remove query params
+                                    if (email_address && email_address.includes('@') && email_address.toLowerCase() !== (email || "").toLowerCase()) { 
+                                        vCardData += `\nEMAIL;TYPE=INTERNET:${sanitizeVCardString(email_address.split('?')[0])}`; 
                                     }
                                 }
-                                // Adicionar URLs genéricas e específicas de redes sociais
                                 else if (link_url_original && (link_url_original.startsWith('http:') || link_url_original.startsWith('https:'))) {
                                     if (icon_type.includes('linkedin')) { vCardData += `\nX-SOCIALPROFILE;TYPE=linkedin:${link_url_sanitized}`; }
                                     else if (icon_type.includes('twitter') || icon_type.includes('x-com')) { vCardData += `\nX-SOCIALPROFILE;TYPE=twitter:${link_url_sanitized}`; }
                                     else if (icon_type.includes('facebook')) { vCardData += `\nX-SOCIALPROFILE;TYPE=facebook:${link_url_sanitized}`; }
                                     else if (icon_type.includes('instagram')) { vCardData += `\nX-SOCIALPROFILE;TYPE=instagram:${link_url_sanitized}`; }
-                                    // Adicione mais X-SOCIALPROFILE para outros tipos se desejar (ex: github, etc.)
-                                    else { vCardData += `\nURL:${link_url_sanitized}`; } // URL genérica
+                                    else { vCardData += `\nURL:${link_url_sanitized}`; } 
                                 }
-
-                                // Adicionar texto @ como nota
                                 if (link_at_text_original) { vCardData += `\nNOTE:${iconNameForNote}: ${link_at_text_sanitized}`; }
                             });
                         }
@@ -560,11 +530,11 @@
                         const a = document.createElement('a');
                         a.href = vcfUrl;
                         const profileNameForFile = sanitizeForFilename({{ (dados.profile if dados.profile else 'contato') | tojson | safe }});
-                        a.download = `contato_${profileNameForFile}.vcf`; // Nome do arquivo
+                        a.download = `contato_${profileNameForFile}.vcf`; 
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
-                        URL.revokeObjectURL(vcfUrl); // Libera o objeto URL
+                        URL.revokeObjectURL(vcfUrl); 
                         console.log("DEBUG: vCard gerado e download iniciado.");
                     } catch(e_vcf) {
                         console.error("DEBUG_ERROR: Erro ao gerar vCard:", e_vcf);
@@ -576,7 +546,7 @@
             console.error("DEBUG_ERROR: Erro na configuração da lógica addToContacts:", e_addToContactsSetup);
         }
         console.log("DEBUG: Fim do script (DOMContentLoaded).");
-    }); // Fim do DOMContentLoaded
+    }); 
     console.log("DEBUG: Script user_page.html principal finalizado (fora do DOMContentLoaded).");
 </script>
 </body>

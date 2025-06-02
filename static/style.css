@@ -9,7 +9,7 @@ body::before {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.35); /* Ajuste a opacidade conforme necessário */
-  z-index: -1;
+  z-index: -1; /* Mantido atrás do overlay da imagem de fundo da página, se houver */
 }
 
 html, body {
@@ -29,7 +29,7 @@ body {
   opacity: 0;
   transition: opacity 0.5s ease-in-out;
   position: relative;
-  z-index: 0;
+  z-index: 0; /* Conteúdo principal acima dos pseudo-elementos de fundo */
 }
 
 .container {
@@ -109,31 +109,133 @@ h1 {
   padding: 14px 20px;
   margin: 0 auto;
   text-decoration: none;
-  color: white;
-  font-size: 16px;
-  font-weight: 500;
+  color: white; /* Cor do texto padrão, pode ser sobrescrita pelo inline style */
+  font-size: 16px; /* Tamanho da fonte padrão, pode ser sobrescrita */
+  font-weight: 500; /* Peso da fonte padrão */
   box-sizing: border-box;
   transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+  position: relative; /* Necessário para alguns efeitos de hover com pseudo-elementos */
+  z-index: 1; /* Garante que o botão esteja acima do z-index negativo do body::before */
+  /* A cor de fundo e borda são aplicadas inline via JS e variáveis CSS */
 }
 
-.link-button-custom.has-hover-effect:hover {
+/* Efeito Hover: Elevar (o antigo has-hover-effect) */
+.link-button-custom.hover-effect-elevate:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    /* A sombra já é aplicada pela classe shadow-*, então não precisa adicionar aqui explicitamente
+       a menos que queira um comportamento de sombra específico APENAS para este hover.
+       Se a classe shadow-* não for usada, você pode adicionar uma sombra aqui:
+       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+    */
 }
+
+
+/* Efeito Hover: Brilho Pulsante (Glow on Hover) */
+.link-button-custom.hover-effect-glow {
+    /* A cor de fundo principal do botão já é definida inline */
+    /* --btn-bg-color e --btn-opacity são usados inline no style do <a> */
+    outline: none;
+    /* z-index: 0; foi removido para evitar conflito, o botão já tem z-index: 1 */
+}
+
+.link-button-custom.hover-effect-glow::before { /* O brilho */
+    content: '';
+    background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+    position: absolute;
+    top: -2px;
+    left:-2px;
+    background-size: 400%;
+    z-index: -1; /* Atrás do conteúdo do botão */
+    filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowing 20s linear infinite;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    border-radius: inherit; /* Herda o border-radius do botão principal */
+}
+
+.link-button-custom.hover-effect-glow:hover::before {
+    opacity: 1;
+}
+
+.link-button-custom.hover-effect-glow::after { /* Camada de fundo sólida sobre o brilho, com a cor do botão */
+    z-index: -1; /* Atrás do conteúdo do botão, mas acima do brilho se o brilho também for -1 e vier antes no DOM virtual */
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    /* Usa a cor de fundo definida para o botão através de variáveis CSS */
+    background-color: var(--btn-bg-color);
+    opacity: var(--btn-opacity); /* Aplica a opacidade definida */
+    left: 0;
+    top: 0;
+    border-radius: inherit; /* Herda o border-radius */
+}
+
+/* Mantém o conteúdo do botão visível sobre os pseudo-elementos */
+.link-button-custom.hover-effect-glow .button-icon-wrapper,
+.link-button-custom.hover-effect-glow .button-text-content {
+    position: relative;
+    z-index: 2;
+}
+
+@keyframes glowing {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+}
+
+/* Efeito Hover: Preenchimento Esquerda */
+.link-button-custom.hover-effect-fill-left {
+    overflow: hidden; /* Importante para conter o ::before */
+    /* A cor de fundo principal do botão já é definida inline */
+    /* z-index: 1; já definido no .link-button-custom */
+}
+
+.link-button-custom.hover-effect-fill-left::before { /* Camada de preenchimento */
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.2); /* Sobreposição escura sutil, ajustável */
+    /* Se quiser usar uma cor sólida mais escura que a cor do botão,
+       seria mais complexo sem JS, mas uma opção seria:
+       background-color: var(--btn-fill-hover-color, #someDefaultDarkerColor); */
+    transition: all .3s;
+    border-radius: inherit; /* Herda o border-radius do botão */
+    z-index: 0; /* Abaixo do conteúdo do botão, mas acima do fundo original se usarmos ::after para o fundo */
+}
+/* Se o botão em si já tem a cor de fundo, o ::after não é estritamente necessário
+   para este efeito, o ::before pode simplesmente deslizar por cima. */
+
+.link-button-custom.hover-effect-fill-left:hover::before {
+    width: 100%;
+}
+
+/* Garante que o texto e o ícone fiquem acima do ::before */
+.link-button-custom.hover-effect-fill-left .button-icon-wrapper,
+.link-button-custom.hover-effect-fill-left .button-text-content {
+    position: relative;
+    z-index: 1; /* Acima do ::before (que tem z-index: 0) */
+}
+
 
 .link-button-custom .button-icon-wrapper {
-    margin-right: 10px; /* Espaço entre ícone/imagem e texto */
+    margin-right: 10px; 
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0; /* Para não encolher o ícone */
+    flex-shrink: 0; 
 }
-.link-button-custom .button-icon-wrapper img { /* Estilo para QUALQUER img dentro do wrapper */
-    max-height: 1.5em; /* Altura máxima relativa ao font-size do botão */
-    max-width: 1.5em;   /* Largura máxima */
-    height: auto;       /* Manter proporção da imagem */
-    width: auto;        /* Manter proporção da imagem */
-    object-fit: contain; /* Garante que a imagem inteira apareça sem ser cortada */
+.link-button-custom .button-icon-wrapper img { 
+    max-height: 1.5em; 
+    max-width: 1.5em;  
+    height: auto;       
+    width: auto;        
+    object-fit: contain; 
     vertical-align: middle;
 }
 .link-button-custom .button-icon-wrapper.rounded img {
@@ -147,9 +249,14 @@ h1 {
 .link-button-custom.button-style-solid_shadow {
     position: relative;
     transition: transform 0.15s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.15s cubic-bezier(0.22, 1, 0.36, 1);
-    z-index: 1;
-    overflow: visible;
+    z-index: 1; /* Mantido, pode precisar ajustar em relação aos z-index dos efeitos hover */
+    overflow: visible; /* Mantido, pode conflitar com hover-effect-fill-left que usa overflow: hidden */
 }
+/* Ajuste para hover-effect-fill-left com button-style-solid_shadow: */
+.link-button-custom.button-style-solid_shadow.hover-effect-fill-left {
+    overflow: hidden; /* Prioriza o overflow hidden para o efeito de preenchimento */
+}
+
 
 .link-button-custom.button-style-solid_shadow::after {
     content: '';
@@ -160,7 +267,7 @@ h1 {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.45);
     border-radius: inherit;
-    z-index: -1;
+    z-index: -1; /* Mantido, abaixo do conteúdo do botão e dos efeitos de hover diretos */
     transition: left 0.15s cubic-bezier(0.22, 1, 0.36, 1),
                 top 0.15s cubic-bezier(0.22, 1, 0.36, 1),
                 opacity 0.15s cubic-bezier(0.22, 1, 0.36, 1);

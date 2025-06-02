@@ -219,8 +219,8 @@
                                 <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
                                 <div style="flex-grow: 1;">
                                     <div class="button-preview
+                                        {# A classe hover-effect-preview será gerenciada dinamicamente por JS se necessário, ou omitida aqui #}
                                         {% if button.hasBorder %}has-border-preview{% endif %}
-                                        {% if button.hasHoverEffect and button.buttonStyle == 'default' %}hover-effect-preview{% endif %}
                                         {% if button.shadowType and button.shadowType != 'none' and button.buttonStyle == 'default' %}shadow-{{ button.shadowType }}{% endif %}
                                         button-style-{{ button.buttonStyle | default(DEFAULT_BUTTON_STYLE) }}"
                                         style="--btn-bg-color: {{ button.color | style_safe }}; --btn-opacity: {{ button.opacity | default(DEFAULT_BUTTON_OPACITY) }}; border-radius: {{ button.radius }}px; padding: 8px; margin-bottom: 8px; color: {{ button.textColor | style_safe }}; font-weight: {{ 'bold' if button.bold else 'normal' }}; font-style: {{ 'italic' if button.italic else 'normal' }}; font-size: {{ button.fontSize }}px; {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor | style_safe }};{% endif %}">
@@ -245,7 +245,7 @@
                                     <input type="hidden" name="custom_button_has_border[]" value="{{ 'true' if button.hasBorder else 'false' }}">
                                     <input type="hidden" name="custom_button_border_color[]" value="{{ button.borderColor | e }}">
                                     <input type="hidden" name="custom_button_border_width[]" value="{{ button.borderWidth }}">
-                                    <input type="hidden" name="custom_button_has_hover[]" value="{{ 'true' if button.hasHoverEffect else 'false' }}">
+                                    <input type="hidden" name="custom_button_hover_effect_type[]" value="{{ button.hoverEffectType | default('none') | e }}">
                                     <input type="hidden" name="custom_button_shadow_type[]" value="{{ button.shadowType | default('none') | e }}">
                                     <input type="hidden" name="custom_button_opacity[]" value="{{ button.opacity | default(DEFAULT_BUTTON_OPACITY) }}">
                                     <input type="hidden" name="custom_button_icon_url[]" value="{{ button.iconUrl | default('') | e }}">
@@ -346,19 +346,39 @@
                             <div class="form-group-inline"><label>Estilo do Texto:</label><input type="checkbox" id="button-text-bold" name="button-text-bold"><label for="button-text-bold">Negrito</label><input type="checkbox" id="button-text-italic" name="button-text-italic"><label for="button-text-italic">Itálico</label></div>
                             <div class="form-group"><label for="button-font-size">Tamanho da Fonte (px):</label><input type="number" id="button-font-size" min="10" max="30" value="16" class="form-input" style="width: 80px;"></div>
 
-                            <div data-style-target="default"> <div class="form-group-inline"><input type="checkbox" id="button-has-border"><label for="button-has-border">Adicionar Borda</label></div>
-                                <div id="border-options-group" style="display: none;" class="border-options-group">
-                                    <div class="form-group-inline"><label for="button-border-color">Cor da Borda:</label><input type="color" id="button-border-color" value="#000000"></div>
-                                    <div class="form-group-inline"><label for="button-border-width">Largura (px):</label><input type="number" id="button-border-width" min="1" max="10" value="2" class="form-input" style="width: 60px;"></div>
+                            <div data-style-target="default"> 
+                                <div class="form-group-inline">
+                                    <input type="checkbox" id="button-has-border">
+                                    <label for="button-has-border">Adicionar Borda</label>
                                 </div>
-                                <div class="form-group-inline"><input type="checkbox" id="button-has-hover"><label for="button-has-hover">Efeito Hover (Elevar)</label></div>
-                                <div class="form-group"><label for="button-shadow-type">Tipo de Sombra (Padrão):</label>
+                                <div id="border-options-group" style="display: none;" class="border-options-group">
+                                    <div class="form-group-inline">
+                                        <label for="button-border-color">Cor da Borda:</label>
+                                        <input type="color" id="button-border-color" value="#000000">
+                                    </div>
+                                    <div class="form-group-inline">
+                                        <label for="button-border-width">Largura (px):</label>
+                                        <input type="number" id="button-border-width" min="1" max="10" value="2" class="form-input" style="width: 60px;">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="button-hover-effect-type">Efeito Hover (Padrão):</label>
+                                    <select id="button-hover-effect-type" class="form-input">
+                                        <option value="none">Nenhum</option>
+                                        <option value="elevate">Elevar</option>
+                                        <option value="glow">Brilho Pulsante</option>
+                                        <option value="fill_left">Preenchimento Esquerda</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="button-shadow-type">Tipo de Sombra (Padrão):</label>
                                     <select id="button-shadow-type" class="form-input">
                                         <option value="none">Nenhuma</option><option value="soft">Suave</option>
                                         <option value="medium">Média</option><option value="hard">Forte</option><option value="inset">Interna</option>
                                     </select>
                                 </div>
-                            </div> <button type="button" id="save-button" class="btn-save"><i class="fas fa-check"></i> Salvar Botão</button>
+                            </div> 
+                            <button type="button" id="save-button" class="btn-save"><i class="fas fa-check"></i> Salvar Botão</button>
                         </div>
                     </div>
                 </div>

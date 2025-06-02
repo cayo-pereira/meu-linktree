@@ -1,3 +1,5 @@
+// static/js/admin.js
+
 // Função para obter valor de um elemento
 function getValue(elementId) {
     const el = document.getElementById(elementId);
@@ -90,7 +92,6 @@ function previewImage(input, previewId, fileInfoId) {
     const previewImageEl = document.getElementById(previewId);
     const fileInfoEl = document.getElementById(fileInfoId);
     const fileWrapper = input.closest('.file-upload-wrapper');
-    // Botão específico para remover imagem de fundo do CARTÃO (card_background_image_preview)
     const removeCardBgImageBtn = document.getElementById('remove_card_background_image_btn');
 
 
@@ -108,30 +109,17 @@ function previewImage(input, previewId, fileInfoId) {
             if (fileInfoEl) fileInfoEl.textContent = input.files[0].name;
             if (fileWrapper) fileWrapper.classList.add('has-file');
 
-            // Lógica específica para o botão de remover imagem de fundo do CARTÃO
             if (previewId === 'card_background_image_preview' && removeCardBgImageBtn) {
                 removeCardBgImageBtn.style.display = 'inline-flex';
                 const hiddenRemoveInput = document.getElementById('remove_card_background_image');
                 if (hiddenRemoveInput) hiddenRemoveInput.value = 'false';
             }
 
-            // Se a imagem sendo atualizada é a de fundo da PÁGINA, precisamos re-aplicar o overlay de escurecimento
             if (previewId === 'background_preview_page') {
                 updatePageBackgroundDarkenPreview();
             }
         };
         reader.readAsDataURL(input.files[0]);
-    } else { // Se nenhum arquivo for selecionado (ex: usuário cancela a seleção)
-        if (previewImageEl) {
-            // Não limpa o src se já houver uma imagem salva (identificada por não ser blob)
-            // A limpeza do src deve ocorrer apenas se o usuário explicitamente remover a imagem
-            // ou se a intenção for realmente limpar a prévia ao cancelar.
-            // Por ora, se cancelar, a prévia da imagem salva (se houver) permanece.
-        }
-        if (fileInfoEl && (!previewImageEl || !previewImageEl.src || previewImageEl.src.includes('blob:') || previewImageEl.src === window.location.href)) {
-            // fileInfoEl.textContent = 'Nenhum arquivo selecionado'; // Isso será tratado pelo carregamento inicial
-        }
-        // if (fileWrapper) fileWrapper.classList.remove('has-file'); // Idem
     }
 }
 
@@ -143,7 +131,6 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, function (m) { return map[m]; });
 }
 
-// Variáveis globais para o modal de botões
 let editingButtonData = null;
 let currentButtonModalPurpose = 'add';
 
@@ -156,11 +143,10 @@ document.addEventListener('DOMContentLoaded', function () {
     updateTextPreview('card_registro_preview', getValue('card_registro_profissional'), getValue('card_registro_font'), getValue('card_registro_color'));
     updateTextPreview('card_endereco_preview', getValue('card_endereco'), getValue('card_endereco_font'), getValue('card_endereco_color'));
 
-    // Lista de imagens para carregar fileInfo e preview no início
     const fotosParaPreviewInicial = [
-        { id: 'foto_preview', infoId: 'foto_info', uploadId: 'foto_upload' }, // Perfil
-        { id: 'card_background_image_preview', infoId: 'card_background_info', uploadId: 'card_background_upload' }, // Fundo do Cartão
-        { id: 'background_preview_page', infoId: 'background_info_page', uploadId: 'background_upload'} // Fundo da Página
+        { id: 'foto_preview', infoId: 'foto_info', uploadId: 'foto_upload' },
+        { id: 'card_background_image_preview', infoId: 'card_background_info', uploadId: 'card_background_upload' },
+        { id: 'background_preview_page', infoId: 'background_info_page', uploadId: 'background_upload'}
     ];
 
     fotosParaPreviewInicial.forEach(item => {
@@ -172,40 +158,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (previewElement && previewElement.src && previewElement.src !== window.location.href && !previewElement.src.includes('blob:') && previewElement.src.trim() !== '') {
             if (containerElement) {
-                // Para background_preview_page_container, o display é 'block' ou 'none' baseado na img.src
-                // Para outros, pode ser 'block' ou 'flex' dependendo do CSS
                 containerElement.style.display = containerElement.id === 'background_preview_page_container' && !previewElement.src ? 'none' : 'block';
                  if (previewElement.src && previewElement.src !== window.location.href && !previewElement.src.includes('blob:')) {
-                    containerElement.classList.add('preview-active'); // Adiciona se tiver imagem real
+                    containerElement.classList.add('preview-active');
                  } else {
                     containerElement.classList.remove('preview-active');
                  }
-
             }
             if (infoElement) {
                 try {
                     const urlParts = previewElement.src.split('/');
                     const fileNameWithQuery = urlParts[urlParts.length - 1];
-                    const fileName = fileNameWithQuery.split('?')[0]; // Remove query params se houver
+                    const fileName = fileNameWithQuery.split('?')[0];
                     infoElement.textContent = `Atual: ${decodeURIComponent(fileName)}`;
                 } catch (e) {
                     infoElement.textContent = 'Imagem atual carregada';
                 }
             }
             if (fileWrapper) fileWrapper.classList.add('has-file');
-
-            // Lógica específica para o botão de remover imagem de fundo do CARTÃO
             if (item.id === 'card_background_image_preview') {
                 const removeBtn = document.getElementById('remove_card_background_image_btn');
                 if (removeBtn) removeBtn.style.display = 'inline-flex';
             }
-        } else { // Se não há imagem salva (src está vazio, é blob, ou é a URL da página)
+        } else {
             if (infoElement) infoElement.textContent = 'Nenhum arquivo selecionado';
             if (containerElement) {
                 containerElement.style.display = 'none';
                 containerElement.classList.remove('preview-active');
             }
-             // Lógica específica para o botão de remover imagem de fundo do CARTÃO
             if (item.id === 'card_background_image_preview') {
                 const removeBtn = document.getElementById('remove_card_background_image_btn');
                 if (removeBtn) removeBtn.style.display = 'none';
@@ -213,8 +193,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-
-    // Lógica para remover imagem de fundo do CARTÃO (já existente)
     const removeCardBgBtn = document.getElementById('remove_card_background_image_btn');
     const cardBgUploadInput = document.getElementById('card_background_upload');
     const cardBgImagePreview = document.getElementById('card_background_image_preview');
@@ -224,7 +202,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (removeCardBgBtn) {
         removeCardBgBtn.addEventListener('click', () => {
-            if (cardBgUploadInput) cardBgUploadInput.value = ''; // Limpa o input file
+            if (cardBgUploadInput) cardBgUploadInput.value = '';
             if (cardBgImagePreview) {
                 cardBgImagePreview.src = '';
                 cardBgImagePreview.style.display = 'none';
@@ -234,11 +212,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 cardBgImagePreviewContainer.style.display = 'none';
             }
             if (cardBgInfo) cardBgInfo.textContent = 'Nenhum arquivo selecionado';
-
             const cardBgUploadWrapper = cardBgUploadInput ? cardBgUploadInput.closest('.file-upload-wrapper') : null;
             if (cardBgUploadWrapper) cardBgUploadWrapper.classList.remove('has-file');
-
-            if (removeCardBgHiddenInput) removeCardBgHiddenInput.value = 'true'; // Marca para remoção no backend
+            if (removeCardBgHiddenInput) removeCardBgHiddenInput.value = 'true';
             removeCardBgBtn.style.display = 'none';
         });
     }
@@ -267,121 +243,16 @@ document.addEventListener('DOMContentLoaded', function () {
     const prevIconPageBtn = document.getElementById('prev-icon-page');
     const nextIconPageBtn = document.getElementById('next-icon-page');
     const currentPageSpan = document.getElementById('current-page');
-    let currentIconModalPurpose = ''; // 'social', 'card_link', 'button_icon_selector'
-    let selectedIconNameForButtonModal = ''; // Armazena o nome do ARQUIVO do ícone (ex: 'instagram.png')
+    let currentIconModalPurpose = '';
+    let selectedIconNameForButtonModal = '';
 
-    // ... (array allSocialIcons - extenso, mantido como no original)
     const allSocialIcons = [
-        { name: 'instagram', path: '/static/icons/instagram.png' },
-        { name: 'instagram-redondo', path: '/static/icons/instagram-redondo.png' },
-        { name: 'linkedin', path: '/static/icons/linkedin.png' },
-        { name: 'linkedin-redondo', path: '/static/icons/linkedin-redondo.png' },
-        { name: 'linkedin-preto', path: '/static/icons/linkedin-preto' },
-        { name: 'github', path: '/static/icons/github.png' },
-        { name: 'github-redondo', path: '/static/icons/github-redondo.png' },
-        { name: 'email', path: '/static/icons/email.png' },
-        { name: 'email-preto', path: '/static/icons/email-preto.png' },
-        { name: 'gmail', path: '/static/icons/gmail.png' },
-        { name: 'gmail-redondo', path: '/static/icons/gmail-redondo.png' },
-        { name: 'gmail-preto', path: '/static/icons/gmail-redondo.png' }, // Note: original tinha gmail-redondo aqui, verificar se é intencional
-        { name: 'whatsapp', path: '/static/icons/whatsapp.png' },
-        { name: 'whatsapp-v-p', path: '/static/icons/whatsapp-v-p.png' },
-        { name: 'whatsapp-preto', path: '/static/icons/whatsapp-preto.png' },
-        { name: 'twitter', path: '/static/icons/twitter.png' }, // Considere 'x-twitter.png' se atualizado
-        { name: 'facebook', path: '/static/icons/facebook.png' },
-        { name: 'facebook-redondo', path: '/static/icons/facebook-redondo.png' },
-        { name: 'youtube', path: '/static/icons/youtube.png' },
-        { name: 'youtube-preto', path: '/static/icons/youtube-preto.png' },
-        { name: 'youtube-r', path: '/static/icons/youtube-r.png' },
-        { name: 'youtube-p-r', path: '/static/icons/youtube-p-r.png' },
-        { name: 'telegram', path: '/static/icons/telegram.png' },
-        { name: 'telegrama-p', path: '/static/icons/telegrama-p.png' },
-        { name: 'tiktok', path: '/static/icons/tiktok.png' },
-        { name: 'tiktok-r', path: '/static/icons/tiktok-r.png' },
-        { name: 'pinterest', path: '/static/icons/pinterest.png' },
-        { name: 'pinterest-p', path: '/static/icons/pinterest-p.png' },
-        { name: 'twitch', path: '/static/icons/twitch.png' },
-        { name: 'twitch-r', path: '/static/icons/twitch-r.png' },
-        { name: 'discord', path: '/static/icons/discord.png' },
-        { name: 'discord-p', path: '/static/icons/discord-p.png' },
-        { name: 'discord-p-r', path: '/static/icons/discord-p-r.png' },
-        { name: 'discord-r', path: '/static/icons/discord-r.png' },
-        { name: 'snapchat', path: '/static/icons/snapchat.png' },
-        { name: 'snapchat-r', path: '/static/icons/snapchat-r.png' },
-        { name: 'reddit', path: '/static/icons/reddit.png' },
-        { name: 'reddit-p', path: '/static/icons/reddit-p.png' },
-        { name: 'vimeo', path: '/static/icons/vimeo.png' },
-        { name: 'spotify', path: '/static/icons/spotify.png' },
-        { name: 'spotify-p', path: '/static/icons/spotify-p.png' },
-        { name: 'soundcloud', path: '/static/icons/soundcloud.png' },
-        { name: 'soundcloud-p', path: '/static/icons/soundcloud-p.png' },
-        { name: 'behance', path: '/static/icons/behance.png' },
-        { name: 'behance-p', path: '/static/icons/behance-p.png' },
-        { name: 'flickr', path: '/static/icons/flickr.png' },
-        { name: 'paypal', path: '/static/icons/paypal.png' },
-        { name: 'paypal-p', path: '/static/icons/paypal-p.png' },
-        { name: 'paypal-p-r', path: '/static/icons/paypal-p-r.png' },
-        { name: 'paypal-r', path: '/static/icons/paypal-r.png' },
-        { name: 'google-drive', path: '/static/icons/google-drive.png' },
-        { name: 'google-drive-r', path: '/static/icons/google-drive-r.png' },
-        { name: 'google-drive-r-p', path: '/static/icons/google-drive-r-p.png' },
-        { name: 'dropbox', path: '/static/icons/dropbox.png' },
-        { name: 'dropbox-p', path: '/static/icons/dropbox-p.png' },
-        { name: 'link', path: '/static/icons/link.png' },
-        { name: 'link-1', path: '/static/icons/link-1.png' },
-        { name: 'link-2', path: '/static/icons/link-2.png' },
-        { name: 'website', path: '/static/icons/website.png' },
-        { name: 'website-p', path: '/static/icons/website-p.png' },
-        { name: 'gitlab', path: '/static/icons/gitlab.png' },
-        { name: 'gitlab-p-r', path: '/static/icons/gitlab-p-r.png' },
-        { name: 'gitlab-r', path: '/static/icons/gitlab-r.png' },
-        { name: 'gitlab-rv-p', path: '/static/icons/gitlab-rv-p.png' },
-        { name: 'codepen', path: '/static/icons/codepen.png' },
-        { name: 'codepen-p-r', path: '/static/icons/codepen-p-r.png' },
-        { name: 'codepen-r-b', path: '/static/icons/codepen-r-b.png' },
-        { name: 'patreon', path: '/static/icons/patreon.png' },
-        { name: 'patreon-c', path: '/static/icons/patreon-c.png' },
-        { name: 'patreon-r', path: '/static/icons/patreon-r.png' },
-        { name: 'patreon-r-p', path: '/static/icons/patreon-r-p.png' },
-        { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' },
-        { name: 'buymeacoffee-p', path: '/static/icons/buymeacoffee-p.png' },
-        { name: 'ko-fi', path: '/static/icons/ko-fi.png' },
-        { name: 'ko-fi-p', path: '/static/icons/ko-fi-p.png' },
-        { name: 'slack', path: '/static/icons/slack.png' },
-        { name: 'slack-r', path: '/static/icons/slack-r.png' },
-        { name: 'slack-r-p', path: '/static/icons/slack-r-p.png' },
-        { name: 'teams', path: '/static/icons/teams.png' },
-        { name: 'teams-r', path: '/static/icons/teams-r.png' },
-        { name: 'teams-r-p', path: '/static/icons/teams-r-p.png' },
-        { name: 'skype', path: '/static/icons/skype.png' },
-        { name: 'skype-o', path: '/static/icons/skype-o.png' },
-        { name: 'skype-o-p', path: '/static/icons/skype-o-p.png' },
-        { name: 'skype-p', path: '/static/icons/skype-p.png' },
-        { name: 'academia-edu', path: '/static/icons/academia-edu.png' },
-        { name: 'bluesky-r-p', path: '/static/icons/bluesky-r-p.png' },
-        { name: 'closefans-r', path: '/static/icons/closefans-r.png' }, // Verificar se colsefans-r-p deve ser closefans-r-p
-        { name: 'colsefans-r-p', path: '/static/icons/colsefans-r-p.png' }, // Potencial typo: colsefans
-        { name: 'kwai', path: '/static/icons/kwai.png' },
-        { name: 'kwai-p', path: '/static/icons/kwai-p.png' },
-        { name: 'kwai-r', path: '/static/icons/kwai-r.png' },
-        { name: 'kwai-r-p', path: '/static/icons/kwai-r-p.png' },
-        { name: 'kwai-rb-p', path: '/static/icons/kwai-rb-p.png' },
-        { name: 'kwai-vr-p', path: '/static/icons/kwai-vr-p.png' },
-        { name: 'onlyfans', path: '/static/icons/onlyfans.png' },
-        { name: 'onlyfans-r', path: '/static/icons/onlyfans-r.png' },
-        { name: 'onlyfans-r-p', path: '/static/icons/onlyfans-r-p.png' },
-        { name: 'onlyfans-rv-p', path: '/static/icons/onlyfans-rv-p.png' },
-        { name: 'privacy', path: '/static/icons/privacy.png' }, // Nome genérico, pode precisar de mais contexto
-        { name: 'privacy-r', path: '/static/icons/privacy-r.png' },
-        { name: 'privacy-r-p', path: '/static/icons/privacy-r-p.png' },
-        { name: 'privacy-rv-p', path: '/static/icons/privacy-rv-p.png' },
-        { name: 'x-twitter', path: '/static/icons/x-twitter.png' },
-        { name: 'x-twitter-r', path: '/static/icons/x-twitter-r.png' },
-    ].sort((a, b) => a.name.localeCompare(b.name)); // Ordena por nome
+        { name: 'instagram', path: '/static/icons/instagram.png' }, { name: 'instagram-redondo', path: '/static/icons/instagram-redondo.png' }, { name: 'linkedin', path: '/static/icons/linkedin.png' }, { name: 'linkedin-redondo', path: '/static/icons/linkedin-redondo.png' }, { name: 'linkedin-preto', path: '/static/icons/linkedin-preto' }, { name: 'github', path: '/static/icons/github.png' }, { name: 'github-redondo', path: '/static/icons/github-redondo.png' }, { name: 'email', path: '/static/icons/email.png' }, { name: 'email-preto', path: '/static/icons/email-preto.png' }, { name: 'gmail', path: '/static/icons/gmail.png' }, { name: 'gmail-redondo', path: '/static/icons/gmail-redondo.png' }, { name: 'gmail-preto', path: '/static/icons/gmail-redondo.png' }, { name: 'whatsapp', path: '/static/icons/whatsapp.png' }, { name: 'whatsapp-v-p', path: '/static/icons/whatsapp-v-p.png' }, { name: 'whatsapp-preto', path: '/static/icons/whatsapp-preto.png' }, { name: 'twitter', path: '/static/icons/twitter.png' }, { name: 'facebook', path: '/static/icons/facebook.png' }, { name: 'facebook-redondo', path: '/static/icons/facebook-redondo.png' }, { name: 'youtube', path: '/static/icons/youtube.png' }, { name: 'youtube-preto', path: '/static/icons/youtube-preto.png' }, { name: 'youtube-r', path: '/static/icons/youtube-r.png' }, { name: 'youtube-p-r', path: '/static/icons/youtube-p-r.png' }, { name: 'telegram', path: '/static/icons/telegram.png' }, { name: 'telegrama-p', path: '/static/icons/telegrama-p.png' }, { name: 'tiktok', path: '/static/icons/tiktok.png' }, { name: 'tiktok-r', path: '/static/icons/tiktok-r.png' }, { name: 'pinterest', path: '/static/icons/pinterest.png' }, { name: 'pinterest-p', path: '/static/icons/pinterest-p.png' }, { name: 'twitch', path: '/static/icons/twitch.png' }, { name: 'twitch-r', path: '/static/icons/twitch-r.png' }, { name: 'discord', path: '/static/icons/discord.png' }, { name: 'discord-p', path: '/static/icons/discord-p.png' }, { name: 'discord-p-r', path: '/static/icons/discord-p-r.png' }, { name: 'discord-r', path: '/static/icons/discord-r.png' }, { name: 'snapchat', path: '/static/icons/snapchat.png' }, { name: 'snapchat-r', path: '/static/icons/snapchat-r.png' }, { name: 'reddit', path: '/static/icons/reddit.png' }, { name: 'reddit-p', path: '/static/icons/reddit-p.png' }, { name: 'vimeo', path: '/static/icons/vimeo.png' }, { name: 'spotify', path: '/static/icons/spotify.png' }, { name: 'spotify-p', path: '/static/icons/spotify-p.png' }, { name: 'soundcloud', path: '/static/icons/soundcloud.png' }, { name: 'soundcloud-p', path: '/static/icons/soundcloud-p.png' }, { name: 'behance', path: '/static/icons/behance.png' }, { name: 'behance-p', path: '/static/icons/behance-p.png' }, { name: 'flickr', path: '/static/icons/flickr.png' }, { name: 'paypal', path: '/static/icons/paypal.png' }, { name: 'paypal-p', path: '/static/icons/paypal-p.png' }, { name: 'paypal-p-r', path: '/static/icons/paypal-p-r.png' }, { name: 'paypal-r', path: '/static/icons/paypal-r.png' }, { name: 'google-drive', path: '/static/icons/google-drive.png' }, { name: 'google-drive-r', path: '/static/icons/google-drive-r.png' }, { name: 'google-drive-r-p', path: '/static/icons/google-drive-r-p.png' }, { name: 'dropbox', path: '/static/icons/dropbox.png' }, { name: 'dropbox-p', path: '/static/icons/dropbox-p.png' }, { name: 'link', path: '/static/icons/link.png' }, { name: 'link-1', path: '/static/icons/link-1.png' }, { name: 'link-2', path: '/static/icons/link-2.png' }, { name: 'website', path: '/static/icons/website.png' }, { name: 'website-p', path: '/static/icons/website-p.png' }, { name: 'gitlab', path: '/static/icons/gitlab.png' }, { name: 'gitlab-p-r', path: '/static/icons/gitlab-p-r.png' }, { name: 'gitlab-r', path: '/static/icons/gitlab-r.png' }, { name: 'gitlab-rv-p', path: '/static/icons/gitlab-rv-p.png' }, { name: 'codepen', path: '/static/icons/codepen.png' }, { name: 'codepen-p-r', path: '/static/icons/codepen-p-r.png' }, { name: 'codepen-r-b', path: '/static/icons/codepen-r-b.png' }, { name: 'patreon', path: '/static/icons/patreon.png' }, { name: 'patreon-c', path: '/static/icons/patreon-c.png' }, { name: 'patreon-r', path: '/static/icons/patreon-r.png' }, { name: 'patreon-r-p', path: '/static/icons/patreon-r-p.png' }, { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' }, { name: 'buymeacoffee-p', path: '/static/icons/buymeacoffee-p.png' }, { name: 'ko-fi', path: '/static/icons/ko-fi.png' }, { name: 'ko-fi-p', path: '/static/icons/ko-fi-p.png' }, { name: 'slack', path: '/static/icons/slack.png' }, { name: 'slack-r', path: '/static/icons/slack-r.png' }, { name: 'slack-r-p', path: '/static/icons/slack-r-p.png' }, { name: 'teams', path: '/static/icons/teams.png' }, { name: 'teams-r', path: '/static/icons/teams-r.png' }, { name: 'teams-r-p', path: '/static/icons/teams-r-p.png' }, { name: 'skype', path: '/static/icons/skype.png' }, { name: 'skype-o', path: '/static/icons/skype-o.png' }, { name: 'skype-o-p', path: '/static/icons/skype-o-p.png' }, { name: 'skype-p', path: '/static/icons/skype-p.png' }, { name: 'academia-edu', path: '/static/icons/academia-edu.png' }, { name: 'bluesky-r-p', path: '/static/icons/bluesky-r-p.png' }, { name: 'closefans-r', path: '/static/icons/closefans-r.png' }, { name: 'colsefans-r-p', path: '/static/icons/colsefans-r-p.png' }, { name: 'kwai', path: '/static/icons/kwai.png' }, { name: 'kwai-p', path: '/static/icons/kwai-p.png' }, { name: 'kwai-r', path: '/static/icons/kwai-r.png' }, { name: 'kwai-r-p', path: '/static/icons/kwai-r-p.png' }, { name: 'kwai-rb-p', path: '/static/icons/kwai-rb-p.png' }, { name: 'kwai-vr-p', path: '/static/icons/kwai-vr-p.png' }, { name: 'onlyfans', path: '/static/icons/onlyfans.png' }, { name: 'onlyfans-r', path: '/static/icons/onlyfans-r.png' }, { name: 'onlyfans-r-p', path: '/static/icons/onlyfans-r-p.png' }, { name: 'onlyfans-rv-p', path: '/static/icons/onlyfans-rv-p.png' }, { name: 'privacy', path: '/static/icons/privacy.png' }, { name: 'privacy-r', path: '/static/icons/privacy-r.png' }, { name: 'privacy-r-p', path: '/static/icons/privacy-r-p.png' }, { name: 'privacy-rv-p', path: '/static/icons/privacy-rv-p.png' }, { name: 'x-twitter', path: '/static/icons/x-twitter.png' }, { name: 'x-twitter-r', path: '/static/icons/x-twitter-r.png' },
+    ].sort((a, b) => a.name.localeCompare(b.name));
 
     let filteredIcons = [...allSocialIcons];
     let currentPage = 1;
-    const iconsPerPage = 9; // Ou 12 para 4 colunas (3x4 ou 4x3)
+    const iconsPerPage = 9;
 
     function renderIcons() {
         if (!iconsGrid || !currentPageSpan) return;
@@ -393,8 +264,8 @@ document.addEventListener('DOMContentLoaded', function () {
         paginatedIcons.forEach(icon => {
             const iconDiv = document.createElement('div');
             iconDiv.className = 'icon-option';
-            iconDiv.dataset.iconName = icon.name; // Usar o 'name' para identificação interna
-            iconDiv.dataset.iconPath = icon.path; // Armazenar o path completo
+            iconDiv.dataset.iconName = icon.name;
+            iconDiv.dataset.iconPath = icon.path;
             iconDiv.innerHTML = `
                 <img src="${icon.path.startsWith('/static') ? icon.path : STATIC_ICONS_PATH + icon.path}" alt="${icon.name.replace(/-/g, ' ')}">
                 <p>${icon.name.replace(/-/g, ' ')}</p>
@@ -433,8 +304,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         document.body.classList.remove('modal-open');
         currentIconModalPurpose = '';
-        selectedIconNameForButtonModal = ''; // Limpa o ícone selecionado para o modal de botão
-         // Limpar seleção no grid de ícones
+        selectedIconNameForButtonModal = '';
         const selectedIconInGrid = iconModal ? iconModal.querySelector('.icon-option.selected') : null;
         if (selectedIconInGrid) {
             selectedIconInGrid.classList.remove('selected');
@@ -447,15 +317,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function openIconModal(purpose) {
         currentIconModalPurpose = purpose;
-        if (iconSearchInput) iconSearchInput.value = ''; // Limpa a busca
-        filterAndRenderIcons(); // Renderiza todos os ícones
+        if (iconSearchInput) iconSearchInput.value = '';
+        filterAndRenderIcons();
         if (iconModal) {
             if (purpose === 'button_icon_selector') {
-                iconModal.classList.add('modal-on-top'); // Garante que o modal de ícones fique sobre o de botões
+                iconModal.classList.add('modal-on-top');
             }
             iconModal.classList.add('show');
             document.body.classList.add('modal-open');
-            setTimeout(() => iconModal.classList.add('active'), 50); // Pequeno delay para transição CSS
+            setTimeout(() => iconModal.classList.add('active'), 50);
         }
     }
 
@@ -480,12 +350,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert('Por favor, selecione um ícone.');
                 return;
             }
-            const iconNameFromDataset = selectedIconDiv.dataset.iconName; // Ex: 'instagram' (nome amigável/chave)
-            const iconPathFromDataset = selectedIconDiv.dataset.iconPath; // Ex: '/static/icons/instagram.png'
-            
-            // O nome do arquivo é a última parte do path
+            const iconNameFromDataset = selectedIconDiv.dataset.iconName;
+            const iconPathFromDataset = selectedIconDiv.dataset.iconPath;
             const iconFileNameOnly = iconPathFromDataset.split('/').pop();
-
 
             if (currentIconModalPurpose === 'social') {
                 const socialItem = document.createElement('div');
@@ -493,7 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 socialItem.innerHTML = `
                     <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
                     <img src="${iconPathFromDataset.startsWith('/static') ? iconPathFromDataset : STATIC_ICONS_PATH + iconFileNameOnly}" alt="${iconNameFromDataset}" width="24" height="24">
-                    <input type="hidden" name="social_icon_name[]" value="${iconFileNameOnly}"> {/* Salva o NOME DO ARQUIVO */}
+                    <input type="hidden" name="social_icon_name[]" value="${iconFileNameOnly}">
                     <input type="text" name="social_icon_url[]" placeholder="Insira o link para ${iconNameFromDataset.replace(/-/g, ' ')}" class="form-input" required>
                     <span class="remove-item" title="Remover este ícone"><i class="fas fa-times"></i></span>
                 `;
@@ -506,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 cardLinkItem.innerHTML = `
                     <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
                     <img src="${iconPathFromDataset.startsWith('/static') ? iconPathFromDataset : STATIC_ICONS_PATH + iconFileNameOnly}" alt="${iconNameFromDataset}" width="24" height="24">
-                    <input type="hidden" name="card_icon_name[]" value="${iconFileNameOnly}"> {/* Salva o NOME DO ARQUIVO */}
+                    <input type="hidden" name="card_icon_name[]" value="${iconFileNameOnly}">
                     <div class="input-group">
                         <input type="url" name="card_icon_url[]" placeholder="URL do Link (Opcional)" class="form-input">
                         <input type="text" name="card_icon_at_text[]" placeholder="Texto exibido (ex: @usuario)" class="form-input card-link-item-at-text">
@@ -532,10 +399,9 @@ document.addEventListener('DOMContentLoaded', function () {
                     <span class="remove-item" title="Remover este link do cartão"><i class="fas fa-times"></i></span>
                 `;
                 if(cardLinksContainer) cardLinksContainer.appendChild(cardLinkItem);
-                updateCardLinkItemPreview(cardLinkItem); // Atualiza a prévia do novo item
+                updateCardLinkItemPreview(cardLinkItem);
                 cardLinkItem.querySelector('.remove-item').addEventListener('click', function () { this.closest('.card-link-item').remove(); });
 
-                // Adicionar listeners para os novos inputs do link do cartão
                 const atTextInputNew = cardLinkItem.querySelector('.card-link-item-at-text');
                 const fontSelectNew = cardLinkItem.querySelector('.card-link-item-font');
                 const colorInputNew = cardLinkItem.querySelector('.card-link-item-color');
@@ -547,25 +413,22 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (colorInputNew && hiddenColorInputNew) colorInputNew.addEventListener('input', () => { hiddenColorInputNew.value = colorInputNew.value; updateCardLinkItemPreview(cardLinkItem); });
                 closeModals();
             } else if (currentIconModalPurpose === 'button_icon_selector') {
-                selectedIconNameForButtonModal = iconFileNameOnly; // Salva o NOME DO ARQUIVO (ex: 'instagram.png')
+                selectedIconNameForButtonModal = iconFileNameOnly;
 
                 const buttonModalActualIconType = document.getElementById('button-modal-actual-icon-type');
                 const buttonModalActualIconValue = document.getElementById('button-modal-actual-icon-value');
                 const libraryIconNamePreview = document.getElementById('button-library-icon-name-preview');
 
                 if (buttonModalActualIconType) buttonModalActualIconType.value = 'library_icon';
-                if (buttonModalActualIconValue) buttonModalActualIconValue.value = selectedIconNameForButtonModal; // Salva o NOME DO ARQUIVO
+                if (buttonModalActualIconValue) buttonModalActualIconValue.value = selectedIconNameForButtonModal;
                 if (libraryIconNamePreview) libraryIconNamePreview.textContent = `Ícone selecionado: ${iconNameFromDataset.replace(/-/g, ' ')}`;
 
-                updateButtonPreview(); // Atualiza a prévia do botão no modal de botões
+                updateButtonPreview();
 
-                // Fecha APENAS o iconModal, mantendo o buttonModal aberto
                 if (iconModal) {
                     iconModal.classList.remove('active', 'show', 'modal-on-top');
                 }
-                // Não remove 'modal-open' do body aqui, pois o buttonModal ainda está ativo
-                currentIconModalPurpose = ''; // Resetar o propósito para o próximo uso
-                // Limpar seleção no grid de ícones
+                currentIconModalPurpose = '';
                 const selectedIconInGrid = iconModal ? iconModal.querySelector('.icon-option.selected') : null;
                 if (selectedIconInGrid) {
                     selectedIconInGrid.classList.remove('selected');
@@ -576,10 +439,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-
-    // Inicializar prévias para links de cartão existentes
     document.querySelectorAll('#card-links-container .card-link-item').forEach(item => {
-        updateCardLinkItemPreview(item); // Atualiza a prévia ao carregar
+        updateCardLinkItemPreview(item);
         const atTextInput = item.querySelector('.card-link-item-at-text');
         const fontSelect = item.querySelector('.card-link-item-font');
         const colorInput = item.querySelector('.card-link-item-color');
@@ -590,7 +451,6 @@ document.addEventListener('DOMContentLoaded', function () {
         if (fontSelect && hiddenFontInput) fontSelect.addEventListener('change', () => { hiddenFontInput.value = fontSelect.value; updateCardLinkItemPreview(item); });
         if (colorInput && hiddenColorInput) colorInput.addEventListener('input', () => { hiddenColorInput.value = colorInput.value; updateCardLinkItemPreview(item); });
     });
-
 
     const addButtonBtn = document.getElementById('add-button-btn');
     const buttonModalCloseBtn = buttonModal ? buttonModal.querySelector('.button-modal-close') : null;
@@ -628,57 +488,46 @@ document.addEventListener('DOMContentLoaded', function () {
     const borderOptionsGroup = document.getElementById('border-options-group');
     const buttonBorderColorInput = document.getElementById('button-border-color');
     const buttonBorderWidthInput = document.getElementById('button-border-width');
-    const buttonHasHoverCheckbox = document.getElementById('button-has-hover');
+    
+    // NOVO: Seletor para o tipo de efeito hover
+    const buttonHoverEffectTypeSelect = document.getElementById('button-hover-effect-type');
+    
     const buttonShadowTypeSelect = document.getElementById('button-shadow-type');
-
-    // Inputs ocultos para armazenar o tipo e valor REAL do ícone do botão
     const buttonModalActualIconType = document.getElementById('button-modal-actual-icon-type');
     const buttonModalActualIconValue = document.getElementById('button-modal-actual-icon-value');
 
-
     function manageButtonIconFieldsVisibility() {
         if(!buttonIconTypeSelect || !buttonIconUrlExternalGroup || !buttonNewImageFileGroup || !buttonSelectLibraryIconGroup || !buttonIconRoundedGroup || !buttonIconUrlExternalInput || !buttonNewImageFileInput || !libraryIconNamePreview || !buttonIconRoundedCheckbox) return;
-
         const selectedType = buttonIconTypeSelect.value;
-
         buttonIconUrlExternalGroup.style.display = selectedType === 'image_url_external' ? 'block' : 'none';
         buttonNewImageFileGroup.style.display = selectedType === 'image_upload_new' ? 'block' : 'none';
         buttonSelectLibraryIconGroup.style.display = selectedType === 'library_icon' ? 'block' : 'none';
-        // Mostrar arredondamento para URL externa e upload novo. Para ícones da lib, geralmente não se arredonda a menos que seja desejado.
         buttonIconRoundedGroup.style.display = (selectedType === 'image_url_external' || selectedType === 'image_upload_new' || selectedType === 'library_icon') ? 'flex' : 'none';
 
-
-        // Limpar campos não selecionados e 'actual' values
         if (selectedType !== 'image_url_external') buttonIconUrlExternalInput.value = '';
         if (selectedType !== 'image_upload_new') {
-            buttonNewImageFileInput.value = ''; // Limpa o input file
+            buttonNewImageFileInput.value = '';
             if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = 'Nenhum arquivo selecionado';
         }
         if (selectedType !== 'library_icon') {
-            if (libraryIconNamePreview) libraryIconNamePreview.textContent = ''; // Limpa nome do ícone da lib
-            selectedIconNameForButtonModal = ''; // Limpa a variável JS
+            if (libraryIconNamePreview) libraryIconNamePreview.textContent = '';
+            selectedIconNameForButtonModal = '';
         }
 
-        // Atualizar 'actual' values baseado na seleção (antes de limpar)
-        // Se o tipo selecionado é diferente do 'actual type', então o 'actual value' deve ser limpo.
         if (buttonModalActualIconType && buttonModalActualIconType.value !== selectedType) {
             if(buttonModalActualIconValue) buttonModalActualIconValue.value = '';
         }
         if (selectedType === 'none') {
             if(buttonModalActualIconType) buttonModalActualIconType.value = 'none';
             if(buttonModalActualIconValue) buttonModalActualIconValue.value = '';
-            buttonIconRoundedCheckbox.checked = false; // Desmarcar arredondamento se nenhum ícone
+            buttonIconRoundedCheckbox.checked = false;
         } else if (selectedType === 'library_icon' && selectedIconNameForButtonModal) {
-            // Se mudou para library_icon E já havia um selecionado, restaura
             if(buttonModalActualIconType) buttonModalActualIconType.value = 'library_icon';
             if(buttonModalActualIconValue) buttonModalActualIconValue.value = selectedIconNameForButtonModal;
         } else if (selectedType === 'image_url_external') {
-            // Se mudou para URL externa, o actual value virá do input
             if(buttonModalActualIconType) buttonModalActualIconType.value = 'image_url_external';
             if(buttonModalActualIconValue) buttonModalActualIconValue.value = buttonIconUrlExternalInput.value;
         }
-        // Para 'image_upload_new', o actual value é setado no evento 'change' do input file.
-
         updateButtonPreview();
     }
 
@@ -695,16 +544,12 @@ document.addEventListener('DOMContentLoaded', function () {
     async function uploadButtonImageAJAX(file) {
         if (!file) return null;
         const formData = new FormData();
-        formData.append('button_image', file); // Nome do campo esperado pelo backend
-
+        formData.append('button_image', file);
         if (liveButtonIconPreview) liveButtonIconPreview.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
-
         try {
-            const response = await fetch(UPLOAD_BUTTON_IMAGE_URL, { // UPLOAD_BUTTON_IMAGE_URL é uma var global
+            const response = await fetch(UPLOAD_BUTTON_IMAGE_URL, {
                 method: 'POST',
                 body: formData,
-                // Não defina Content-Type aqui, o browser faz isso com FormData
             });
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({ error: 'Erro desconhecido no upload.' }));
@@ -712,42 +557,39 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             const data = await response.json();
             if (data.url) {
-                return data.url; // URL pública do Supabase
+                return data.url;
             } else {
                 throw new Error(data.error || 'URL da imagem não retornada.');
             }
         } catch (error) {
             console.error('Erro no upload da imagem do botão:', error);
             alert(`Erro ao enviar imagem: ${error.message}`);
-            if (liveButtonIconPreview) liveButtonIconPreview.innerHTML = ''; // Limpa o spinner
+            if (liveButtonIconPreview) liveButtonIconPreview.innerHTML = '';
             return null;
         }
     }
-
 
     if (buttonNewImageFileInput) {
         buttonNewImageFileInput.addEventListener('change', async function () {
             if (this.files && this.files[0]) {
                 const file = this.files[0];
                 if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = file.name;
-
                 const uploadedUrl = await uploadButtonImageAJAX(file);
                 if (uploadedUrl) {
-                    if (buttonModalActualIconType) buttonModalActualIconType.value = 'image_uploaded'; // Tipo especial para saber que é do storage
+                    if (buttonModalActualIconType) buttonModalActualIconType.value = 'image_uploaded';
                     if (buttonModalActualIconValue) buttonModalActualIconValue.value = uploadedUrl;
                     updateButtonPreview();
-                } else { // Falha no upload
-                    this.value = ''; // Limpa o input file
+                } else {
+                    this.value = '';
                     if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = 'Falha no envio. Nenhum arquivo selecionado.';
                     if (buttonModalActualIconType && buttonModalActualIconType.value === 'image_uploaded') {
-                        buttonModalActualIconType.value = 'none'; // Reverte para 'none'
+                        buttonModalActualIconType.value = 'none';
                         if(buttonModalActualIconValue) buttonModalActualIconValue.value = '';
                     }
                     updateButtonPreview();
                 }
-            } else { // Nenhum arquivo selecionado (ex: cancelou)
+            } else {
                 if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = 'Nenhum arquivo selecionado';
-                // Se o tipo atual era 'image_uploaded', e o usuário cancela, precisa resetar
                 if (buttonModalActualIconType && buttonModalActualIconType.value === 'image_uploaded') {
                     buttonModalActualIconType.value = 'none';
                     if(buttonModalActualIconValue) buttonModalActualIconValue.value = '';
@@ -758,18 +600,16 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     if (buttonIconUrlExternalInput) {
         buttonIconUrlExternalInput.addEventListener('input', function () {
-            // Só atualiza o 'actual' se o tipo selecionado for realmente 'image_url_external'
             if (buttonIconTypeSelect && buttonIconTypeSelect.value === 'image_url_external') {
                 if (buttonModalActualIconType) buttonModalActualIconType.value = 'image_url_external';
-                if (buttonModalActualIconValue) buttonModalActualIconValue.value = this.value; // this.value é a URL
+                if (buttonModalActualIconValue) buttonModalActualIconValue.value = this.value;
                 updateButtonPreview();
             }
         });
     }
 
-
     function updateButtonPreview() {
-        if (!liveButtonPreview || !liveButtonTextPreview || !liveButtonIconPreview || !buttonTextInput || !buttonColorInput || !buttonRadiusInput || !radiusValueSpan || !buttonTextColorInput || !buttonTextBoldCheckbox || !buttonTextItalicCheckbox || !buttonFontSizeInput || !buttonHasBorderCheckbox || !buttonBorderColorInput || !buttonBorderWidthInput || !buttonHasHoverCheckbox || !buttonShadowTypeSelect || !buttonOpacitySlider || !opacityValueSpan || !buttonIconTypeSelect || !buttonStyleSelect || !buttonIconRoundedCheckbox || !borderOptionsGroup || !buttonModalActualIconType || !buttonModalActualIconValue) {
+        if (!liveButtonPreview || !liveButtonTextPreview || !liveButtonIconPreview || !buttonTextInput || !buttonColorInput || !buttonRadiusInput || !radiusValueSpan || !buttonTextColorInput || !buttonTextBoldCheckbox || !buttonTextItalicCheckbox || !buttonFontSizeInput || !buttonHasBorderCheckbox || !buttonBorderColorInput || !buttonBorderWidthInput || !buttonHoverEffectTypeSelect || !buttonShadowTypeSelect || !buttonOpacitySlider || !opacityValueSpan || !buttonIconTypeSelect || !buttonStyleSelect || !buttonIconRoundedCheckbox || !borderOptionsGroup || !buttonModalActualIconType || !buttonModalActualIconValue) {
             console.warn("updateButtonPreview: Elementos de preview ou controle não encontrados.");
             return;
         }
@@ -793,50 +633,56 @@ document.addEventListener('DOMContentLoaded', function () {
         if (buttonHasBorderCheckbox.checked) {
             liveButtonPreview.style.border = `${buttonBorderWidthInput.value}px solid ${buttonBorderColorInput.value}`;
         } else {
-            liveButtonPreview.style.border = 'none'; // Ou '1px solid transparent' se preferir manter o layout
+            liveButtonPreview.style.border = 'none';
         }
 
-        // Limpar classes de estilo e sombra antes de aplicar as novas
-        liveButtonPreview.className = 'button-style-default'; // Reset para classe base do preview
-        // Adiciona a classe do estilo principal (ex: button-style-default, button-style-solid_shadow)
+        liveButtonPreview.className = 'button-style-default'; // Reset
         const selectedButtonStyle = buttonStyleSelect.value;
         liveButtonPreview.classList.add(`button-style-${selectedButtonStyle}`);
 
-        // Controlar visibilidade dos campos de estilo "default" (sombra, hover)
-        const defaultStyleControlsElements = document.querySelectorAll('[data-style-target="default"]');
+        // Remover classes de efeito hover anteriores
+        liveButtonPreview.classList.remove('hover-effect-preview', 'hover-effect-glow-preview', 'hover-effect-fill-left-preview');
 
+        const defaultStyleControlsElements = document.querySelectorAll('[data-style-target="default"]');
         if (selectedButtonStyle === 'default') {
-            defaultStyleControlsElements.forEach(el => el.style.display = 'block'); // ou 'flex' se for inline
-             // Aplicar sombra e hover apenas se o estilo for 'default'
+            defaultStyleControlsElements.forEach(el => el.style.display = 'block');
+            
+            // Aplicar sombra se estilo for 'default'
             if (buttonShadowTypeSelect.value !== 'none') {
                 liveButtonPreview.classList.add(`shadow-${buttonShadowTypeSelect.value}`);
             }
-            if (buttonHasHoverCheckbox.checked) {
-                liveButtonPreview.classList.add('hover-effect-preview'); // Classe para simular hover no preview
+            
+            // Aplicar classe de preview de efeito hover se estilo for 'default'
+            const selectedHoverEffect = buttonHoverEffectTypeSelect.value;
+            if (selectedHoverEffect === 'elevate') {
+                liveButtonPreview.classList.add('hover-effect-preview'); // Efeito de elevação
+            } else if (selectedHoverEffect === 'glow') {
+                liveButtonPreview.classList.add('hover-effect-glow-preview'); // Para futura estilização da prévia admin
+            } else if (selectedHoverEffect === 'fill_left') {
+                liveButtonPreview.classList.add('hover-effect-fill-left-preview'); // Para futura estilização da prévia admin
             }
+            // Outros efeitos podem ter suas classes de prévia aqui...
+
         } else {
             defaultStyleControlsElements.forEach(el => el.style.display = 'none');
         }
 
-
-        // Lógica do Ícone
-        const actualIconType = buttonModalActualIconType.value; // 'none', 'image_url_external', 'image_uploaded', 'library_icon'
-        const actualIconValue = buttonModalActualIconValue.value.trim(); // URL ou nome do arquivo do ícone da lib
+        const actualIconType = buttonModalActualIconType.value;
+        const actualIconValue = buttonModalActualIconValue.value.trim();
         const iconRounded = buttonIconRoundedCheckbox.checked;
-
-        liveButtonIconPreview.innerHTML = ''; // Limpa ícone anterior
+        liveButtonIconPreview.innerHTML = '';
 
         if (actualIconType !== 'none' && actualIconValue) {
             const img = document.createElement('img');
             if (actualIconType === 'image_url_external' || actualIconType === 'image_uploaded') {
-                img.src = actualIconValue; // URL direta
+                img.src = actualIconValue;
             } else if (actualIconType === 'library_icon') {
-                img.src = `${STATIC_ICONS_PATH}${actualIconValue}`; // Constrói URL para ícone da lib
+                img.src = `${STATIC_ICONS_PATH}${actualIconValue}`;
             }
             img.alt = 'Ícone';
             if (iconRounded) img.classList.add('rounded');
             liveButtonIconPreview.appendChild(img);
-            liveButtonIconPreview.style.marginRight = liveButtonTextPreview.textContent ? '8px' : '0'; // Espaço se houver texto
+            liveButtonIconPreview.style.marginRight = liveButtonTextPreview.textContent ? '8px' : '0';
         } else {
             liveButtonIconPreview.style.marginRight = '0';
         }
@@ -848,7 +694,6 @@ document.addEventListener('DOMContentLoaded', function () {
             if (borderOptionsGroup) borderOptionsGroup.style.display = this.checked ? 'flex' : 'none';
             updateButtonPreview();
         });
-         // Estado inicial do borderOptionsGroup
         if (borderOptionsGroup) borderOptionsGroup.style.display = buttonHasBorderCheckbox.checked ? 'flex' : 'none';
     }
 
@@ -856,8 +701,9 @@ document.addEventListener('DOMContentLoaded', function () {
         buttonTextInput, buttonColorInput, buttonRadiusInput, buttonTextColorInput,
         buttonTextBoldCheckbox, buttonTextItalicCheckbox, buttonFontSizeInput,
         buttonHasBorderCheckbox, buttonBorderColorInput, buttonBorderWidthInput,
-        buttonHasHoverCheckbox, buttonShadowTypeSelect, buttonStyleSelect,
-        buttonOpacitySlider, buttonIconTypeSelect, buttonIconUrlExternalInput, // buttonNewImageFileInput atualiza via seu próprio listener
+        buttonHoverEffectTypeSelect, // NOVO: Adicionado o select de efeito hover
+        buttonShadowTypeSelect, buttonStyleSelect,
+        buttonOpacitySlider, buttonIconTypeSelect, buttonIconUrlExternalInput,
         buttonIconRoundedCheckbox
     ];
 
@@ -870,53 +716,61 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function openButtonModal(data = null, index = -1) {
         currentButtonModalPurpose = data ? 'edit' : 'add';
-        editingButtonData = data; // Armazena os dados do botão que está sendo editado
-        document.getElementById('button-modal-editing-index').value = index; // Para saber qual item atualizar na lista
+        editingButtonData = data;
+        document.getElementById('button-modal-editing-index').value = index;
 
-        // Resetar ou preencher campos do modal
         buttonTextInput.value = data ? data.text : '';
         buttonLinkInput.value = data ? data.link : '';
         buttonStyleSelect.value = data ? data.buttonStyle : DEFAULT_BUTTON_STYLE_JS;
 
-        // Lógica para ícones ao abrir modal
         const currentIconType = data ? data.iconType : DEFAULT_BUTTON_ICON_TYPE_JS;
-        const currentIconUrl = data ? data.iconUrl : DEFAULT_BUTTON_ICON_URL_JS; // Pode ser URL ou nome do arquivo da lib
+        const currentIconUrl = data ? data.iconUrl : DEFAULT_BUTTON_ICON_URL_JS;
         
-        buttonModalActualIconType.value = currentIconType; // Define o tipo real do ícone
-        buttonModalActualIconValue.value = currentIconUrl; // Define o valor real (URL ou nome do arquivo)
-
-        // Ajusta o seletor de tipo de ícone
+        buttonModalActualIconType.value = currentIconType;
+        buttonModalActualIconValue.value = currentIconUrl;
         buttonIconTypeSelect.value = currentIconType;
+
         if (currentIconType === 'image_url_external') {
             buttonIconUrlExternalInput.value = currentIconUrl;
         } else if (currentIconType === 'library_icon') {
-            selectedIconNameForButtonModal = currentIconUrl; // Nome do arquivo do ícone da lib
+            selectedIconNameForButtonModal = currentIconUrl;
             if(libraryIconNamePreview) libraryIconNamePreview.textContent = `Ícone atual: ${currentIconUrl.split('.')[0].replace(/-/g, ' ')}`;
         } else if (currentIconType === 'image_uploaded') {
-            // Para image_uploaded, o valor é a URL do Supabase. O input file não será preenchido.
             if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = `Atual: ${currentIconUrl.split('/').pop().split('?')[0]}`;
-        } else { // 'none' ou default
+        } else {
             buttonIconTypeSelect.value = 'none';
         }
-        manageButtonIconFieldsVisibility(); // Mostra/esconde os campos corretos de ícone
+        manageButtonIconFieldsVisibility();
 
         buttonIconRoundedCheckbox.checked = data ? data.iconRounded : DEFAULT_BUTTON_ICON_ROUNDED_JS;
-        buttonColorInput.value = data ? data.color : '#4CAF50'; // Default color
+        buttonColorInput.value = data ? data.color : '#4CAF50';
         buttonOpacitySlider.value = data ? data.opacity : DEFAULT_BUTTON_OPACITY_JS;
-        buttonRadiusInput.value = data ? data.radius : '10'; // Default radius
-        buttonTextColorInput.value = data ? data.textColor : '#FFFFFF'; // Default text color
+        buttonRadiusInput.value = data ? data.radius : '10';
+        buttonTextColorInput.value = data ? data.textColor : '#FFFFFF';
         buttonTextBoldCheckbox.checked = data ? data.bold : false;
         buttonTextItalicCheckbox.checked = data ? data.italic : false;
-        buttonFontSizeInput.value = data ? data.fontSize : '16'; // Default font size
+        buttonFontSizeInput.value = data ? data.fontSize : '16';
         buttonHasBorderCheckbox.checked = data ? data.hasBorder : false;
         if (borderOptionsGroup) borderOptionsGroup.style.display = buttonHasBorderCheckbox.checked ? 'flex' : 'none';
         buttonBorderColorInput.value = data ? data.borderColor : '#000000';
         buttonBorderWidthInput.value = data ? data.borderWidth : '2';
-        buttonHasHoverCheckbox.checked = data ? (data.buttonStyle === 'default' ? data.hasHoverEffect : false) : false;
+        
+        // Lógica para o novo seletor de efeito hover
+        if (data) {
+            if (data.hoverEffectType) { // Se o novo campo existir
+                buttonHoverEffectTypeSelect.value = data.buttonStyle === 'default' ? data.hoverEffectType : 'none';
+            } else if (typeof data.hasHoverEffect !== 'undefined') { // Se o campo antigo (booleano) existir (retrocompatibilidade)
+                buttonHoverEffectTypeSelect.value = data.buttonStyle === 'default' ? (data.hasHoverEffect ? 'elevate' : 'none') : 'none';
+            } else { // Default para botões muito antigos sem nenhum dos campos
+                buttonHoverEffectTypeSelect.value = 'none';
+            }
+        } else { // Adicionando novo botão
+            buttonHoverEffectTypeSelect.value = 'none'; // Ou 'elevate' se quiser que seja o padrão
+        }
+
         buttonShadowTypeSelect.value = data ? (data.buttonStyle === 'default' ? data.shadowType : 'none') : 'none';
 
-
-        updateButtonPreview(); // Atualiza a prévia com os dados carregados/resetados
+        updateButtonPreview();
         if (buttonModal) {
             buttonModal.classList.add('show');
             document.body.classList.add('modal-open');
@@ -924,39 +778,35 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-
     if (addButtonBtn) {
-        addButtonBtn.addEventListener('click', () => openButtonModal()); // Abre para adicionar novo
+        addButtonBtn.addEventListener('click', () => openButtonModal());
     }
 
     const saveButtonModalBtn = document.getElementById('save-button');
     if (saveButtonModalBtn) {
         saveButtonModalBtn.addEventListener('click', function (event) {
-            event.preventDefault(); // Previne submissão do formulário principal
+            event.preventDefault();
 
             const btnText = buttonTextInput.value.trim();
             const btnLinkValue = buttonLinkInput.value.trim();
 
             if (!btnText) {
                 alert('Por favor, preencha o texto do botão!');
-                if (buttonTextInput) {
-                    buttonTextInput.focus();
-                }
+                if (buttonTextInput) buttonTextInput.focus();
                 return;
             }
-
-            if (buttonLinkInput && btnLinkValue && !buttonLinkInput.checkValidity()) { // Valida URL se preenchida
+            if (buttonLinkInput && btnLinkValue && !buttonLinkInput.checkValidity()) {
                 buttonLinkInput.reportValidity();
                 return;
             }
-            const btnLink = btnLinkValue; // Pode ser vazia se não obrigatória
+            const btnLink = btnLinkValue;
 
             const newButtonData = {
                 text: btnText,
                 link: btnLink,
                 buttonStyle: buttonStyleSelect.value,
-                iconType: buttonModalActualIconType.value, // Usa o valor "real" do tipo de ícone
-                iconUrl: buttonModalActualIconValue.value,  // Usa o valor "real" do ícone (URL ou nome do arquivo)
+                iconType: buttonModalActualIconType.value,
+                iconUrl: buttonModalActualIconValue.value,
                 iconRounded: buttonIconRoundedCheckbox.checked,
                 color: buttonColorInput.value,
                 opacity: parseFloat(buttonOpacitySlider.value),
@@ -968,38 +818,35 @@ document.addEventListener('DOMContentLoaded', function () {
                 hasBorder: buttonHasBorderCheckbox.checked,
                 borderColor: buttonBorderColorInput.value,
                 borderWidth: parseInt(buttonBorderWidthInput.value),
-                hasHoverEffect: buttonStyleSelect.value === 'default' ? buttonHasHoverCheckbox.checked : false,
+                // NOVO: Salvar o tipo de efeito hover
+                hoverEffectType: buttonStyleSelect.value === 'default' ? buttonHoverEffectTypeSelect.value : 'none',
                 shadowType: buttonStyleSelect.value === 'default' ? buttonShadowTypeSelect.value : 'none',
             };
 
             const editingIndex = parseInt(document.getElementById('button-modal-editing-index').value);
-            if (editingIndex > -1) { // Editando um botão existente
+            if (editingIndex > -1) {
                 const items = customButtonsContainer.querySelectorAll('.custom-button-item');
                 if (items[editingIndex]) {
-                    items[editingIndex].remove(); // Remove o item antigo da DOM
-                    renderCustomButton(newButtonData, editingIndex); // Re-renderiza na mesma posição
-                } else { // Caso não encontre o item (improvável), adiciona no final
+                    items[editingIndex].remove();
+                    renderCustomButton(newButtonData, editingIndex);
+                } else {
                     renderCustomButton(newButtonData);
                 }
-            } else { // Adicionando novo botão
+            } else {
                 renderCustomButton(newButtonData);
             }
-            closeModals(); // Fecha o modal de botão (e o de ícones, se aberto)
+            closeModals();
         });
     }
 
     function renderCustomButton(buttonData, index = -1) {
         if (!customButtonsContainer) return;
 
-        const buttonField = document.createElement('div');
-        buttonField.className = 'custom-button-item';
-
-        // Sanitizar e definir defaults para todos os campos de buttonData
         const text = escapeHtml(buttonData.text || 'Botão');
         const link = escapeHtml(buttonData.link || '#');
         const buttonStyle = escapeHtml(buttonData.buttonStyle || DEFAULT_BUTTON_STYLE_JS);
         const iconType = escapeHtml(buttonData.iconType || DEFAULT_BUTTON_ICON_TYPE_JS);
-        const iconUrl = escapeHtml(buttonData.iconUrl || DEFAULT_BUTTON_ICON_URL_JS); // Pode ser URL ou nome de arquivo da lib
+        const iconUrl = escapeHtml(buttonData.iconUrl || DEFAULT_BUTTON_ICON_URL_JS);
         const iconRounded = buttonData.iconRounded || DEFAULT_BUTTON_ICON_ROUNDED_JS;
         const color = escapeHtml(buttonData.color || '#4CAF50');
         const opacity = typeof buttonData.opacity === 'number' ? buttonData.opacity : DEFAULT_BUTTON_OPACITY_JS;
@@ -1011,29 +858,32 @@ document.addEventListener('DOMContentLoaded', function () {
         const hasBorder = buttonData.hasBorder || false;
         const borderColor = escapeHtml(buttonData.borderColor || '#000000');
         const borderWidth = parseInt(buttonData.borderWidth) || 2;
-        const hasHoverEffect = buttonStyle === 'default' ? (buttonData.hasHoverEffect || false) : false;
+        // NOVO: Ler o hoverEffectType
+        const hoverEffectType = escapeHtml(buttonData.hoverEffectType || 'none');
         const shadowType = buttonStyle === 'default' ? (escapeHtml(buttonData.shadowType || 'none')) : 'none';
 
-
         let borderStyleCSS = '';
-        let buttonPreviewClasses = ['button-preview', `button-style-${buttonStyle}`]; // Adiciona classe de estilo principal
+        let buttonPreviewClasses = ['button-preview', `button-style-${buttonStyle}`];
         if (hasBorder) {
             borderStyleCSS = `border: ${borderWidth}px solid ${borderColor};`;
-            buttonPreviewClasses.push('has-border-preview'); // Classe para estilização de borda se necessário
+            buttonPreviewClasses.push('has-border-preview');
         }
         if (buttonStyle === 'default') {
-            if (hasHoverEffect) buttonPreviewClasses.push('hover-effect-preview');
+            // Adicionar classe de preview de hover na lista do admin (simples)
+            if (hoverEffectType === 'elevate') buttonPreviewClasses.push('hover-effect-preview'); // Usa a classe antiga para elevação
+            else if (hoverEffectType === 'glow') buttonPreviewClasses.push('hover-effect-glow-preview-adminlist'); // Nova classe para admin
+            else if (hoverEffectType === 'fill_left') buttonPreviewClasses.push('hover-effect-fill-left-preview-adminlist'); // Nova classe para admin
+            // Adicionar sombra
             if (shadowType !== 'none') buttonPreviewClasses.push(`shadow-${shadowType}`);
         }
-
 
         let iconHtmlInList = '';
         if (iconType !== 'none' && iconUrl) {
             let imgSrc = '';
             if (iconType === 'image_url_external' || iconType === 'image_uploaded') {
-                imgSrc = iconUrl; // URL direta
+                imgSrc = iconUrl;
             } else if (iconType === 'library_icon') {
-                imgSrc = `${STATIC_ICONS_PATH}${iconUrl}`; // Constrói URL para ícone da lib
+                imgSrc = `${STATIC_ICONS_PATH}${iconUrl}`;
             }
             if (imgSrc) {
                 iconHtmlInList = `<img src="${imgSrc}" alt="Ícone" class="button-embedded-icon ${iconRounded ? 'rounded' : ''}">`;
@@ -1042,6 +892,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const finalButtonBgWithOpacity = hexToRgba(color, opacity);
 
+        const buttonField = document.createElement('div');
+        buttonField.className = 'custom-button-item';
         buttonField.innerHTML = `
             <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
             <div style="flex-grow: 1;">
@@ -1061,7 +913,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 <input type="hidden" name="custom_button_has_border[]" value="${hasBorder}">
                 <input type="hidden" name="custom_button_border_color[]" value="${borderColor}">
                 <input type="hidden" name="custom_button_border_width[]" value="${borderWidth}">
-                <input type="hidden" name="custom_button_has_hover[]" value="${hasHoverEffect}">
+                <input type="hidden" name="custom_button_hover_effect_type[]" value="${hoverEffectType}"> {/* NOVO campo */}
                 <input type="hidden" name="custom_button_shadow_type[]" value="${shadowType}">
                 <input type="hidden" name="custom_button_opacity[]" value="${opacity}">
                 <input type="hidden" name="custom_button_icon_url[]" value="${iconUrl}">
@@ -1073,14 +925,12 @@ document.addEventListener('DOMContentLoaded', function () {
             <span class="remove-item" title="Remover este botão"><i class="fas fa-times"></i></span>
         `;
 
-        // Inserir o novo/editado item na posição correta ou no final
         if (index > -1 && customButtonsContainer.childNodes[index]) {
             customButtonsContainer.insertBefore(buttonField, customButtonsContainer.childNodes[index]);
         } else {
             customButtonsContainer.appendChild(buttonField);
         }
 
-        // Adicionar listeners para os botões de editar/remover do novo item
         buttonField.querySelector('.remove-item').addEventListener('click', function () {
             this.closest('.custom-button-item').remove();
         });
@@ -1089,7 +939,6 @@ document.addEventListener('DOMContentLoaded', function () {
             const parent = currentItem.parentNode;
             const itemIndex = Array.prototype.indexOf.call(parent.children, currentItem);
 
-            // Recriar o objeto de dados para edição a partir dos inputs hidden
             const dataToEdit = {
                 text: currentItem.querySelector('input[name="custom_button_text[]"]').value,
                 link: currentItem.querySelector('input[name="custom_button_link[]"]').value,
@@ -1107,13 +956,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 hasBorder: currentItem.querySelector('input[name="custom_button_has_border[]"]').value === 'true',
                 borderColor: currentItem.querySelector('input[name="custom_button_border_color[]"]').value,
                 borderWidth: parseInt(currentItem.querySelector('input[name="custom_button_border_width[]"]').value),
-                hasHoverEffect: currentItem.querySelector('input[name="custom_button_has_hover[]"]').value === 'true',
+                // NOVO: Ler o hoverEffectType
+                hoverEffectType: currentItem.querySelector('input[name="custom_button_hover_effect_type[]"]').value,
                 shadowType: currentItem.querySelector('input[name="custom_button_shadow_type[]"]').value
             };
             openButtonModal(dataToEdit, itemIndex);
         });
     }
-
 
     if (iconModalCloseBtn) iconModalCloseBtn.addEventListener('click', closeModals);
     if (buttonModalCloseBtn) buttonModalCloseBtn.addEventListener('click', closeModals);
@@ -1125,15 +974,13 @@ document.addEventListener('DOMContentLoaded', function () {
     window.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
             if (iconModal && iconModal.classList.contains('active')) {
-                // Se o modal de ícones estiver sobre o modal de botões, fecha só ele
                 if (iconModal.classList.contains('modal-on-top')) {
                      iconModal.classList.remove('active', 'show', 'modal-on-top');
                      currentIconModalPurpose = '';
                      const selectedIconInGrid = iconModal.querySelector('.icon-option.selected');
                      if (selectedIconInGrid) selectedIconInGrid.classList.remove('selected');
-                     // Não remove modal-open do body, pois o buttonModal ainda pode estar ativo
                 } else {
-                    closeModals(); // Fecha todos se for o único modal ativo
+                    closeModals();
                 }
             } else if (buttonModal && buttonModal.classList.contains('active')) {
                 closeModals();
@@ -1141,8 +988,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-
-    // Adicionar listeners para botões de remover e editar JÁ EXISTENTES na página
     document.querySelectorAll('.social-item .remove-item, .custom-button-item .remove-item, .card-link-item .remove-item').forEach(item => {
         item.addEventListener('click', function () {
             this.closest('.social-item, .custom-button-item, .card-link-item').remove();
@@ -1151,12 +996,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.querySelectorAll('#custom-buttons-container .custom-button-item').forEach((buttonItemHtml) => {
         const editBtn = buttonItemHtml.querySelector('.edit-item-btn');
-        if (editBtn) { // Verifica se o botão de editar já existe
+        if (editBtn) {
             editBtn.addEventListener('click', function () {
                 const currentItem = this.closest('.custom-button-item');
                 const parent = currentItem.parentNode;
                 const itemIndex = Array.prototype.indexOf.call(parent.children, currentItem);
-                const dataToEdit = { /* ... (lógica para extrair dados dos inputs hidden, igual a renderCustomButton) ... */
+                const dataToEdit = {
                     text: currentItem.querySelector('input[name="custom_button_text[]"]').value,
                     link: currentItem.querySelector('input[name="custom_button_link[]"]').value,
                     buttonStyle: currentItem.querySelector('input[name="custom_button_style[]"]').value,
@@ -1173,7 +1018,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     hasBorder: currentItem.querySelector('input[name="custom_button_has_border[]"]').value === 'true',
                     borderColor: currentItem.querySelector('input[name="custom_button_border_color[]"]').value,
                     borderWidth: parseInt(currentItem.querySelector('input[name="custom_button_border_width[]"]').value),
-                    hasHoverEffect: currentItem.querySelector('input[name="custom_button_has_hover[]"]').value === 'true',
+                    // NOVO: Ler o hoverEffectType de botões existentes
+                    hoverEffectType: currentItem.querySelector('input[name="custom_button_hover_effect_type[]"]') ? currentItem.querySelector('input[name="custom_button_hover_effect_type[]"]').value : (currentItem.querySelector('input[name="custom_button_has_hover[]"]') && currentItem.querySelector('input[name="custom_button_has_hover[]"]').value === 'true' ? 'elevate' : 'none'), // Retrocompatibilidade
                     shadowType: currentItem.querySelector('input[name="custom_button_shadow_type[]"]').value
                 };
                 openButtonModal(dataToEdit, itemIndex);
@@ -1181,8 +1027,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-
-    // Lógica para o tipo de fundo do CARTÃO (já existente)
     const cardBgTypeRadios = document.querySelectorAll('input[name="card_background_type"]');
     const cardBgColorPicker = document.getElementById('card_background_color_picker');
     const cardBgImageUploadSection = document.getElementById('card_background_image_upload_section');
@@ -1191,56 +1035,43 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!cardBgColorPicker || !cardBgImageUploadSection) return;
         const selectedTypeRadio = document.querySelector('input[name="card_background_type"]:checked');
         if (!selectedTypeRadio) return;
-
         const selectedType = selectedTypeRadio.value;
-        // A visibilidade do color picker em si (o input type color) é controlada pelo display do seu label pai
-        // que é ajustado aqui.
         const colorPickerLabel = cardBgColorPicker.closest('label');
-
         if (selectedType === 'color') {
-            if (colorPickerLabel) colorPickerLabel.style.display = 'flex'; // Ou 'inline-flex' dependendo do seu layout
-            cardBgColorPicker.style.display = 'inline-block'; // Garante que o input color esteja visível
+            if (colorPickerLabel) colorPickerLabel.style.display = 'flex';
+            cardBgColorPicker.style.display = 'inline-block';
             cardBgImageUploadSection.style.display = 'none';
         } else if (selectedType === 'image') {
-            if (colorPickerLabel) colorPickerLabel.style.display = 'flex'; // Mantém o label do radio visível
-            cardBgColorPicker.style.display = 'none'; // Esconde o input color
+            if (colorPickerLabel) colorPickerLabel.style.display = 'flex';
+            cardBgColorPicker.style.display = 'none';
             cardBgImageUploadSection.style.display = 'block';
         }
     }
     if (cardBgTypeRadios.length > 0) {
         cardBgTypeRadios.forEach(radio => radio.addEventListener('change', updateCardBackgroundVisibility));
-        updateCardBackgroundVisibility(); // Estado inicial
+        updateCardBackgroundVisibility();
     }
 
-
-    // Aplicar opacidade aos previews de botões existentes ao carregar a página
     document.querySelectorAll('#custom-buttons-container .custom-button-item').forEach(buttonItem => {
         const previewDiv = buttonItem.querySelector('.button-preview');
-        // Os valores de cor e opacidade agora vêm das variáveis CSS --btn-bg-color e --btn-opacity
-        // definidas no style do elemento .button-preview.
-        // A função hexToRgba é usada para aplicar a opacidade.
         const bgColorFromVar = previewDiv.style.getPropertyValue('--btn-bg-color').trim();
         const opacityFromVar = parseFloat(previewDiv.style.getPropertyValue('--btn-opacity').trim());
-
         if (previewDiv && bgColorFromVar && !isNaN(opacityFromVar)) {
             previewDiv.style.backgroundColor = hexToRgba(bgColorFromVar, opacityFromVar);
-        } else if (previewDiv && bgColorFromVar) { // Se opacidade não definida, usa a cor como está (fallback)
+        } else if (previewDiv && bgColorFromVar) {
             previewDiv.style.backgroundColor = bgColorFromVar;
         }
     });
 
-    // --- NOVA LÓGICA PARA BACKGROUND DA PÁGINA PRINCIPAL ---
     const backgroundTypeRadiosPage = document.querySelectorAll('input[name="background_type_page"]');
     const backgroundPageImageOptions = document.getElementById('background_page_image_options');
     const backgroundPageColorOptions = document.getElementById('background_page_color_options');
-
     const backgroundPreviewPage = document.getElementById('background_preview_page');
     const backgroundPreviewPageOverlay = document.getElementById('background_preview_page_overlay');
     const darkenEnabledCheckboxPage = document.getElementById('background_image_darken_enabled_page');
     const darkenControlsPage = document.getElementById('background_image_darken_controls_page');
     const darkenSliderPage = document.getElementById('background_image_darken_level_page');
     const darkenValueSpanPage = document.getElementById('darken_level_value_page');
-
     const colorPickerPage = document.getElementById('background_color_value_page');
     const colorHexSpanPage = document.getElementById('background_color_hex_page');
 
@@ -1261,12 +1092,11 @@ document.addEventListener('DOMContentLoaded', function () {
         backgroundTypeRadiosPage.forEach(radio => {
             radio.addEventListener('change', updatePageBackgroundControlsVisibility);
         });
-        updatePageBackgroundControlsVisibility(); // Estado inicial
+        updatePageBackgroundControlsVisibility();
     }
 
-    window.updatePageBackgroundDarkenPreview = function() { // Tornando global para ser chamada por previewImage
+    window.updatePageBackgroundDarkenPreview = function() {
         if (!backgroundPreviewPageOverlay || !darkenEnabledCheckboxPage || !darkenSliderPage || !darkenValueSpanPage) return;
-
         if (darkenEnabledCheckboxPage.checked) {
             const level = parseFloat(darkenSliderPage.value);
             backgroundPreviewPageOverlay.style.backgroundColor = `rgba(0, 0, 0, ${level})`;
@@ -1284,11 +1114,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 darkenControlsPage.style.display = this.checked ? 'block' : 'none';
             }
             if (!this.checked && darkenSliderPage) {
-                darkenSliderPage.value = 0; // Reseta o slider se desmarcado
+                darkenSliderPage.value = 0;
             }
             updatePageBackgroundDarkenPreview();
         });
-        // Estado inicial do controle do slider
         if (darkenControlsPage) {
              darkenControlsPage.style.display = darkenEnabledCheckboxPage.checked ? 'block' : 'none';
         }
@@ -1296,24 +1125,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (darkenSliderPage) {
         darkenSliderPage.addEventListener('input', updatePageBackgroundDarkenPreview);
-        // Estado inicial do span do valor
         if (darkenValueSpanPage) darkenValueSpanPage.textContent = parseFloat(darkenSliderPage.value).toFixed(2);
     }
     
-    // Chamada inicial para a prévia do escurecimento se uma imagem já estiver carregada
     if (backgroundPreviewPage && backgroundPreviewPage.src && backgroundPreviewPage.src !== window.location.href && !backgroundPreviewPage.src.includes('blob:')) {
         updatePageBackgroundDarkenPreview();
     }
-
 
     if (colorPickerPage && colorHexSpanPage) {
         colorPickerPage.addEventListener('input', function() {
             colorHexSpanPage.textContent = this.value.toUpperCase();
         });
-        if (colorPickerPage.value) { // Estado inicial
+        if (colorPickerPage.value) {
             colorHexSpanPage.textContent = colorPickerPage.value.toUpperCase();
         }
     }
-    // --- FIM DA NOVA LÓGICA PARA BACKGROUND DA PÁGINA PRINCIPAL ---
 
 }); // Fim do DOMContentLoaded
