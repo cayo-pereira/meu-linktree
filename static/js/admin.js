@@ -123,8 +123,8 @@ function escapeHtml(text) {
 }
 
 // Variáveis globais para o modal de botões
-let editingButtonData = null; 
-let currentButtonModalPurpose = 'add'; 
+let editingButtonData = null;
+let currentButtonModalPurpose = 'add';
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -230,35 +230,144 @@ document.addEventListener('DOMContentLoaded', function () {
     const prevIconPageBtn = document.getElementById('prev-icon-page');
     const nextIconPageBtn = document.getElementById('next-icon-page');
     const currentPageSpan = document.getElementById('current-page');
-    let currentIconModalPurpose = ''; 
-    let selectedIconNameForButtonModal = ''; 
+    let currentIconModalPurpose = '';
+    let selectedIconNameForButtonModal = '';
 
     const allSocialIcons = [
-        { name: '500px', path: '500px.png' }, { name: 'behance', path: 'behance.png' },
-        { name: 'blogger', path: 'blogger.png' }, { name: 'codepen', path: 'codepen.png' },
-        { name: 'discord', path: 'discord.png' }, { name: 'dribbble', path: 'dribbble.png' },
-        { name: 'email', path: 'email.png' }, { name: 'email-preto', path: 'email-preto.png' },
-        { name: 'facebook', path: 'facebook.png' }, { name: 'figma', path: 'figma.png' },
-        { name: 'github', path: 'github.png' }, { name: 'github-redondo', path: 'github-redondo.png' },
-        { name: 'gitlab', path: 'gitlab.png' }, { name: 'gmail', path: 'gmail.png' },
-        { name: 'gmail-redondo', path: 'gmail-redondo.png' }, { name: 'google-play', path: 'google-play.png' },
-        { name: 'instagram', path: 'instagram.png' }, { name: 'instagram-redondo', path: 'instagram-redondo.png' },
-        { name: 'linkedin', path: 'linkedin.png' }, { name: 'linkedin-redondo', path: 'linkedin-redondo.png' },
-        { name: 'linkedin-p', path: 'linkedin-p.png' }, { name: 'medium', path: 'medium.png' },
-        { name: 'messenger', path: 'messenger.png' }, { name: 'paypal', path: 'paypal.png' },
-        { name: 'pinterest', path: 'pinterest.png' }, { name: 'presente', path: 'presente.png' },
-        { name: 'presente-p', path: 'presente-p.png' }, { name: 'quora', path: 'quora.png' },
-        { name: 'reddit', path: 'reddit.png' }, { name: 'skype', path: 'skype.png' },
-        { name: 'snapchat', path: 'snapchat.png' }, { name: 'soundcloud', path: 'soundcloud.png' },
-        { name: 'spotify', path: 'spotify.png' }, { name: 'stackoverflow', path: 'stackoverflow.png' },
-        { name: 'telegram', path: 'telegram.png' }, { name: 'tiktok', path: 'tiktok.png' },
-        { name: 'tumblr', path: 'tumblr.png' }, { name: 'twitch', path: 'twitch.png' },
-        { name: 'twitter', path: 'twitter.png' }, { name: 'twitter-x', path: 'twitter-x.png' },
-        { name: 'vimeo', path: 'vimeo.png' }, { name: 'whatsapp', path: 'whatsapp.png' },
-        { name: 'whatsapp-preto', path: 'whatsapp-preto.png' }, { name: 'whatsapp-v-p', path: 'whatsapp-v-p.png' },
-        { name: 'wordpress', path: 'wordpress.png' }, { name: 'youtube', path: 'youtube.png' },
-        { name: 'zoom', path: 'zoom.png' }
-    ].sort((a, b) => a.name.localeCompare(b.name)); 
+        { name: 'instagram', path: '/static/icons/instagram.png' },
+        { name: 'instagram-redondo', path: '/static/icons/instagram-redondo.png' },
+        { name: 'linkedin', path: '/static/icons/linkedin.png' },
+        { name: 'linkedin-redondo', path: '/static/icons/linkedin-redondo.png' },
+        { name: 'linkedin-preto', path: '/static/icons/linkedin-preto' },
+        { name: 'github', path: '/static/icons/github.png' },
+        { name: 'github-redondo', path: '/static/icons/github-redondo.png' },
+        { name: 'email', path: '/static/icons/email.png' },
+        { name: 'email-preto', path: '/static/icons/email-preto.png' },
+        { name: 'gmail', path: '/static/icons/gmail.png' },
+        { name: 'gmail-redondo', path: '/static/icons/gmail-redondo.png' },
+        { name: 'gmail-preto', path: '/static/icons/gmail-redondo.png' },
+        { name: 'whatsapp', path: '/static/icons/whatsapp.png' },
+        { name: 'whatsapp-v-p', path: '/static/icons/whatsapp-v-p.png' },
+        { name: 'whatsapp-preto', path: '/static/icons/whatsapp-preto.png' },
+        { name: 'twitter', path: '/static/icons/twitter.png' },
+        { name: 'facebook', path: '/static/icons/facebook.png' },
+        { name: 'youtube', path: '/static/icons/youtube.png' },
+        { name: 'telegram', path: '/static/icons/telegram.png' },
+        { name: 'tiktok', path: '/static/icons/tiktok.png' },
+        { name: 'pinterest', path: '/static/icons/pinterest.png' },
+        { name: 'twitch', path: '/static/icons/twitch.png' },
+        { name: 'discord', path: '/static/icons/discord.png' },
+        { name: 'snapchat', path: '/static/icons/snapchat.png' },
+        { name: 'reddit', path: '/static/icons/reddit.png' },
+        { name: 'vimeo', path: '/static/icons/vimeo.png' },
+        { name: 'spotify', path: '/static/icons/spotify.png' },
+        { name: 'soundcloud', path: '/static/icons/soundcloud.png' },
+        { name: 'behance', path: '/static/icons/behance.png' },
+        { name: 'flickr', path: '/static/icons/flickr.png' },
+        { name: 'paypal', path: '/static/icons/paypal.png' },
+        { name: 'google-drive', path: '/static/icons/google-drive.png' },
+        { name: 'dropbox', path: '/static/icons/dropbox.png' },
+        { name: 'link', path: '/static/icons/link.png' },
+        { name: 'website', path: '/static/icons/website.png' },
+        { name: 'gitlab', path: '/static/icons/gitlab.png' },
+        { name: 'codepen', path: '/static/icons/codepen.png' },
+        { name: 'patreon', path: '/static/icons/patreon.png' },
+        { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' },
+        { name: 'ko-fi', path: '/static/icons/ko-fi.png' },
+        { name: 'slack', path: '/static/icons/slack.png' },
+        { name: 'teams', path: '/static/icons/teams.png' },
+        { name: 'skype', path: '/static/icons/skype.png' },
+        { name: 'academia-edu', path: '/static/icons/academia-edu.png' }
+        { name: 'academia-edu', path: '/static/icons/academia-edu.png' }
+        { name: 'behance', path: '/static/icons/behance.png' }
+        { name: 'behance-p', path: '/static/icons/behance-p.png' }
+        { name: 'bluesky-r-p', path: '/static/icons/bluesky-r-p.png' }
+        { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' }
+        { name: 'buymeacoffee-p', path: '/static/icons/buymeacoffee-p.png' }
+        { name: 'closefans-r', path: '/static/icons/closefans-r.png' }
+        { name: 'codepen', path: '/static/icons/codepen.png' }
+        { name: 'codepen-p-r', path: '/static/icons/codepen-p-r.png' }
+        { name: 'codepen-r-b', path: '/static/icons/codepen-r-b.png' }
+        { name: 'colsefans-r-p', path: '/static/icons/colsefans-r-p.png' }
+        { name: 'discord', path: '/static/icons/discord.png' }
+        { name: 'discord-p', path: '/static/icons/discord-p.png' }
+        { name: 'discord-p-r', path: '/static/icons/discord-p-r.png' }
+        { name: 'discord-r', path: '/static/icons/discord-r.png' }
+        { name: 'dropbox', path: '/static/icons/dropbox.png' }
+        { name: 'dropbox-p', path: '/static/icons/dropbox-p.png' }
+        { name: 'facebook', path: '/static/icons/facebook.png' }
+        { name: 'facebook-redondo', path: '/static/icons/facebook-redondo.png' }
+        { name: 'flickr', path: '/static/icons/flickr.png' }
+        { name: 'gitlab', path: '/static/icons/gitlab.png' }
+        { name: 'gitlab-p-r', path: '/static/icons/gitlab-p-r.png' }
+        { name: 'gitlab-r', path: '/static/icons/gitlab-r.png' }
+        { name: 'gitlab-rv-p', path: '/static/icons/gitlab-rv-p.png' }
+        { name: 'google-drive', path: '/static/icons/google-drive.png' }
+        { name: 'google-drive-r', path: '/static/icons/google-drive-r.png' }
+        { name: 'google-drive-r-p', path: '/static/icons/google-drive-r-p.png' }
+        { name: 'ko-fi', path: '/static/icons/ko-fi.png' }
+        { name: 'ko-fi-p', path: '/static/icons/ko-fi-p.png' }
+        { name: 'kwai', path: '/static/icons/kwai.png' }
+        { name: 'kwai-p', path: '/static/icons/kwai-p.png' }
+        { name: 'kwai-r', path: '/static/icons/kwai-r.png' }
+        { name: 'kwai-r-p', path: '/static/icons/kwai-r-p.png' }
+        { name: 'kwai-rb-p', path: '/static/icons/kwai-rb-p.png' }
+        { name: 'kwai-vr-p', path: '/static/icons/kwai-vr-p.png' }
+        { name: 'link', path: '/static/icons/link.png' }
+        { name: 'link-1', path: '/static/icons/link-1.png' }
+        { name: 'link-2', path: '/static/icons/link-2.png' }
+        { name: 'onlyfans', path: '/static/icons/onlyfans.png' }
+        { name: 'onlyfans-r', path: '/static/icons/onlyfans-r.png' }
+        { name: 'onlyfans-r-p', path: '/static/icons/onlyfans-r-p.png' }
+        { name: 'onlyfans-rv-p', path: '/static/icons/onlyfans-rv-p.png' }
+        { name: 'patreon', path: '/static/icons/patreon.png' }
+        { name: 'patreon-c', path: '/static/icons/patreon-c.png' }
+        { name: 'patreon-r', path: '/static/icons/patreon-r.png' }
+        { name: 'patreon-r-p', path: '/static/icons/patreon-r-p.png' }
+        { name: 'paypal', path: '/static/icons/paypal.png' }
+        { name: 'paypal-p', path: '/static/icons/paypal-p.png' }
+        { name: 'paypal-p-r', path: '/static/icons/paypal-p-r.png' }
+        { name: 'paypal-r', path: '/static/icons/paypal-r.png' }
+        { name: 'pinterest', path: '/static/icons/pinterest.png' }
+        { name: 'pinterest-p', path: '/static/icons/pinterest-p.png' }
+        { name: 'privacy', path: '/static/icons/privacy.png' }
+        { name: 'privacy-r', path: '/static/icons/privacy-r.png' }
+        { name: 'privacy-r-p', path: '/static/icons/privacy-r-p.png' }
+        { name: 'privacy-rv-p', path: '/static/icons/privacy-rv-p.png' }
+        { name: 'reddit', path: '/static/icons/reddit.png' }
+        { name: 'reddit-p', path: '/static/icons/reddit-p.png' }
+        { name: 'skype', path: '/static/icons/skype.png' }
+        { name: 'skype-o', path: '/static/icons/skype-o.png' }
+        { name: 'skype-o-p', path: '/static/icons/skype-o-p.png' }
+        { name: 'skype-p', path: '/static/icons/skype-p.png' }
+        { name: 'slack', path: '/static/icons/slack.png' }
+        { name: 'slack-r', path: '/static/icons/slack-r.png' }
+        { name: 'slack-r-p', path: '/static/icons/slack-r-p.png' }
+        { name: 'snapchat', path: '/static/icons/snapchat.png' }
+        { name: 'snapchat-r', path: '/static/icons/snapchat-r.png' }
+        { name: 'soundcloud', path: '/static/icons/soundcloud.png' }
+        { name: 'soundcloud-p', path: '/static/icons/soundcloud-p.png' }
+        { name: 'spotify', path: '/static/icons/spotify.png' }
+        { name: 'spotify-p', path: '/static/icons/spotify-p.png' }
+        { name: 'teams', path: '/static/icons/teams.png' }
+        { name: 'teams-r', path: '/static/icons/teams-r.png' }
+        { name: 'teams-r-p', path: '/static/icons/teams-r-p.png' }
+        { name: 'telegram', path: '/static/icons/telegram.png' }
+        { name: 'telegrama-p', path: '/static/icons/telegrama-p.png' }
+        { name: 'tiktok', path: '/static/icons/tiktok.png' }
+        { name: 'tiktok-r', path: '/static/icons/tiktok-r.png' }
+        { name: 'twitch', path: '/static/icons/twitch.png' }
+        { name: 'twitch-r', path: '/static/icons/twitch-r.png' }
+        { name: 'vimeo', path: '/static/icons/vimeo.png' }
+        { name: 'website', path: '/static/icons/website.png' }
+        { name: 'website-p', path: '/static/icons/website-p.png' }
+        { name: 'x-twitter', path: '/static/icons/x-twitter.png' }
+        { name: 'x-twitter-r', path: '/static/icons/x-twitter-r.png' }
+        { name: 'youtube', path: '/static/icons/youtube.png' }
+        { name: 'youtube-p-r', path: '/static/icons/youtube-p-r.png' }
+        { name: 'youtube-preto', path: '/static/icons/youtube-preto.png' }
+        { name: 'youtube-r', path: '/static/icons/youtube-r.png' }
+    ].sort((a, b) => a.name.localeCompare(b.name));
 
     let filteredIcons = [...allSocialIcons];
     let currentPage = 1;
@@ -274,7 +383,7 @@ document.addEventListener('DOMContentLoaded', function () {
         paginatedIcons.forEach(icon => {
             const iconDiv = document.createElement('div');
             iconDiv.className = 'icon-option';
-            iconDiv.dataset.iconName = icon.name; 
+            iconDiv.dataset.iconName = icon.name;
             iconDiv.innerHTML = `
                 <img src="${STATIC_ICONS_PATH}${icon.path}" alt="${icon.name.replace(/-/g, ' ')}">
                 <p>${icon.name.replace(/-/g, ' ')}</p>
@@ -306,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function closeModals() {
         if (iconModal) {
-            iconModal.classList.remove('active', 'show', 'modal-on-top'); 
+            iconModal.classList.remove('active', 'show', 'modal-on-top');
         }
         if (buttonModal) {
             buttonModal.classList.remove('active', 'show');
@@ -323,7 +432,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function openIconModal(purpose) {
         currentIconModalPurpose = purpose;
         if (iconSearchInput) iconSearchInput.value = '';
-        filterAndRenderIcons(); 
+        filterAndRenderIcons();
         if (iconModal) {
             if (purpose === 'button_icon_selector') {
                 iconModal.classList.add('modal-on-top');
@@ -378,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 `;
                 socialIconsContainer.appendChild(socialItem);
                 socialItem.querySelector('.remove-item').addEventListener('click', function () { this.closest('.social-item').remove(); });
-                closeModals(); 
+                closeModals();
             } else if (currentIconModalPurpose === 'card_link') {
                 const cardLinkItem = document.createElement('div');
                 cardLinkItem.className = 'card-link-item';
@@ -413,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 cardLinksContainer.appendChild(cardLinkItem);
                 updateCardLinkItemPreview(cardLinkItem);
                 cardLinkItem.querySelector('.remove-item').addEventListener('click', function () { this.closest('.card-link-item').remove(); });
-                
+
                 const atTextInputNew = cardLinkItem.querySelector('.card-link-item-at-text');
                 const fontSelectNew = cardLinkItem.querySelector('.card-link-item-font');
                 const colorInputNew = cardLinkItem.querySelector('.card-link-item-color');
@@ -423,10 +532,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (atTextInputNew) atTextInputNew.addEventListener('input', () => updateCardLinkItemPreview(cardLinkItem));
                 if (fontSelectNew && hiddenFontInputNew) fontSelectNew.addEventListener('change', () => { hiddenFontInputNew.value = fontSelectNew.value; updateCardLinkItemPreview(cardLinkItem); });
                 if (colorInputNew && hiddenColorInputNew) colorInputNew.addEventListener('input', () => { hiddenColorInputNew.value = colorInputNew.value; updateCardLinkItemPreview(cardLinkItem); });
-                closeModals(); 
+                closeModals();
             } else if (currentIconModalPurpose === 'button_icon_selector') {
                 selectedIconNameForButtonModal = iconFileName; // Salva o NOME DO ARQUIVO (ex: 'instagram.png')
-                
+
                 const buttonModalActualIconType = document.getElementById('button-modal-actual-icon-type');
                 const buttonModalActualIconValue = document.getElementById('button-modal-actual-icon-value');
                 const libraryIconNamePreview = document.getElementById('button-library-icon-name-preview');
@@ -435,8 +544,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (buttonModalActualIconValue) buttonModalActualIconValue.value = selectedIconNameForButtonModal; // Salva o NOME DO ARQUIVO
                 if (libraryIconNamePreview) libraryIconNamePreview.textContent = `Ícone selecionado: ${iconNameFromDataset.replace(/-/g, ' ')}`; // Exibe o nome amigável
 
-                updateButtonPreview(); 
-                
+                updateButtonPreview();
+
                 // MODIFICAÇÃO: Fechar APENAS o iconModal
                 if (iconModal) {
                     iconModal.classList.remove('active', 'show', 'modal-on-top');
@@ -447,7 +556,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 // o que é bom enquanto o buttonModal estiver aberto.
                 currentIconModalPurpose = ''; // Resetar o propósito para o próximo uso
             } else {
-                closeModals(); 
+                closeModals();
             }
         });
     }
@@ -518,18 +627,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (selectedType !== 'image_url_external') buttonIconUrlExternalInput.value = '';
         if (selectedType !== 'image_upload_new') {
-            buttonNewImageFileInput.value = ''; 
+            buttonNewImageFileInput.value = '';
             if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = 'Nenhum arquivo selecionado';
         }
         if (selectedType !== 'library_icon') {
             if (libraryIconNamePreview) libraryIconNamePreview.textContent = '';
-            selectedIconNameForButtonModal = ''; 
+            selectedIconNameForButtonModal = '';
         }
         if (selectedType === 'none') {
             if (buttonModalActualIconType) buttonModalActualIconType.value = 'none';
             if (buttonModalActualIconValue) buttonModalActualIconValue.value = '';
         }
-        
+
         if (selectedType !== 'image_url_external' && selectedType !== 'image_upload_new') {
             buttonIconRoundedCheckbox.checked = false;
         }
@@ -572,7 +681,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (error) {
             console.error('Erro no upload da imagem do botão:', error);
             alert(`Erro ao enviar imagem: ${error.message}`);
-            if (liveButtonIconPreview) liveButtonIconPreview.innerHTML = ''; 
+            if (liveButtonIconPreview) liveButtonIconPreview.innerHTML = '';
             return null;
         }
     }
@@ -586,19 +695,19 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 const uploadedUrl = await uploadButtonImageAJAX(file);
                 if (uploadedUrl) {
-                    if (buttonModalActualIconType) buttonModalActualIconType.value = 'image_uploaded'; 
+                    if (buttonModalActualIconType) buttonModalActualIconType.value = 'image_uploaded';
                     if (buttonModalActualIconValue) buttonModalActualIconValue.value = uploadedUrl;
                     updateButtonPreview();
                 } else {
                     this.value = '';
                     if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = 'Falha no envio. Nenhum arquivo selecionado.';
-                    if (buttonModalActualIconType) buttonModalActualIconType.value = 'none'; 
+                    if (buttonModalActualIconType) buttonModalActualIconType.value = 'none';
                     if (buttonModalActualIconValue) buttonModalActualIconValue.value = '';
                     updateButtonPreview();
                 }
             } else {
                 if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = 'Nenhum arquivo selecionado';
-                if (buttonModalActualIconType && buttonModalActualIconType.value === 'image_uploaded') { 
+                if (buttonModalActualIconType && buttonModalActualIconType.value === 'image_uploaded') {
                     buttonModalActualIconType.value = 'none';
                     buttonModalActualIconValue.value = '';
                 }
@@ -671,7 +780,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const actualIconValue = buttonModalActualIconValue.value.trim();
         const iconRounded = buttonIconRoundedCheckbox.checked;
 
-        liveButtonIconPreview.innerHTML = ''; 
+        liveButtonIconPreview.innerHTML = '';
 
         if (actualIconType === 'image_url_external' && actualIconValue) {
             const img = document.createElement('img');
@@ -681,13 +790,13 @@ document.addEventListener('DOMContentLoaded', function () {
             liveButtonIconPreview.appendChild(img);
         } else if (actualIconType === 'image_uploaded' && actualIconValue) {
             const img = document.createElement('img');
-            img.src = actualIconValue; 
+            img.src = actualIconValue;
             img.alt = 'Ícone Enviado';
             if (iconRounded) img.classList.add('rounded');
             liveButtonIconPreview.appendChild(img);
         } else if (actualIconType === 'library_icon' && actualIconValue) {
             const img = document.createElement('img');
-            img.src = `${STATIC_ICONS_PATH}${actualIconValue}`; 
+            img.src = `${STATIC_ICONS_PATH}${actualIconValue}`;
             img.alt = actualIconValue.split('.')[0];
             if (iconRounded) img.classList.add('rounded');
             liveButtonIconPreview.appendChild(img);
@@ -707,7 +816,7 @@ document.addEventListener('DOMContentLoaded', function () {
         buttonTextBoldCheckbox, buttonTextItalicCheckbox, buttonFontSizeInput,
         buttonHasBorderCheckbox, buttonBorderColorInput, buttonBorderWidthInput,
         buttonHasHoverCheckbox, buttonShadowTypeSelect,
-        buttonOpacitySlider, buttonIconTypeSelect, buttonIconUrlExternalInput, 
+        buttonOpacitySlider, buttonIconTypeSelect, buttonIconUrlExternalInput,
         buttonIconRoundedCheckbox, buttonStyleSelect
     ];
 
@@ -720,7 +829,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function openButtonModal(data = null, index = -1) {
         currentButtonModalPurpose = data ? 'edit' : 'add';
-        editingButtonData = data; 
+        editingButtonData = data;
         document.getElementById('button-modal-editing-index').value = index;
 
 
@@ -729,7 +838,7 @@ document.addEventListener('DOMContentLoaded', function () {
         buttonStyleSelect.value = data ? data.buttonStyle : DEFAULT_BUTTON_STYLE_JS;
 
         const currentIconType = data ? data.iconType : DEFAULT_BUTTON_ICON_TYPE_JS;
-        const currentIconUrl = data ? data.iconUrl : DEFAULT_BUTTON_ICON_URL_JS; 
+        const currentIconUrl = data ? data.iconUrl : DEFAULT_BUTTON_ICON_URL_JS;
         buttonModalActualIconType.value = currentIconType;
         buttonModalActualIconValue.value = currentIconUrl;
 
@@ -737,17 +846,17 @@ document.addEventListener('DOMContentLoaded', function () {
         if (currentIconType === 'image_url_external') {
             buttonIconTypeSelect.value = 'image_url_external';
             buttonIconUrlExternalInput.value = currentIconUrl;
-        } else if (currentIconType === 'image_uploaded') { 
-            buttonIconTypeSelect.value = 'image_upload_new'; 
+        } else if (currentIconType === 'image_uploaded') {
+            buttonIconTypeSelect.value = 'image_upload_new';
             if (buttonNewImageFileInfo) buttonNewImageFileInfo.textContent = currentIconUrl.split('/').pop();
         } else if (currentIconType === 'library_icon') {
             buttonIconTypeSelect.value = 'library_icon';
-            selectedIconNameForButtonModal = currentIconUrl; 
+            selectedIconNameForButtonModal = currentIconUrl;
             if (libraryIconNamePreview) libraryIconNamePreview.textContent = `Ícone atual: ${currentIconUrl.split('.')[0].replace(/-/g, ' ')}`;
-        } else { 
+        } else {
             buttonIconTypeSelect.value = 'none';
         }
-        
+
         manageButtonIconFieldsVisibility();
 
         buttonIconRoundedCheckbox.checked = data ? data.iconRounded : DEFAULT_BUTTON_ICON_ROUNDED_JS;
@@ -778,27 +887,27 @@ document.addEventListener('DOMContentLoaded', function () {
         addButtonBtn.addEventListener('click', () => openButtonModal());
     }
 
-    const saveButtonModalBtn = document.getElementById('save-button'); 
+    const saveButtonModalBtn = document.getElementById('save-button');
     if (saveButtonModalBtn) {
         saveButtonModalBtn.addEventListener('click', function (event) {
-            event.preventDefault(); 
+            event.preventDefault();
 
             const btnText = buttonTextInput.value.trim();
-            const btnLinkValue = buttonLinkInput.value.trim(); 
+            const btnLinkValue = buttonLinkInput.value.trim();
 
             if (!btnText) {
                 alert('Por favor, preencha o texto do botão!');
-                if (buttonTextInput) { 
+                if (buttonTextInput) {
                     buttonTextInput.focus();
                 }
-                return; 
+                return;
             }
 
             if (buttonLinkInput && !buttonLinkInput.checkValidity()) {
                 buttonLinkInput.reportValidity();
-                return; 
+                return;
             }
-            
+
             const btnLink = btnLinkValue;
 
             const newButtonData = {
@@ -823,7 +932,7 @@ document.addEventListener('DOMContentLoaded', function () {
             };
 
             const editingIndex = parseInt(document.getElementById('button-modal-editing-index').value);
-            if (editingIndex > -1) { 
+            if (editingIndex > -1) {
                 const items = customButtonsContainer.querySelectorAll('.custom-button-item');
                 if (items[editingIndex]) {
                     items[editingIndex].remove();
@@ -831,7 +940,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 } else {
                     renderCustomButton(newButtonData);
                 }
-            } else { 
+            } else {
                 renderCustomButton(newButtonData);
             }
             closeModals();
@@ -849,7 +958,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const link = escapeHtml(buttonData.link || '#');
         const buttonStyle = escapeHtml(buttonData.buttonStyle || DEFAULT_BUTTON_STYLE_JS);
         const iconType = escapeHtml(buttonData.iconType || DEFAULT_BUTTON_ICON_TYPE_JS);
-        const iconUrl = escapeHtml(buttonData.iconUrl || DEFAULT_BUTTON_ICON_URL_JS); 
+        const iconUrl = escapeHtml(buttonData.iconUrl || DEFAULT_BUTTON_ICON_URL_JS);
         const iconRounded = buttonData.iconRounded || DEFAULT_BUTTON_ICON_ROUNDED_JS;
         const color = escapeHtml(buttonData.color || '#4CAF50');
         const opacity = typeof buttonData.opacity === 'number' ? buttonData.opacity : DEFAULT_BUTTON_OPACITY_JS;
@@ -861,8 +970,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const hasBorder = buttonData.hasBorder || false;
         const borderColor = escapeHtml(buttonData.borderColor || '#000000');
         const borderWidth = parseInt(buttonData.borderWidth) || 2;
-        const hasHoverEffect = buttonData.hasHoverEffect || false; 
-        const shadowType = escapeHtml(buttonData.shadowType || 'none'); 
+        const hasHoverEffect = buttonData.hasHoverEffect || false;
+        const shadowType = escapeHtml(buttonData.shadowType || 'none');
 
 
         let borderStyleCSS = '';
@@ -879,9 +988,9 @@ document.addEventListener('DOMContentLoaded', function () {
         let iconHtmlInList = '';
         if (iconType === 'image_url_external' && iconUrl) {
             iconHtmlInList = `<img src="${iconUrl}" alt="Ícone" class="button-embedded-icon ${iconRounded ? 'rounded' : ''}">`;
-        } else if (iconType === 'image_uploaded' && iconUrl) { 
+        } else if (iconType === 'image_uploaded' && iconUrl) {
             iconHtmlInList = `<img src="${iconUrl}" alt="Ícone Enviado" class="button-embedded-icon ${iconRounded ? 'rounded' : ''}">`;
-        } else if (iconType === 'library_icon' && iconUrl) { 
+        } else if (iconType === 'library_icon' && iconUrl) {
             iconHtmlInList = `<img src="${STATIC_ICONS_PATH}${iconUrl}" alt="${iconUrl.split('.')[0]}" class="button-embedded-icon ${iconRounded ? 'rounded' : ''}">`;
         }
 
@@ -972,19 +1081,19 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     document.querySelectorAll('#custom-buttons-container .custom-button-item').forEach((buttonItem, itemIndex) => {
-        const editBtn = buttonItem.querySelector('.edit-item-btn'); 
-        if (!editBtn) { 
+        const editBtn = buttonItem.querySelector('.edit-item-btn');
+        if (!editBtn) {
             const newEditBtn = document.createElement('button');
             newEditBtn.type = 'button';
             newEditBtn.className = 'edit-item-btn';
             newEditBtn.title = 'Editar este botão';
             newEditBtn.innerHTML = '<i class="fas fa-edit"></i>';
-            
+
             const removeBtnSpan = buttonItem.querySelector('.remove-item');
             if (removeBtnSpan) {
                 buttonItem.insertBefore(newEditBtn, removeBtnSpan);
             } else {
-                buttonItem.appendChild(newEditBtn); 
+                buttonItem.appendChild(newEditBtn);
             }
 
 
