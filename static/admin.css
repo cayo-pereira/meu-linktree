@@ -849,3 +849,103 @@ input[type="range"].form-input {
   .icons-grid { grid-template-columns: repeat(2, 1fr); }
   .pagination-btn { padding: 0.5rem 0.7rem; font-size: 0.9rem; }
 }
+
+/* NOVOS ESTILOS PARA AS OPÇÕES DE BACKGROUND DA PÁGINA PRINCIPAL */
+
+/* Estilos para a prévia da imagem de fundo da PÁGINA com overlay */
+#background_preview_page_container {
+    position: relative; /* Necessário para o overlay absoluto */
+    width: 100%;
+    min-height: 150px; /* Altura mínima para a área da prévia */
+    max-height: 250px; /* Altura máxima */
+    border: 1px dashed var(--border-color-light);
+    background-color: var(--input-bg-light);
+    display: flex; /* Para centralizar a imagem se for menor que o container */
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* Para conter a imagem e o overlay */
+    margin-top: 10px; /* Espaçamento acima da prévia */
+    border-radius: var(--border-radius);
+}
+
+#background_preview_page { /* A imagem de prévia em si */
+    display: block; /* Comportamento padrão da imagem */
+    max-width: 100%;
+    max-height: 100%; /* Garante que não exceda o container */
+    width: auto; /* Mantém proporção se a altura for limitante */
+    height: auto; /* Mantém proporção se a largura for limitante */
+    object-fit: contain; /* Garante que toda a imagem apareça, pode ser 'cover' se preferir preenchimento */
+}
+
+.image-preview-overlay { /* Classe genérica para overlay, usada por background_preview_page_overlay */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0); /* Começa transparente */
+    display: none; /* Controlado por JS */
+    pointer-events: none; /* Não interfere com cliques */
+    z-index: 1; /* Sobre a imagem */
+    border-radius: var(--border-radius); /* Para acompanhar o arredondamento do container */
+}
+
+
+/* Ajustes para os inputs de range (sliders) para consistência */
+input[type="range"].form-input {
+    padding: 0; /* Remove padding padrão de inputs para range */
+    height: auto; /* Altura natural do slider */
+    vertical-align: middle; /* Alinha melhor com labels e spans */
+    margin-top: 5px; /* Pequeno espaço acima do slider */
+}
+
+/* Estilo para o span que mostra o valor do slider e o hex da cor */
+#darken_level_value_page,
+#background_color_hex_page {
+    display: inline-block;
+    min-width: 45px; /* Para acomodar "0.00" ou "#RRGGBB" */
+    margin-left: 8px;
+    font-family: monospace; /* Fonte monoespaçada para números e hex */
+    font-size: 0.9em;
+    color: var(--text-color-light);
+    background-color: var(--button-secondary-bg-light); /* Fundo sutil */
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--button-secondary-border-light);
+}
+
+/* Para os radio buttons de tipo de fundo e seus labels */
+.card-background-options label { /* Reutilizando classe para consistência */
+    margin-right: 15px;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: normal; /* Para não ser negrito como outros labels de form-group */
+}
+.card-background-options input[type="radio"] {
+    margin-right: 6px;
+    vertical-align: middle;
+}
+
+/* Para o seletor de cor de fundo da página e seu span de valor hexadecimal */
+#background_page_color_options .form-group-inline {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Espaço entre o input color e o span do hex */
+}
+
+#background_color_value_page.form-input { /* Input de cor */
+    min-width: 50px; /* Tamanho mínimo */
+    width: 60px; /* Largura fixa */
+    height: 40px; /* Altura */
+    padding: 2px; /* Pequeno padding interno */
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color-light);
+    cursor: pointer;
+    background-color: transparent; /* Remove fundo padrão do input color se houver */
+}
+
+/* Garante que o file-info para background_info_page tenha margem */
+#background_info_page {
+    margin-top: 5px;
+}

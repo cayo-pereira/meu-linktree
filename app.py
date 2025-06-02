@@ -53,10 +53,15 @@ DEFAULT_CARD_ENDERECO_COLOR = "#FFFFFF"
 
 # Novos defaults para botões customizados (iconType pode ser: none, image_url_external, image_uploaded, library_icon)
 DEFAULT_BUTTON_OPACITY = 1.0
-DEFAULT_BUTTON_ICON_URL = "" # Para image_url_external ou nome do arquivo do ícone da lib, ou URL da imagem upada
+DEFAULT_BUTTON_ICON_URL = "" # Para image_url_external ou nome do ícone da lib, ou URL da imagem upada
 DEFAULT_BUTTON_ICON_TYPE = "none"
 DEFAULT_BUTTON_STYLE = "default"
 DEFAULT_BUTTON_ICON_ROUNDED = False
+
+# NOVAS CONSTANTES PARA O BACKGROUND DA PÁGINA PRINCIPAL
+DEFAULT_BACKGROUND_TYPE = "image"  # 'image' ou 'color'
+DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL = 0.0  # 0.0 (sem escurecimento) a 1.0 (preto total)
+DEFAULT_BACKGROUND_COLOR_VALUE = "#000000" # Cor de fundo padrão se 'color' for escolhido
 
 
 app.config.update(
@@ -73,7 +78,11 @@ app.config.update(
     DEFAULT_BUTTON_ICON_URL = DEFAULT_BUTTON_ICON_URL,
     DEFAULT_BUTTON_ICON_TYPE = DEFAULT_BUTTON_ICON_TYPE,
     DEFAULT_BUTTON_STYLE = DEFAULT_BUTTON_STYLE,
-    DEFAULT_BUTTON_ICON_ROUNDED = DEFAULT_BUTTON_ICON_ROUNDED
+    DEFAULT_BUTTON_ICON_ROUNDED = DEFAULT_BUTTON_ICON_ROUNDED,
+    # Adicionar novas constantes ao app.config
+    DEFAULT_BACKGROUND_TYPE = DEFAULT_BACKGROUND_TYPE,
+    DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL = DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL,
+    DEFAULT_BACKGROUND_COLOR_VALUE = DEFAULT_BACKGROUND_COLOR_VALUE
 )
 
 
@@ -203,15 +212,14 @@ def delete_page():
                     return url.split('/')[-1].split('?')[0]
                 return None
 
-            for field in ['foto', 'background']:
+            for field in ['foto', 'background']: # 'background' é o campo para a imagem de fundo da página
                 filename = get_storage_filename(user_data.get(field))
                 if filename: files_to_delete.append(filename)
 
-            if user_data.get('card_background_type') == 'image':
+            if user_data.get('card_background_type') == 'image': # Fundo do cartão
                 filename = get_storage_filename(user_data.get('card_background_value'))
                 if filename: files_to_delete.append(filename)
 
-            # Adicionar lógica para deletar imagens de botões do storage
             custom_buttons_str = user_data.get('custom_buttons', '[]')
             try:
                 custom_buttons_list = json.loads(custom_buttons_str) if isinstance(custom_buttons_str, str) else custom_buttons_str
@@ -265,7 +273,7 @@ def delete_page():
 @app.route('/')
 def index():
     if 'user_id' in session and 'profile' in session:
-        pass
+        pass # Não redireciona mais automaticamente para o admin_panel
     return render_template('index.html')
 
 
@@ -318,6 +326,13 @@ def user_page(profile):
         if user_data['card_background_type'] == 'color' and not re.match(r'^#(?:[0-9a-fA-F]{3,4}){1,2}$', str(user_data.get('card_background_value',''))):
             user_data['card_background_value'] = app.config['DEFAULT_CARD_BG_COLOR']
 
+        # Adicionar defaults para os novos campos de background da página principal
+        user_data.setdefault('background_type', app.config['DEFAULT_BACKGROUND_TYPE'])
+        user_data.setdefault('background_image_darken_level', app.config['DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL'])
+        user_data.setdefault('background_color_value', app.config['DEFAULT_BACKGROUND_COLOR_VALUE'])
+        if not user_data.get('background'): # 'background' é o URL da imagem de fundo da página
+            user_data['background'] = ''
+
 
         for key_json in ['custom_buttons', 'social_links', 'card_links']:
             current_value = user_data.get(key_json)
@@ -333,13 +348,13 @@ def user_page(profile):
 
                     if key_json == 'custom_buttons' and isinstance(user_data[key_json], list):
                         for button in user_data[key_json]:
-                            if isinstance(button, dict): # Garantir que é um dicionário
+                            if isinstance(button, dict): 
                                 button.setdefault('bold', False); button.setdefault('italic', False); button.setdefault('hasBorder', False)
                                 button.setdefault('hasHoverEffect', False); button.setdefault('fontSize', 16); button.setdefault('borderWidth', 2)
                                 button.setdefault('textColor', '#FFFFFF'); button.setdefault('borderColor', '#000000'); button.setdefault('shadowType', 'none')
                                 button.setdefault('opacity', app.config['DEFAULT_BUTTON_OPACITY'])
-                                button.setdefault('iconUrl', app.config['DEFAULT_BUTTON_ICON_URL']) # Pode ser URL de imagem ou nome do ícone da lib
-                                button.setdefault('iconType', app.config['DEFAULT_BUTTON_ICON_TYPE']) # none, image_url_external, image_uploaded, library_icon
+                                button.setdefault('iconUrl', app.config['DEFAULT_BUTTON_ICON_URL']) 
+                                button.setdefault('iconType', app.config['DEFAULT_BUTTON_ICON_TYPE']) 
                                 button.setdefault('iconRounded', app.config['DEFAULT_BUTTON_ICON_ROUNDED'])
                                 button.setdefault('buttonStyle', app.config['DEFAULT_BUTTON_STYLE'])
 
@@ -364,6 +379,10 @@ def user_page(profile):
                                                 DEFAULT_REG_COLOR_CARD=app.config['DEFAULT_REG_COLOR_CARD'],
                                                 DEFAULT_CARD_LINK_TEXT_COLOR=app.config['DEFAULT_CARD_LINK_TEXT_COLOR'],
                                                 DEFAULT_CARD_ENDERECO_COLOR=app.config['DEFAULT_CARD_ENDERECO_COLOR'],
+                                                # Passar novos defaults para o template user_page
+                                                DEFAULT_BACKGROUND_TYPE=app.config['DEFAULT_BACKGROUND_TYPE'],
+                                                DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL=app.config['DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL'],
+                                                DEFAULT_BACKGROUND_COLOR_VALUE=app.config['DEFAULT_BACKGROUND_COLOR_VALUE'],
                                                 og_image=og_image_to_pass,
                                                 og_title=og_title_to_pass,
                                                 og_description=og_description_to_pass))
@@ -372,7 +391,7 @@ def user_page(profile):
         response.headers['Expires'] = '0'
         return response
     except Exception as e:
-        if hasattr(e, 'message') and "PGRST116" in e.message:
+        if hasattr(e, 'message') and "PGRST116" in e.message: # Supabase específico para "not found"
             logger.warning(f"Perfil público não encontrado (PGRST116 Supabase): {profile}")
             abort(404)
         logger.error(f"Erro ao carregar perfil público {profile}: {str(e)}", exc_info=True)
@@ -385,7 +404,7 @@ def login_google():
         scheme = 'http'
         if request.headers.get('X-Forwarded-Proto') == 'https' or request.url.startswith('https'):
             scheme = 'https'
-        elif not app.debug and request.host not in ['localhost', '127.0.0.1']:
+        elif not app.debug and request.host not in ['localhost', '127.0.0.1']: # Forçar HTTPS em produção
              scheme = 'https'
 
         redirect_uri = url_for('callback_handler', _external=True, _scheme=scheme)
@@ -406,6 +425,7 @@ def login_google():
 
 @app.route('/callback_handler')
 def callback_handler():
+    # Esta rota agora apenas renderiza o callback.html, que fará o POST para /callback via JS
     return render_template('callback.html')
 
 
@@ -418,7 +438,7 @@ def callback():
         data = request.get_json()
         received_access_token = data.get('access_token')
         received_refresh_token = data.get('refresh_token')
-        auth_code = data.get('auth_code')
+        auth_code = data.get('auth_code') # Receber auth_code do corpo JSON
 
         user_supabase, access_token_to_store, refresh_token_to_store = None, None, None
 
@@ -438,25 +458,25 @@ def callback():
                 logger.error(f"Callback: Exceção ao trocar código de autorização: {str(e)}", exc_info=True)
                 return jsonify({"error": "Autenticação falhou durante a troca de código."}), 401
 
-        elif received_access_token:
+        elif received_access_token: # Se não houver auth_code, tenta com tokens (fluxo implícito/hash)
             logger.info("Callback: Recebido access_token (fluxo implícito/hash). Tentando definir/verificar sessão.")
             try:
-                session_response = supabase.auth.set_session(received_access_token, received_refresh_token)
+                # Tentar obter o usuário diretamente com o token, se set_session não retornar explicitamente o usuário
+                session_response = supabase.auth.set_session(received_access_token, received_refresh_token) # Pode não retornar user
                 if session_response and session_response.user:
                      user_supabase = session_response.user
-                     access_token_to_store = received_access_token
-                     refresh_token_to_store = received_refresh_token
-                     logger.info(f"Callback: Sessão definida com tokens para usuário ID: {user_supabase.id}")
-                else:
-                    get_user_resp = supabase.auth.get_user(jwt=received_access_token)
+                else: # Se set_session não retornou user, tenta get_user
+                    get_user_resp = supabase.auth.get_user(jwt=received_access_token) # Usa o token recebido
                     if get_user_resp and get_user_resp.user:
                         user_supabase = get_user_resp.user
-                        access_token_to_store = received_access_token
-                        refresh_token_to_store = received_refresh_token
-                        logger.info(f"Callback: Usuário obtido com get_user para ID: {user_supabase.id}")
                     else:
                         logger.error("Callback: Falha ao definir sessão ou obter usuário com tokens recebidos.")
                         return jsonify({"error": "Falha ao validar sessão com tokens."}), 401
+                
+                access_token_to_store = received_access_token
+                refresh_token_to_store = received_refresh_token
+                logger.info(f"Callback: Sessão definida/verificada com tokens para usuário ID: {user_supabase.id}")
+
             except Exception as e:
                 logger.error(f"Callback: Exceção ao definir/verificar sessão com tokens: {str(e)}", exc_info=True)
                 return jsonify({"error": "Autenticação falhou durante a validação da sessão."}), 401
@@ -464,13 +484,14 @@ def callback():
             logger.error("Callback: Nenhum token de acesso ou código de autorização fornecido.")
             return jsonify({"error": "Token de acesso ou código de autorização não fornecido."}), 400
 
+
         if not user_supabase or not user_supabase.id:
             logger.error("Callback: Falha na autenticação - usuário Supabase não obtido ou ID ausente.")
             return jsonify({"error": "Falha na autenticação do usuário."}), 401
 
         user_data_db = get_user_by_id(user_supabase.id)
 
-        if not user_data_db:
+        if not user_data_db: # Novo usuário
             logger.info(f"Callback: Novo usuário detectado com ID Supabase: {user_supabase.id}. Criando perfil...")
             base_for_slug = user_supabase.user_metadata.get('full_name', user_supabase.email.split('@')[0] if user_supabase.email else 'usuario')
             profile_slug = generate_unique_slug(base_for_slug)
@@ -495,10 +516,15 @@ def callback():
                 'card_registro_font': app.config['DEFAULT_FONT'], 'card_registro_color': app.config['DEFAULT_REG_COLOR_CARD'],
                 'card_link_text_color': app.config['DEFAULT_CARD_LINK_TEXT_COLOR'],
                 'card_endereco': '', 'card_endereco_font': app.config['DEFAULT_FONT'], 'card_endereco_color': app.config['DEFAULT_CARD_ENDERECO_COLOR'],
+                # Adicionar defaults para novos campos de background da página principal
+                'background_type': app.config['DEFAULT_BACKGROUND_TYPE'],
+                'background_image_darken_level': app.config['DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL'],
+                'background_color_value': app.config['DEFAULT_BACKGROUND_COLOR_VALUE'],
+                'background': '', # URL da imagem de fundo da página
             }
             try:
                 insert_response = supabase.table('usuarios').insert(new_user_payload).execute()
-                if not insert_response.data or len(insert_response.data) == 0:
+                if not insert_response.data or len(insert_response.data) == 0: # 'return=representation' deve retornar dados
                     logger.error(f"Callback: Falha ao inserir novo usuário no banco de dados 'usuarios'. Resposta Supabase: {insert_response}")
                     return jsonify({"error": "Falha ao criar perfil do usuário no banco de dados."}), 500
                 user_data_db = insert_response.data[0]
@@ -506,13 +532,14 @@ def callback():
             except Exception as e_insert:
                 logger.error(f"Callback: Exceção ao inserir novo usuário no banco de dados 'usuarios': {str(e_insert)}", exc_info=True)
                 return jsonify({"error": "Erro interno do servidor ao criar perfil."}), 500
-        else:
+        else: # Usuário existente
             logger.info(f"Callback: Usuário existente ID {user_data_db['id']} com perfil '{user_data_db['profile']}' logado.")
 
+        # Armazenar na sessão Flask
         session['user_id'] = user_supabase.id
         session['access_token'] = access_token_to_store
         session['refresh_token'] = refresh_token_to_store
-        session['profile'] = user_data_db['profile']
+        session['profile'] = user_data_db['profile'] # Usar o profile do banco
         session['logado'] = True
 
         logger.info(f"Callback: Login bem-sucedido para usuário {user_supabase.id}. Redirecionando para admin/{user_data_db['profile']}.")
@@ -527,20 +554,17 @@ def callback():
         return jsonify({"error": "Erro interno do servidor durante o callback."}), 500
 
 
-# Nova rota para upload de imagem de botão via AJAX
 @app.route('/admin/upload_button_temp_image', methods=['POST'])
 def upload_button_temp_image():
     if 'user_id' not in session or not session.get('access_token'):
         return jsonify({"error": "Não autorizado: Sessão inválida."}), 401
 
     try:
-        # Revalidar sessão Supabase
         set_session_response = supabase.auth.set_session(session['access_token'], session.get('refresh_token'))
         current_supabase_user = supabase.auth.get_user().user
         if not current_supabase_user or current_supabase_user.id != session.get('user_id'):
             session.clear()
             return jsonify({"error": "Não autorizado: Sessão Supabase inválida ou expirada."}), 401
-        # Atualizar tokens na sessão Flask se foram refrescados
         if set_session_response and set_session_response.session and set_session_response.session.access_token != session.get('access_token'):
             session['access_token'] = set_session_response.session.access_token
             if set_session_response.session.refresh_token:
@@ -563,7 +587,6 @@ def upload_button_temp_image():
 
     if file and arquivo_permitido(file.filename):
         try:
-            # Usar um field_type específico para imagens de botão
             public_url = upload_to_supabase(file, user_id_from_session, 'button_icon')
             if public_url:
                 return jsonify({"success": True, "url": public_url}), 200
@@ -653,6 +676,14 @@ def admin_panel(username):
     user_data_db.setdefault('card_background_value', app.config['DEFAULT_CARD_BG_COLOR'])
     if user_data_db['card_background_type'] == 'color' and not re.match(r'^#(?:[0-9a-fA-F]{3,4}){1,2}$', str(user_data_db.get('card_background_value',''))):
         user_data_db['card_background_value'] = app.config['DEFAULT_CARD_BG_COLOR']
+    
+    # Definir padrões para os novos campos de background da página principal
+    user_data_db.setdefault('background_type', app.config['DEFAULT_BACKGROUND_TYPE'])
+    user_data_db.setdefault('background_image_darken_level', app.config['DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL'])
+    user_data_db.setdefault('background_color_value', app.config['DEFAULT_BACKGROUND_COLOR_VALUE'])
+    if not user_data_db.get('background'): # 'background' é o URL da imagem de fundo da página
+            user_data_db['background'] = ''
+
 
     for key_json in ['custom_buttons', 'social_links', 'card_links']:
         current_value_admin = user_data_db.get(key_json)
@@ -660,10 +691,10 @@ def admin_panel(username):
             try:
                 if isinstance(current_value_admin, str):
                     user_data_db[key_json] = json.loads(current_value_admin)
-                elif not isinstance(current_value_admin, list):
+                elif not isinstance(current_value_admin, list): # Garantir que é uma lista
                     user_data_db[key_json] = []
 
-                if isinstance(user_data_db[key_json], list):
+                if isinstance(user_data_db[key_json], list): # Processar itens da lista
                     if key_json == 'custom_buttons':
                         for button in user_data_db[key_json]:
                             if isinstance(button, dict):
@@ -681,9 +712,9 @@ def admin_panel(username):
                                 link_item.setdefault('font', app.config['DEFAULT_FONT'])
                                 link_item.setdefault('color', user_data_db.get('card_link_text_color', app.config['DEFAULT_TEXT_COLOR_CARD']))
             except (json.JSONDecodeError, ValueError, TypeError) as e:
-                user_data_db[key_json] = []
+                user_data_db[key_json] = [] # Resetar para lista vazia em caso de erro de parsing
         else:
-            user_data_db[key_json] = []
+            user_data_db[key_json] = [] # Se o campo não existir ou for None, inicializa como lista vazia
 
 
     if request.method == 'POST':
@@ -710,27 +741,73 @@ def admin_panel(username):
                 'card_endereco': request.form.get('card_endereco', user_data_db.get('card_endereco')),
                 'card_endereco_font': request.form.get('card_endereco_font', user_data_db.get('card_endereco_font')),
                 'card_endereco_color': request.form.get('card_endereco_color', user_data_db.get('card_endereco_color')),
+                
+                # NOVOS CAMPOS PARA O BACKGROUND DA PÁGINA PRINCIPAL
+                'background_type': request.form.get('background_type_page', user_data_db.get('background_type')),
+                'background_image_darken_level': float(request.form.get('background_image_darken_level_page', user_data_db.get('background_image_darken_level', 0.0))),
+                'background_color_value': request.form.get('background_color_value_page', user_data_db.get('background_color_value')),
             }
 
             novo_profile = update_data['profile']
             if not novo_profile or not is_valid_slug(novo_profile):
                 flash("❌ URL de perfil inválida. Use apenas letras minúsculas (sem acentos), números e hífens. Não pode começar ou terminar com hífen.", "error")
                 form_data_for_repopulation = user_data_db.copy()
-                form_data_for_repopulation.update(request.form.to_dict(flat=True))
+                form_data_for_repopulation.update(request.form.to_dict(flat=True)) # Atualiza com os dados do form que falhou
+                # Corrigir a repopulação dos campos JSON para o template
+                for key_json_repop in ['social_links', 'custom_buttons', 'card_links']:
+                     form_data_for_repopulation[key_json_repop] = json.loads(user_data_db.get(key_json_repop, '[]')) # Usa o que estava no DB
                 return render_template('admin.html', dados=form_data_for_repopulation, **app.config)
 
 
             if novo_profile != username and slug_exists(novo_profile, user_id_from_session):
                 flash(f"❌ A URL de perfil '{novo_profile}' já está em uso. Por favor, escolha outra.", "error")
-                update_data['profile'] = username
+                update_data['profile'] = username # Reverte para o username original no update_data
                 form_data_for_repopulation_slug_error = user_data_db.copy()
-                form_data_for_repopulation_slug_error.update(update_data)
+                form_data_for_repopulation_slug_error.update(update_data) # Atualiza com update_data (que tem o profile revertido)
+                # Corrigir a repopulação dos campos JSON para o template
+                for key_json_repop_slug in ['social_links', 'custom_buttons', 'card_links']:
+                     form_data_for_repopulation_slug_error[key_json_repop_slug] = json.loads(user_data_db.get(key_json_repop_slug, '[]'))
                 return render_template('admin.html', dados=form_data_for_repopulation_slug_error, **app.config)
 
+            # Lógica para fundo do cartão (existente, manter)
             if update_data['card_background_type'] == 'color':
                 update_data['card_background_value'] = request.form.get('card_background_value_color', app.config['DEFAULT_CARD_BG_COLOR'])
             elif update_data['card_background_type'] == 'image':
-                update_data['card_background_value'] = user_data_db.get('card_background_value', '')
+                # Mantém o valor existente se nenhuma nova imagem for enviada
+                update_data['card_background_value'] = user_data_db.get('card_background_value', '') 
+
+            # Lógica para upload de imagem de fundo da página (background_upload)
+            background_file = request.files.get('background_upload')
+            if background_file and background_file.filename != '' and arquivo_permitido(background_file.filename):
+                file_url = upload_to_supabase(background_file, user_id_from_session, 'background')
+                if file_url:
+                    update_data['background'] = file_url # 'background' continua sendo o URL da imagem
+                else:
+                    flash("❌ Erro no upload da imagem de fundo da página.", "error")
+                    # Se o upload falhar, mantém a imagem antiga ou nenhuma se não houver
+                    update_data['background'] = user_data_db.get('background', '')
+            elif not user_data_db.get('background') and not background_file: # Se não há nova imagem e não havia uma antes
+                 update_data['background'] = '' # Define como vazio
+            else: # Se não enviou nova imagem, mantém a antiga
+                update_data['background'] = user_data_db.get('background', '')
+
+
+            # Se o tipo for cor para o fundo da página, garantir que o valor da cor seja salvo
+            if update_data['background_type'] == 'color':
+                if not update_data['background_color_value']: # Garante um valor padrão se estiver vazio
+                    update_data['background_color_value'] = app.config['DEFAULT_BACKGROUND_COLOR_VALUE']
+                # Opcional: limpar o campo de imagem se o tipo é cor e nenhuma nova imagem foi enviada
+                if not background_file or background_file.filename == '':
+                    update_data['background'] = '' # Limpa o URL da imagem da página se o tipo é cor
+            elif update_data['background_type'] == 'image':
+                if not update_data.get('background') and not user_data_db.get('background'):
+                    # Se o tipo é imagem mas não há URL (nem antiga nem nova), pode ser um problema.
+                    # Poderia forçar para 'color' ou deixar o template user_page.html lidar com a ausência de URL.
+                    # Por ora, vamos manter o tipo 'image' e o template user_page.html usará um fallback.
+                     update_data['background_color_value'] = user_data_db.get('background_color_value', app.config['DEFAULT_BACKGROUND_COLOR_VALUE']) # Mantém a cor antiga
+                else: # Se tipo imagem e tem URL, garante que o campo de cor não interfira
+                    update_data['background_color_value'] = user_data_db.get('background_color_value', app.config['DEFAULT_BACKGROUND_COLOR_VALUE']) # Mantém a cor antiga
+
 
             social_links_list = []
             sc_names = request.form.getlist('social_icon_name[]')
@@ -754,8 +831,8 @@ def admin_panel(username):
             btn_has_hovers = request.form.getlist('custom_button_has_hover[]')
             btn_shadow_types = request.form.getlist('custom_button_shadow_type[]')
             btn_opacities = request.form.getlist('custom_button_opacity[]')
-            btn_icon_urls = request.form.getlist('custom_button_icon_url[]') # Receberá URL da imagem ou nome do ícone da lib
-            btn_icon_types = request.form.getlist('custom_button_icon_type[]') # none, image_url_external, image_uploaded, library_icon
+            btn_icon_urls = request.form.getlist('custom_button_icon_url[]') 
+            btn_icon_types = request.form.getlist('custom_button_icon_type[]') 
             btn_icon_roundeds = request.form.getlist('custom_button_icon_rounded[]')
             btn_styles = request.form.getlist('custom_button_style[]')
 
@@ -804,12 +881,7 @@ def admin_panel(username):
                 if file_url: update_data['foto'] = file_url
                 else: flash("❌ Erro no upload da foto de perfil.", "error")
 
-            background_file = request.files.get('background_upload')
-            if background_file and background_file.filename != '' and arquivo_permitido(background_file.filename):
-                file_url = upload_to_supabase(background_file, user_id_from_session, 'background')
-                if file_url: update_data['background'] = file_url
-                else: flash("❌ Erro no upload da imagem de fundo da página.", "error")
-
+            # Upload do fundo do cartão (existente, manter)
             if update_data['card_background_type'] == 'image':
                 card_bg_file = request.files.get('card_background_upload')
                 if card_bg_file and card_bg_file.filename != '' and arquivo_permitido(card_bg_file.filename):
@@ -820,17 +892,17 @@ def admin_panel(username):
                         flash("❌ Erro no upload da imagem de fundo do cartão. Revertendo para cor.", "error")
                         update_data['card_background_type'] = 'color'
                         update_data['card_background_value'] = request.form.get('card_background_value_color', app.config['DEFAULT_CARD_BG_COLOR'])
-
-            if request.form.get('remove_card_background_image') == 'true':
-                if user_data_db.get('card_background_type') == 'image' and str(user_data_db.get('card_background_value','')).startswith(f"{SUPABASE_URL}/storage/v1/object/public/usuarios/"):
-                    try:
-                        filename_to_remove = user_data_db['card_background_value'].split('/')[-1].split('?')[0]
-                        supabase.storage.from_("usuarios").remove([filename_to_remove])
-                        logger.info(f"Imagem de fundo do cartão '{filename_to_remove}' removida do storage.")
-                    except Exception as e_remove_storage:
-                        logger.error(f"Erro ao remover imagem de fundo do cartão do storage: {str(e_remove_storage)}")
-                update_data['card_background_type'] = 'color'
-                update_data['card_background_value'] = request.form.get('card_background_value_color', app.config['DEFAULT_CARD_BG_COLOR'])
+                # Lógica de remoção da imagem de fundo do cartão (existente, manter)
+                if request.form.get('remove_card_background_image') == 'true':
+                    if user_data_db.get('card_background_type') == 'image' and str(user_data_db.get('card_background_value','')).startswith(f"{SUPABASE_URL}/storage/v1/object/public/usuarios/"):
+                        try:
+                            filename_to_remove = user_data_db['card_background_value'].split('/')[-1].split('?')[0]
+                            supabase.storage.from_("usuarios").remove([filename_to_remove])
+                            logger.info(f"Imagem de fundo do cartão '{filename_to_remove}' removida do storage.")
+                        except Exception as e_remove_storage:
+                            logger.error(f"Erro ao remover imagem de fundo do cartão do storage: {str(e_remove_storage)}")
+                    update_data['card_background_type'] = 'color'
+                    update_data['card_background_value'] = request.form.get('card_background_value_color', app.config['DEFAULT_CARD_BG_COLOR'])
 
 
             db_response = supabase.table('usuarios').update(update_data).eq('id', user_id_from_session).execute()
@@ -838,8 +910,8 @@ def admin_panel(username):
             if db_response.data:
                 logger.info(f"Dados do usuário '{username}' (ID: {user_id_from_session}) atualizados com sucesso.")
                 if 'profile' in update_data and update_data['profile'] != username:
-                    session['profile'] = update_data['profile']
-                    username = update_data['profile']
+                    session['profile'] = update_data['profile'] # Atualiza o profile na sessão Flask
+                    username = update_data['profile'] # Atualiza a variável local para o redirect
                 flash("✅ Alterações salvas com sucesso!", "success")
                 return redirect(url_for('admin_panel', username=username))
             else:
@@ -848,17 +920,42 @@ def admin_panel(username):
                     error_message_supabase = db_response.error.message
                 logger.error(f"Falha ao salvar dados para '{username}' no Supabase: {error_message_supabase}")
                 flash(f"❌ Erro ao salvar os dados no banco de dados: {error_message_supabase}", "error")
+                # Repopular o formulário com os dados que falharam ao salvar, mas mantendo os JSONs como listas/dicts
+                failed_form_data = user_data_db.copy() # Começa com os dados do DB
+                failed_form_data.update(update_data) # Sobrescreve com os dados do formulário que foram processados
+                # Garantir que os campos JSON sejam passados corretamente como listas/dicionários para o template
+                for key_json_fail in ['social_links', 'custom_buttons', 'card_links']:
+                    if isinstance(failed_form_data.get(key_json_fail), str): # Se ainda for string JSON
+                        try:
+                            failed_form_data[key_json_fail] = json.loads(failed_form_data[key_json_fail])
+                        except: failed_form_data[key_json_fail] = [] # fallback
+                    elif not isinstance(failed_form_data.get(key_json_fail), list):
+                         failed_form_data[key_json_fail] = []
+
+
+                return render_template('admin.html', dados=failed_form_data, **app.config)
 
         except Exception as e_post_general:
             logger.error(f"Erro GERAL durante o POST do admin_panel para '{username}': {str(e_post_general)}", exc_info=True)
             flash(f"⚠️ Ocorreu um erro inesperado ao tentar salvar as alterações: {str(e_post_general)}", "error")
-            failed_form_data = user_data_db.copy()
-            for key, value in request.form.items():
-                if key.endswith('[]'):
-                    failed_form_data[key.replace('[]','')] = request.form.getlist(key)
-                else:
-                    failed_form_data[key] = value
-            return render_template('admin.html', dados=failed_form_data, **app.config)
+            # Repopular o formulário em caso de erro geral
+            failed_form_data_general_error = user_data_db.copy()
+            # Atualizar com o que veio do formulário, mas com cuidado para não quebrar
+            for key_form, value_form in request.form.items():
+                 if key_form.endswith('[]'):
+                    failed_form_data_general_error[key_form.replace('[]','')] = request.form.getlist(key_form)
+                 else:
+                    failed_form_data_general_error[key_form] = value_form
+            # Garantir que campos JSON sejam listas para o template
+            for key_json_error in ['social_links', 'custom_buttons', 'card_links']:
+                if not isinstance(failed_form_data_general_error.get(key_json_error), list):
+                    try:
+                        loaded_json = json.loads(user_data_db.get(key_json_error, '[]'))
+                        failed_form_data_general_error[key_json_error] = loaded_json if isinstance(loaded_json, list) else []
+                    except:
+                         failed_form_data_general_error[key_json_error] = []
+
+            return render_template('admin.html', dados=failed_form_data_general_error, **app.config)
 
     return render_template('admin.html', dados=user_data_db, **app.config)
 
@@ -867,13 +964,13 @@ def admin_panel(username):
 def logout():
     user_id_logout = session.get('user_id', 'Desconhecido')
     try:
-        if 'access_token' in session:
-            supabase.auth.sign_out()
+        if 'access_token' in session: # Só tenta deslogar do Supabase se houver token
+            supabase.auth.sign_out() # Isso invalida o token no lado do Supabase
         logger.info(f"Usuário {user_id_logout} deslogado com sucesso do Supabase Auth.")
     except Exception as e_supabase_logout:
         logger.error(f"Erro durante o sign_out do Supabase para o usuário {user_id_logout}: {str(e_supabase_logout)}")
     finally:
-        session.clear()
+        session.clear() # Limpa a sessão Flask independentemente do resultado do Supabase
         flash("👋 Você foi desconectado com segurança.", "info")
     return redirect(url_for('index'))
 

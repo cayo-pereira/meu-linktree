@@ -105,7 +105,8 @@
                 </div>
 
                 <div class="form-section">
-                    <h2><i class="fas fa-images"></i> Imagens da Página</h2>
+                    <h2><i class="fas fa-images"></i> Imagens e Fundo da Página Principal</h2>
+
                     <div class="form-group">
                         <label for="foto_upload">Foto de Perfil (Recomendado: Quadrada, ex: 300x300px)</label>
                         <div class="file-upload-wrapper">
@@ -119,28 +120,70 @@
                             <div class="file-info" id="foto_info">Nenhum arquivo selecionado</div>
                             <div class="image-preview-container" id="foto_preview_container">
                                 <img src="{{ dados.foto if dados.foto else '' }}" class="image-preview" id="foto_preview"
-                                    alt="Prévia da Foto de Perfil" onerror="this.style.display='none'">
+                                    alt="Prévia da Foto de Perfil" onerror="this.style.display='none'; this.parentElement.style.display='none';">
                             </div>
                         </div>
                     </div>
+
                     <div class="form-group">
+                        <label>Fundo da Página Principal:</label>
+                        <div class="card-background-options" style="margin-bottom: 10px;">
+                            <label>
+                                <input type="radio" name="background_type_page" value="image"
+                                       {% if dados.background_type == 'image' or dados.background_type is none %}checked{% endif %}>
+                                Enviar Imagem
+                            </label>
+                            <label>
+                                <input type="radio" name="background_type_page" value="color"
+                                       {% if dados.background_type == 'color' %}checked{% endif %}>
+                                Selecionar Cor
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="background_page_image_options" class="form-group" style="display: {% if dados.background_type == 'image' or dados.background_type is none %}block{% else %}none{% endif %};">
                         <label for="background_upload">Imagem de Fundo da Página (Opcional)</label>
                         <div class="file-upload-wrapper">
                             <div class="file-upload">
                                 <input type="file" id="background_upload" name="background_upload" accept="image/png, image/jpeg, image/gif" class="file-input"
-                                    onchange="previewImage(this, 'background_preview', 'background_info')">
+                                    onchange="previewImage(this, 'background_preview_page', 'background_info_page')">
                                 <label for="background_upload" class="file-label">
-                                    <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo
+                                    <i class="fas fa-cloud-upload-alt"></i> Escolher arquivo de fundo
                                 </label>
                             </div>
-                            <div class="file-info" id="background_info">Nenhum arquivo selecionado</div>
-                            <div class="image-preview-container" id="background_preview_container">
+                            <div class="file-info" id="background_info_page">Nenhum arquivo selecionado</div>
+                            <div class="image-preview-container" id="background_preview_page_container" style="position: relative; display: {% if dados.background %}block{% else %}none{% endif %};">
                                 <img src="{{ dados.background if dados.background else '' }}" class="image-preview"
-                                    id="background_preview" alt="Prévia do Fundo da Página" onerror="this.style.display='none'">
+                                    id="background_preview_page" alt="Prévia do Fundo da Página" onerror="this.style.display='none'; this.parentElement.style.display='none';">
+                                <div id="background_preview_page_overlay" class="image-preview-overlay"></div>
                             </div>
+                        </div>
+
+                        <div class="form-group-inline" style="margin-top: 15px; align-items: center;">
+                            <input type="checkbox" id="background_image_darken_enabled_page" name="background_image_darken_enabled_page"
+                                   {% if dados.background_image_darken_level | float > 0 %}checked{% endif %}>
+                            <label for="background_image_darken_enabled_page" style="margin-bottom: 0;">Escurecer imagem de fundo</label>
+                        </div>
+                        <div id="background_image_darken_controls_page" class="form-group"
+                             style="margin-top: 5px; display: {% if dados.background_image_darken_level | float > 0 %}block{% else %}none{% endif %};">
+                            <label for="background_image_darken_level_page">Nível de Escurecimento:
+                                <span id="darken_level_value_page">{{ "%.2f" | format(dados.background_image_darken_level | float) }}</span>
+                            </label>
+                            <input type="range" id="background_image_darken_level_page" name="background_image_darken_level_page"
+                                   min="0" max="1" step="0.01" value="{{ dados.background_image_darken_level | float | default(0.0) }}" class="form-input">
+                        </div>
+                    </div>
+
+                    <div id="background_page_color_options" class="form-group" style="display: {% if dados.background_type == 'color' %}block{% else %}none{% endif %};">
+                        <label for="background_color_value_page">Cor de Fundo da Página:</label>
+                        <div class="form-group-inline">
+                            <input type="color" id="background_color_value_page" name="background_color_value_page"
+                                   value="{{ dados.background_color_value | default(DEFAULT_BACKGROUND_COLOR_VALUE, true) }}" class="form-input" style="width: 60px; height: 40px; padding: 2px;">
+                            <span id="background_color_hex_page" style="margin-left: 10px; font-family: monospace;">{{ dados.background_color_value | default(DEFAULT_BACKGROUND_COLOR_VALUE, true) }}</span>
                         </div>
                     </div>
                 </div>
+
 
                 <div class="form-section">
                     <h2><i class="fas fa-link"></i> Links e Botões (Página Principal)</h2>
@@ -182,11 +225,12 @@
                                         button-style-{{ button.buttonStyle | default(DEFAULT_BUTTON_STYLE) }}"
                                         style="--btn-bg-color: {{ button.color | style_safe }}; --btn-opacity: {{ button.opacity | default(DEFAULT_BUTTON_OPACITY) }}; border-radius: {{ button.radius }}px; padding: 8px; margin-bottom: 8px; color: {{ button.textColor | style_safe }}; font-weight: {{ 'bold' if button.bold else 'normal' }}; font-style: {{ 'italic' if button.italic else 'normal' }}; font-size: {{ button.fontSize }}px; {% if button.hasBorder %}border: {{ button.borderWidth }}px solid {{ button.borderColor | style_safe }};{% endif %}">
 
-                                        {% if button.iconType == 'image_url' and button.iconUrl %}
-                                            <img src="{{ button.iconUrl | e }}" alt="Ícone" class="button-embedded-icon {{ 'rounded' if button.iconRounded else '' }}">
-                                        {% elif button.iconType == 'library_icon' and button.iconUrl %}
-                                            {# Assumindo que iconUrl para library_icon é o nome do arquivo do ícone em static/icons/ #}
-                                            <img src="{{ url_for('static', filename='icons/' + button.iconUrl) }}" alt="Ícone" class="button-embedded-icon">
+                                        {% if button.iconUrl and button.iconType != 'none' %}
+                                            {% if button.iconType == 'image_url_external' or button.iconType == 'image_uploaded' %}
+                                                <img src="{{ button.iconUrl | e }}" alt="Ícone" class="button-embedded-icon {{ 'rounded' if button.iconRounded else '' }}">
+                                            {% elif button.iconType == 'library_icon' %}
+                                                <img src="{{ url_for('static', filename='icons/' + button.iconUrl) }}" alt="Ícone" class="button-embedded-icon {{ 'rounded' if button.iconRounded else '' }}">
+                                            {% endif %}
                                         {% endif %}
                                         <span class="button-text-content">{{ button.text }}</span>
                                     </div>
@@ -209,6 +253,7 @@
                                     <input type="hidden" name="custom_button_icon_rounded[]" value="{{ 'true' if button.iconRounded else 'false' }}">
                                     <input type="hidden" name="custom_button_style[]" value="{{ button.buttonStyle | default(DEFAULT_BUTTON_STYLE) | e }}">
                                 </div>
+                                <button type="button" class="edit-item-btn" title="Editar este botão"><i class="fas fa-edit"></i></button>
                                 <span class="remove-item" title="Remover este botão"><i class="fas fa-times"></i></span>
                             </div>
                             {% endfor %}
@@ -247,7 +292,7 @@
 
 
                             <div class="form-group"><label for="button-text">Texto do Botão:</label><input type="text" id="button-text" class="form-input" placeholder="Ex: Meu Portfólio"></div>
-                            <div class="form-group"><label for="button-link">Link do Botão (URL completa):</label><input type="url" id="button-link" name=""button-link" class="form-input" placeholder="https://exemplo.com"></div>
+                            <div class="form-group"><label for="button-link">Link do Botão (URL completa):</label><input type="url" id="button-link" name="button-link" class="form-input" placeholder="https://exemplo.com"></div>
 
                             <div class="form-group">
                                 <label for="button-style-select">Estilo do Botão:</label>
@@ -301,21 +346,19 @@
                             <div class="form-group-inline"><label>Estilo do Texto:</label><input type="checkbox" id="button-text-bold" name="button-text-bold"><label for="button-text-bold">Negrito</label><input type="checkbox" id="button-text-italic" name="button-text-italic"><label for="button-text-italic">Itálico</label></div>
                             <div class="form-group"><label for="button-font-size">Tamanho da Fonte (px):</label><input type="number" id="button-font-size" min="10" max="30" value="16" class="form-input" style="width: 80px;"></div>
 
-                            <div class="form-group-inline"><input type="checkbox" id="button-has-border"><label for="button-has-border">Adicionar Borda</label></div>
-                            <div id="border-options-group" style="display: none;" class="border-options-group">
-                                <div class="form-group-inline"><label for="button-border-color">Cor da Borda:</label><input type="color" id="button-border-color" value="#000000"></div>
-                                <div class="form-group-inline"><label for="button-border-width">Largura (px):</label><input type="number" id="button-border-width" min="1" max="10" value="2" class="form-input" style="width: 60px;"></div>
-                            </div>
-
-                            <div data-style-target="default"> <div class="form-group-inline"><input type="checkbox" id="button-has-hover"><label for="button-has-hover">Efeito Hover (Elevar)</label></div>
+                            <div data-style-target="default"> <div class="form-group-inline"><input type="checkbox" id="button-has-border"><label for="button-has-border">Adicionar Borda</label></div>
+                                <div id="border-options-group" style="display: none;" class="border-options-group">
+                                    <div class="form-group-inline"><label for="button-border-color">Cor da Borda:</label><input type="color" id="button-border-color" value="#000000"></div>
+                                    <div class="form-group-inline"><label for="button-border-width">Largura (px):</label><input type="number" id="button-border-width" min="1" max="10" value="2" class="form-input" style="width: 60px;"></div>
+                                </div>
+                                <div class="form-group-inline"><input type="checkbox" id="button-has-hover"><label for="button-has-hover">Efeito Hover (Elevar)</label></div>
                                 <div class="form-group"><label for="button-shadow-type">Tipo de Sombra (Padrão):</label>
                                     <select id="button-shadow-type" class="form-input">
                                         <option value="none">Nenhuma</option><option value="soft">Suave</option>
                                         <option value="medium">Média</option><option value="hard">Forte</option><option value="inset">Interna</option>
                                     </select>
                                 </div>
-                            </div>
-                            <button type="button" id="save-button" class="btn-save"><i class="fas fa-check"></i> Salvar Botão</button>
+                            </div> <button type="button" id="save-button" class="btn-save"><i class="fas fa-check"></i> Salvar Botão</button>
                         </div>
                     </div>
                 </div>
@@ -432,7 +475,7 @@
                                 </div>
                                 <div class="image-preview-container" id="card_background_image_preview_container" style="display: {% if dados.card_background_type == 'image' and dados.card_background_value %}block{% else %}none{% endif %};">
                                     <img src="{{ dados.card_background_value if dados.card_background_type == 'image' else '' }}" class="image-preview" id="card_background_image_preview"
-                                        alt="Prévia do Fundo do Cartão" onerror="this.style.display='none'">
+                                        alt="Prévia do Fundo do Cartão" onerror="this.style.display='none'; this.parentElement.style.display='none';">
                                     <button type="button" class="btn-delete btn-sm" id="remove_card_background_image_btn" style="margin-top: 10px; display: {% if dados.card_background_type == 'image' and dados.card_background_value %}inline-flex{% else %}none{% endif %}; align-items: center; gap: 5px;" title="Remover imagem de fundo do cartão"><i class="fas fa-times-circle"></i>Remover Imagem</button>
                                     <input type="hidden" name="remove_card_background_image" id="remove_card_background_image" value="false">
                                 </div>
@@ -518,12 +561,18 @@
 
         // Novas constantes globais para JS para defaults de botões
         const DEFAULT_BUTTON_OPACITY_JS = parseFloat("{{ DEFAULT_BUTTON_OPACITY }}");
-        const DEFAULT_BUTTON_ICON_URL_JS = "{{ DEFAULT_BUTTON_ICON_URL | e }}"; // Será usado para URL externa ou nome do ícone da lib.
-        const DEFAULT_BUTTON_ICON_TYPE_JS = "{{ DEFAULT_BUTTON_ICON_TYPE | e }}"; // none, image_url_external, image_upload_new, library_icon
+        const DEFAULT_BUTTON_ICON_URL_JS = "{{ DEFAULT_BUTTON_ICON_URL | e }}"; 
+        const DEFAULT_BUTTON_ICON_TYPE_JS = "{{ DEFAULT_BUTTON_ICON_TYPE | e }}"; 
         const DEFAULT_BUTTON_ICON_ROUNDED_JS = "{{ 'true' if DEFAULT_BUTTON_ICON_ROUNDED else 'false' }}" === 'true';
         const DEFAULT_BUTTON_STYLE_JS = "{{ DEFAULT_BUTTON_STYLE | e }}";
-        const STATIC_ICONS_PATH = "{{ url_for('static', filename='icons/') }}"; // Caminho base para ícones da biblioteca
+        const STATIC_ICONS_PATH = "{{ url_for('static', filename='icons/') }}"; 
         const UPLOAD_BUTTON_IMAGE_URL = "{{ url_for('upload_button_temp_image') }}";
+
+        // Novas constantes para o fundo da página principal
+        const DEFAULT_BACKGROUND_TYPE_JS = "{{ DEFAULT_BACKGROUND_TYPE | e }}";
+        const DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL_JS = parseFloat("{{ DEFAULT_BACKGROUND_IMAGE_DARKEN_LEVEL }}");
+        const DEFAULT_BACKGROUND_COLOR_VALUE_JS = "{{ DEFAULT_BACKGROUND_COLOR_VALUE | e }}";
+
     </script>
     <script src="{{ url_for('static', filename='js/admin.js') }}?v={{ range(1, 100000) | random }}" defer></script>
     <script src="{{ url_for('static', filename='js/dark-mode.js') }}?v={{ range(1, 100000) | random }}"></script>
