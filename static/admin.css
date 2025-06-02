@@ -554,7 +554,7 @@ body.modal-open {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid transparent;
+  border: 1px solid transparent; /* Mantido transparente por padrão, será sobrescrito se hasBorder for true ou para solid_shadow */
 }
 .custom-button-item .button-preview .button-embedded-icon {
     margin-right: 8px;
@@ -567,37 +567,33 @@ body.modal-open {
     border-radius: 50%;
 }
 
+/* ========= AJUSTE DA PRÉVIA DO BOTÃO "SOMBRA DESTACADA" NO ADMIN ========= */
 .button-preview.button-style-solid_shadow,
 #live-button-preview.button-style-solid_shadow {
-    position: relative;
-    border: 1px solid #222;
+    position: relative; /* Necessário para que box-shadow pareça "atrás" */
+    border: 2px solid #000000 !important; /* Borda preta, !important para garantir prioridade sobre '.has-border-preview' se ambos estiverem presentes */
+    
+    /* Nova sombra usando box-shadow */
+    box-shadow: 4px 4px 0px 0px #000000 !important; /* !important para garantir prioridade */
+
     transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-    z-index: 1;
+    /* z-index não é mais usado para este efeito de sombra */
+    /* A cor de fundo é aplicada inline pelo JavaScript */
 }
+
+/* Remover completamente o ::after para este estilo, pois usaremos box-shadow */
 .button-preview.button-style-solid_shadow::after,
 #live-button-preview.button-style-solid_shadow::after {
-    content: '';
-    position: absolute;
-    left: 3px;
-    top: 3px;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.55);
-    border-radius: inherit;
-    z-index: -1;
-    transition: left 0.15s ease-out, top 0.15s ease-out, opacity 0.15s ease-out;
+    content: none;
 }
+
+/* Ajustar o hover para a prévia do botão "Sombra Destacada" */
 .button-preview.button-style-solid_shadow:hover,
 #live-button-preview.button-style-solid_shadow:hover {
-    transform: translate(3px, 3px);
-    box-shadow: none !important;
+    transform: translate(2px, 2px); /* Botão "afunda" um pouco */
+    box-shadow: 2px 2px 0px 0px #000000 !important; /* Sombra se ajusta */
 }
-.button-preview.button-style-solid_shadow:hover::after,
-#live-button-preview.button-style-solid_shadow:hover::after {
-    left: 0px;
-    top: 0px;
-    opacity: 0.3;
-}
+/* ========= FIM DO AJUSTE DA PRÉVIA DO BOTÃO "SOMBRA DESTACADA" ========= */
 
 
 #button-preview-area {
@@ -618,7 +614,7 @@ body.modal-open {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.1s ease-out;
+    transition: all 0.1s ease-out; /* Transição mais rápida para a prévia */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
