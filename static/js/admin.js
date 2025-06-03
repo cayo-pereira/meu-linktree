@@ -245,7 +245,111 @@ document.addEventListener('DOMContentLoaded', function () {
     let selectedIconNameForButtonModal = '';
 
     const allSocialIcons = [
-        { name: 'instagram', path: '/static/icons/instagram.png' }, { name: 'instagram-redondo', path: '/static/icons/instagram-redondo.png' }, { name: 'linkedin', path: '/static/icons/linkedin.png' }, { name: 'linkedin-redondo', path: '/static/icons/linkedin-redondo.png' }, { name: 'linkedin-preto', path: '/static/icons/linkedin-preto' }, { name: 'github', path: '/static/icons/github.png' }, { name: 'github-redondo', path: '/static/icons/github-redondo.png' }, { name: 'email', path: '/static/icons/email.png' }, { name: 'email-preto', path: '/static/icons/email-preto.png' }, { name: 'gmail', path: '/static/icons/gmail.png' }, { name: 'gmail-redondo', path: '/static/icons/gmail-redondo.png' }, { name: 'gmail-preto', path: '/static/icons/gmail-redondo.png' }, { name: 'whatsapp', path: '/static/icons/whatsapp.png' }, { name: 'whatsapp-v-p', path: '/static/icons/whatsapp-v-p.png' }, { name: 'whatsapp-preto', path: '/static/icons/whatsapp-preto.png' }, { name: 'twitter', path: '/static/icons/twitter.png' }, { name: 'facebook', path: '/static/icons/facebook.png' }, { name: 'facebook-redondo', path: '/static/icons/facebook-redondo.png' }, { name: 'youtube', path: '/static/icons/youtube.png' }, { name: 'youtube-preto', path: '/static/icons/youtube-preto.png' }, { name: 'youtube-r', path: '/static/icons/youtube-r.png' }, { name: 'youtube-p-r', path: '/static/icons/youtube-p-r.png' }, { name: 'telegram', path: '/static/icons/telegram.png' }, { name: 'telegrama-p', path: '/static/icons/telegrama-p.png' }, { name: 'tiktok', path: '/static/icons/tiktok.png' }, { name: 'tiktok-r', path: '/static/icons/tiktok-r.png' }, { name: 'pinterest', path: '/static/icons/pinterest.png' }, { name: 'pinterest-p', path: '/static/icons/pinterest-p.png' }, { name: 'twitch', path: '/static/icons/twitch.png' }, { name: 'twitch-r', path: '/static/icons/twitch-r.png' }, { name: 'discord', path: '/static/icons/discord.png' }, { name: 'discord-p', path: '/static/icons/discord-p.png' }, { name: 'discord-p-r', path: '/static/icons/discord-p-r.png' }, { name: 'discord-r', path: '/static/icons/discord-r.png' }, { name: 'snapchat', path: '/static/icons/snapchat.png' }, { name: 'snapchat-r', path: '/static/icons/snapchat-r.png' }, { name: 'reddit', path: '/static/icons/reddit.png' }, { name: 'reddit-p', path: '/static/icons/reddit-p.png' }, { name: 'vimeo', path: '/static/icons/vimeo.png' }, { name: 'spotify', path: '/static/icons/spotify.png' }, { name: 'spotify-p', path: '/static/icons/spotify-p.png' }, { name: 'soundcloud', path: '/static/icons/soundcloud.png' }, { name: 'soundcloud-p', path: '/static/icons/soundcloud-p.png' }, { name: 'behance', path: '/static/icons/behance.png' }, { name: 'behance-p', path: '/static/icons/behance-p.png' }, { name: 'flickr', path: '/static/icons/flickr.png' }, { name: 'paypal', path: '/static/icons/paypal.png' }, { name: 'paypal-p', path: '/static/icons/paypal-p.png' }, { name: 'paypal-p-r', path: '/static/icons/paypal-p-r.png' }, { name: 'paypal-r', path: '/static/icons/paypal-r.png' }, { name: 'google-drive', path: '/static/icons/google-drive.png' }, { name: 'google-drive-r', path: '/static/icons/google-drive-r.png' }, { name: 'google-drive-r-p', path: '/static/icons/google-drive-r-p.png' }, { name: 'dropbox', path: '/static/icons/dropbox.png' }, { name: 'dropbox-p', path: '/static/icons/dropbox-p.png' }, { name: 'link', path: '/static/icons/link.png' }, { name: 'link-1', path: '/static/icons/link-1.png' }, { name: 'link-2', path: '/static/icons/link-2.png' }, { name: 'website', path: '/static/icons/website.png' }, { name: 'website-p', path: '/static/icons/website-p.png' }, { name: 'gitlab', path: '/static/icons/gitlab.png' }, { name: 'gitlab-p-r', path: '/static/icons/gitlab-p-r.png' }, { name: 'gitlab-r', path: '/static/icons/gitlab-r.png' }, { name: 'gitlab-rv-p', path: '/static/icons/gitlab-rv-p.png' }, { name: 'codepen', path: '/static/icons/codepen.png' }, { name: 'codepen-p-r', path: '/static/icons/codepen-p-r.png' }, { name: 'codepen-r-b', path: '/static/icons/codepen-r-b.png' }, { name: 'patreon', path: '/static/icons/patreon.png' }, { name: 'patreon-c', path: '/static/icons/patreon-c.png' }, { name: 'patreon-r', path: '/static/icons/patreon-r.png' }, { name: 'patreon-r-p', path: '/static/icons/patreon-r-p.png' }, { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' }, { name: 'buymeacoffee-p', path: '/static/icons/buymeacoffee-p.png' }, { name: 'ko-fi', path: '/static/icons/ko-fi.png' }, { name: 'ko-fi-p', path: '/static/icons/ko-fi-p.png' }, { name: 'slack', path: '/static/icons/slack.png' }, { name: 'slack-r', path: '/static/icons/slack-r.png' }, { name: 'slack-r-p', path: '/static/icons/slack-r-p.png' }, { name: 'teams', path: '/static/icons/teams.png' }, { name: 'teams-r', path: '/static/icons/teams-r.png' }, { name: 'teams-r-p', path: '/static/icons/teams-r-p.png' }, { name: 'skype', path: '/static/icons/skype.png' }, { name: 'skype-o', path: '/static/icons/skype-o.png' }, { name: 'skype-o-p', path: '/static/icons/skype-o-p.png' }, { name: 'skype-p', path: '/static/icons/skype-p.png' }, { name: 'academia-edu', path: '/static/icons/academia-edu.png' }, { name: 'bluesky-r-p', path: '/static/icons/bluesky-r-p.png' }, { name: 'closefans-r', path: '/static/icons/closefans-r.png' }, { name: 'colsefans-r-p', path: '/static/icons/colsefans-r-p.png' }, { name: 'kwai', path: '/static/icons/kwai.png' }, { name: 'kwai-p', path: '/static/icons/kwai-p.png' }, { name: 'kwai-r', path: '/static/icons/kwai-r.png' }, { name: 'kwai-r-p', path: '/static/icons/kwai-r-p.png' }, { name: 'kwai-rb-p', path: '/static/icons/kwai-rb-p.png' }, { name: 'kwai-vr-p', path: '/static/icons/kwai-vr-p.png' }, { name: 'onlyfans', path: '/static/icons/onlyfans.png' }, { name: 'onlyfans-r', path: '/static/icons/onlyfans-r.png' }, { name: 'onlyfans-r-p', path: '/static/icons/onlyfans-r-p.png' }, { name: 'onlyfans-rv-p', path: '/static/icons/onlyfans-rv-p.png' }, { name: 'privacy', path: '/static/icons/privacy.png' }, { name: 'privacy-r', path: '/static/icons/privacy-r.png' }, { name: 'privacy-r-p', path: '/static/icons/privacy-r-p.png' }, { name: 'privacy-rv-p', path: '/static/icons/privacy-rv-p.png' }, { name: 'x-twitter', path: '/static/icons/x-twitter.png' }, { name: 'x-twitter-r', path: '/static/icons/x-twitter-r.png' },
+        { name: 'academia-edu', path: '/static/icons/academia-edu.png' },
+        { name: 'behance', path: '/static/icons/behance.png' },
+        { name: 'behance-p', path: '/static/icons/behance-p.png' },
+        { name: 'bluesky-r-p', path: '/static/icons/bluesky-r-p.png' },
+        { name: 'buymeacoffee', path: '/static/icons/buymeacoffee.png' },
+        { name: 'buymeacoffee-p', path: '/static/icons/buymeacoffee-p.png' },
+        { name: 'closefans-r', path: '/static/icons/closefans-r.png' },
+        { name: 'codepen', path: '/static/icons/codepen.png' },
+        { name: 'codepen-p-r', path: '/static/icons/codepen-p-r.png' },
+        { name: 'codepen-r-b', path: '/static/icons/codepen-r-b.png' },
+        { name: 'colsefans-r-p', path: '/static/icons/colsefans-r-p.png' },
+        { name: 'discord', path: '/static/icons/discord.png' },
+        { name: 'discord-p', path: '/static/icons/discord-p.png' },
+        { name: 'discord-p-r', path: '/static/icons/discord-p-r.png' },
+        { name: 'discord-r', path: '/static/icons/discord-r.png' },
+        { name: 'dropbox', path: '/static/icons/dropbox.png' },
+        { name: 'dropbox-p', path: '/static/icons/dropbox-p.png' },
+        { name: 'email', path: '/static/icons/email.png' },
+        { name: 'email-preto', path: '/static/icons/email-preto.png' },
+        { name: 'facebook', path: '/static/icons/facebook.png' },
+        { name: 'facebook-redondo', path: '/static/icons/facebook-redondo.png' },
+        { name: 'flickr', path: '/static/icons/flickr.png' },
+        { name: 'gitlab', path: '/static/icons/gitlab.png' },
+        { name: 'gitlab-p-r', path: '/static/icons/gitlab-p-r.png' },
+        { name: 'gitlab-r', path: '/static/icons/gitlab-r.png' },
+        { name: 'gitlab-rv-p', path: '/static/icons/gitlab-rv-p.png' },
+        { name: 'github', path: '/static/icons/github.png' },
+        { name: 'github-redondo', path: '/static/icons/github-redondo.png' },
+        { name: 'gmail', path: '/static/icons/gmail.png' },
+        { name: 'gmail-preto', path: '/static/icons/gmail-redondo.png' },
+        { name: 'gmail-redondo', path: '/static/icons/gmail-redondo.png' },
+        { name: 'google-drive', path: '/static/icons/google-drive.png' },
+        { name: 'google-drive-r', path: '/static/icons/google-drive-r.png' },
+        { name: 'google-drive-r-p', path: '/static/icons/google-drive-r-p.png' },
+        { name: 'instagram', path: '/static/icons/instagram.png' },
+        { name: 'instagram-redondo', path: '/static/icons/instagram-redondo.png' },
+        { name: 'ko-fi', path: '/static/icons/ko-fi.png' },
+        { name: 'ko-fi-p', path: '/static/icons/ko-fi-p.png' },
+        { name: 'kwai', path: '/static/icons/kwai.png' },
+        { name: 'kwai-p', path: '/static/icons/kwai-p.png' },
+        { name: 'kwai-r', path: '/static/icons/kwai-r.png' },
+        { name: 'kwai-r-p', path: '/static/icons/kwai-r-p.png' },
+        { name: 'kwai-rb-p', path: '/static/icons/kwai-rb-p.png' },
+        { name: 'kwai-vr-p', path: '/static/icons/kwai-vr-p.png' },
+        { name: 'link', path: '/static/icons/link.png' },
+        { name: 'link-1', path: '/static/icons/link-1.png' },
+        { name: 'link-2', path: '/static/icons/link-2.png' },
+        { name: 'linkedin', path: '/static/icons/linkedin.png' },
+        { name: 'linkedin-preto', path: '/static/icons/linkedin-preto' },
+        { name: 'linkedin-redondo', path: '/static/icons/linkedin-redondo.png' },
+        { name: 'onlyfans', path: '/static/icons/onlyfans.png' },
+        { name: 'onlyfans-r', path: '/static/icons/onlyfans-r.png' },
+        { name: 'onlyfans-r-p', path: '/static/icons/onlyfans-r-p.png' },
+        { name: 'onlyfans-rv-p', path: '/static/icons/onlyfans-rv-p.png' },
+        { name: 'patreon', path: '/static/icons/patreon.png' },
+        { name: 'patreon-c', path: '/static/icons/patreon-c.png' },
+        { name: 'patreon-r', path: '/static/icons/patreon-r.png' },
+        { name: 'patreon-r-p', path: '/static/icons/patreon-r-p.png' },
+        { name: 'paypal', path: '/static/icons/paypal.png' },
+        { name: 'paypal-p', path: '/static/icons/paypal-p.png' },
+        { name: 'paypal-p-r', path: '/static/icons/paypal-p-r.png' },
+        { name: 'paypal-r', path: '/static/icons/paypal-r.png' },
+        { name: 'pinterest', path: '/static/icons/pinterest.png' },
+        { name: 'pinterest-p', path: '/static/icons/pinterest-p.png' },
+        { name: 'privacy', path: '/static/icons/privacy.png' },
+        { name: 'privacy-r', path: '/static/icons/privacy-r.png' },
+        { name: 'privacy-r-p', path: '/static/icons/privacy-r-p.png' },
+        { name: 'privacy-rv-p', path: '/static/icons/privacy-rv-p.png' },
+        { name: 'reddit', path: '/static/icons/reddit.png' },
+        { name: 'reddit-p', path: '/static/icons/reddit-p.png' },
+        { name: 'skype', path: '/static/icons/skype.png' },
+        { name: 'skype-o', path: '/static/icons/skype-o.png' },
+        { name: 'skype-o-p', path: '/static/icons/skype-o-p.png' },
+        { name: 'skype-p', path: '/static/icons/skype-p.png' },
+        { name: 'slack', path: '/static/icons/slack.png' },
+        { name: 'slack-r', path: '/static/icons/slack-r.png' },
+        { name: 'slack-r-p', path: '/static/icons/slack-r-p.png' },
+        { name: 'snapchat', path: '/static/icons/snapchat.png' },
+        { name: 'snapchat-r', path: '/static/icons/snapchat-r.png' },
+        { name: 'soundcloud', path: '/static/icons/soundcloud.png' },
+        { name: 'soundcloud-p', path: '/static/icons/soundcloud-p.png' },
+        { name: 'spotify', path: '/static/icons/spotify.png' },
+        { name: 'spotify-p', path: '/static/icons/spotify-p.png' },
+        { name: 'teams', path: '/static/icons/teams.png' },
+        { name: 'teams-r', path: '/static/icons/teams-r.png' },
+        { name: 'teams-r-p', path: '/static/icons/teams-r-p.png' },
+        { name: 'telegram', path: '/static/icons/telegram.png' },
+        { name: 'telegrama-p', path: '/static/icons/telegrama-p.png' },
+        { name: 'tiktok', path: '/static/icons/tiktok.png' },
+        { name: 'tiktok-r', path: '/static/icons/tiktok-r.png' },
+        { name: 'twitch', path: '/static/icons/twitch.png' },
+        { name: 'twitch-r', path: '/static/icons/twitch-r.png' },
+        { name: 'twitter', path: '/static/icons/twitter.png' },
+        { name: 'vimeo', path: '/static/icons/vimeo.png' },
+        { name: 'website', path: '/static/icons/website.png' },
+        { name: 'website-p', path: '/static/icons/website-p.png' },
+        { name: 'whatsapp', path: '/static/icons/whatsapp.png' },
+        { name: 'whatsapp-preto', path: '/static/icons/whatsapp-preto.png' },
+        { name: 'whatsapp-v-p', path: '/static/icons/whatsapp-v-p.png' },
+        { name: 'x-twitter', path: '/static/icons/x-twitter.png' },
+        { name: 'x-twitter-r', path: '/static/icons/x-twitter-r.png' },
+        { name: 'youtube', path: '/static/icons/youtube.png' },
+        { name: 'youtube-p-r', path: '/static/icons/youtube-p-r.png' },
+        { name: 'youtube-preto', path: '/static/icons/youtube-preto.png' },
+        { name: 'youtube-r', path: '/static/icons/youtube-r.png' }
     ].sort((a, b) => a.name.localeCompare(b.name));
 
     let filteredIcons = [...allSocialIcons];
@@ -358,7 +462,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 socialItem.innerHTML = `
                     <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
                     <img src="${iconPathFromDataset.startsWith('/static') ? iconPathFromDataset : STATIC_ICONS_PATH + iconFileNameOnly}" alt="${iconNameFromDataset}" width="24" height="24">
-                    <input type="hidden" name="social_icon_name[]" value="${iconFileNameOnly}">
+                    <input type="hidden" name="social_icon_name[]" value="${iconNameFromDataset}">
                     <input type="text" name="social_icon_url[]" placeholder="Insira o link para ${iconNameFromDataset.replace(/-/g, ' ')}" class="form-input" required>
                     <span class="remove-item" title="Remover este ícone"><i class="fas fa-times"></i></span>
                 `;
@@ -371,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 cardLinkItem.innerHTML = `
                     <i class="fas fa-grip-vertical drag-handle" title="Arrastar para reordenar"></i>
                     <img src="${iconPathFromDataset.startsWith('/static') ? iconPathFromDataset : STATIC_ICONS_PATH + iconFileNameOnly}" alt="${iconNameFromDataset}" width="24" height="24">
-                    <input type="hidden" name="card_icon_name[]" value="${iconFileNameOnly}">
+                    <input type="hidden" name="card_icon_name[]" value="${iconNameFromDataset}">
                     <div class="input-group">
                         <input type="url" name="card_icon_url[]" placeholder="URL do Link (Opcional)" class="form-input">
                         <input type="text" name="card_icon_at_text[]" placeholder="Texto exibido (ex: @usuario)" class="form-input card-link-item-at-text">
