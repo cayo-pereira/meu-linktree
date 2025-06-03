@@ -22,6 +22,8 @@ app.secret_key = os.getenv('FLASK_SECRET_KEY') or 'dev-secret-key'
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# Adicionado para acesso de administrador de autenticação, usado para deletar usuários da Auth.
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 
 supabase: Client = create_client(
     SUPABASE_URL,
@@ -34,6 +36,18 @@ supabase: Client = create_client(
         }
     )
 )
+
+# Cliente Supabase com chave de serviço (para operações de Auth Admin)
+supabase_admin_client: Client = None
+if SUPABASE_SERVICE_KEY:
+    try:
+        supabase_admin_client = create_client(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+        logger.info("Cliente Supabase Admin inicializado com sucesso.")
+    except Exception as e:
+        logger.error(f"Erro ao inicializar cliente Supabase Admin: {str(e)}")
+else:
+    logger.warning("Variável de ambiente SUPABASE_SERVICE_KEY não encontrada. Algumas funcionalidades de administração de usuário (ex: deleção de Auth) podem não funcionar.")
+
 
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -138,7 +152,8 @@ def is_valid_slug(slug):
 
 def get_user_by_id(user_id):
     try:
-        res = supabase.table('usuarios').select('*').eq('id', user_id).limit(1).single().execute()
+        # Adicionado 'is_super_admin' na seleção
+        res = supabase.table('usuarios').select('*, is_super_admin').eq('id', user_id).limit(1).single().execute()
         return res.data if res.data else None
     except Exception as e:
         logger.error(f"Erro ao buscar usuário por ID ({user_id}): {str(e)}")
@@ -189,6 +204,19 @@ def style_safe_filter(value):
         return cleaned_value
     return value
 
+# Função auxiliar para verificar se o usuário é super administrador
+def is_super_admin(user_id):
+    if not user_id:
+        return False
+    try:
+        user_data = get_user_by_id(user_id)
+        return user_data and user_data.get('is_super_admin', False)
+    except Exception as e:
+        logger.error(f"Erro ao verificar se usuário {user_id} é super admin: {str(e)}")
+        return False
+
+# E-mail do super admin mestre (apenas para o primeiro acesso/definição)
+MASTER_ADMIN_EMAIL = "cayopereira9.8@gmail.com" #
 
 @app.route('/delete_page', methods=['POST'])
 def delete_page():
@@ -204,41 +232,50 @@ def delete_page():
         supabase.auth.set_session(session['access_token'], session['refresh_token'])
 
         user_data = get_user_by_id(user_id)
-        if user_data:
-            files_to_delete = []
-            def get_storage_filename(url):
-                if url and isinstance(url, str) and supabase.storage.from_("usuarios").get_public_url("").startswith(url.rsplit('/',1)[0]):
-                    return url.split('/')[-1].split('?')[0]
-                return None
+        if not user_data:
+            flash("❌ Usuário não encontrado para deleção.", "error")
+            session.clear()
+            return redirect(url_for('index'))
 
-            for field in ['foto', 'background']:
-                filename = get_storage_filename(user_data.get(field))
-                if filename: files_to_delete.append(filename)
+        # Impedir que um super admin apague sua própria conta através do painel normal
+        if user_data.get('is_super_admin', False):
+            flash("🚫 Super administradores não podem apagar suas próprias contas por aqui. Por favor, entre em contato com o suporte para assistência.", "error")
+            return redirect(url_for('admin_panel', username=profile_to_redirect_to_admin))
 
-            if user_data.get('card_background_type') == 'image':
-                filename = get_storage_filename(user_data.get('card_background_value'))
-                if filename: files_to_delete.append(filename)
+        files_to_delete = []
+        def get_storage_filename(url):
+            if url and isinstance(url, str) and supabase.storage.from_("usuarios").get_public_url("").startswith(url.rsplit('/',1)[0]):
+                return url.split('/')[-1].split('?')[0]
+            return None
 
-            custom_buttons_str = user_data.get('custom_buttons', '[]')
+        for field in ['foto', 'background']:
+            filename = get_storage_filename(user_data.get(field))
+            if filename: files_to_delete.append(filename)
+
+        if user_data.get('card_background_type') == 'image':
+            filename = get_storage_filename(user_data.get('card_background_value'))
+            if filename: files_to_delete.append(filename)
+
+        custom_buttons_str = user_data.get('custom_buttons', '[]')
+        try:
+            custom_buttons_list = json.loads(custom_buttons_str) if isinstance(custom_buttons_str, str) else custom_buttons_str
+            if isinstance(custom_buttons_list, list):
+                for button in custom_buttons_list:
+                    if isinstance(button, dict) and button.get('iconType') == 'image_uploaded' and button.get('iconUrl'):
+                        filename = get_storage_filename(button.get('iconUrl'))
+                        if filename: files_to_delete.append(filename)
+        except json.JSONDecodeError:
+            logger.warning(f"Erro ao decodificar custom_buttons para deleção de arquivos do usuário {user_id}")
+
+
+        if files_to_delete:
             try:
-                custom_buttons_list = json.loads(custom_buttons_str) if isinstance(custom_buttons_str, str) else custom_buttons_str
-                if isinstance(custom_buttons_list, list):
-                    for button in custom_buttons_list:
-                        if isinstance(button, dict) and button.get('iconType') == 'image_uploaded' and button.get('iconUrl'):
-                            filename = get_storage_filename(button.get('iconUrl'))
-                            if filename: files_to_delete.append(filename)
-            except json.JSONDecodeError:
-                logger.warning(f"Erro ao decodificar custom_buttons para deleção de arquivos do usuário {user_id}")
-
-
-            if files_to_delete:
-                try:
-                    valid_files_to_delete = [f for f in files_to_delete if f and '/' not in f]
-                    if valid_files_to_delete:
-                         supabase.storage.from_("usuarios").remove(valid_files_to_delete)
-                         logger.info(f"Arquivos de storage removidos para o usuário {user_id}: {valid_files_to_delete}")
-                except Exception as e_storage:
-                    logger.error(f"Erro ao remover arquivos do storage para usuário {user_id}: {str(e_storage)}")
+                valid_files_to_delete = [f for f in files_to_delete if f and '/' not in f]
+                if valid_files_to_delete:
+                     supabase.storage.from_("usuarios").remove(valid_files_to_delete)
+                     logger.info(f"Arquivos de storage removidos para o usuário {user_id}: {valid_files_to_delete}")
+            except Exception as e_storage:
+                logger.error(f"Erro ao remover arquivos do storage para usuário {user_id}: {str(e_storage)}")
 
         response_db_delete = supabase.table('usuarios').delete().eq('id', user_id).execute()
         affected_rows = len(response_db_delete.data) if hasattr(response_db_delete, 'data') and response_db_delete.data is not None else 0
@@ -246,18 +283,16 @@ def delete_page():
         if affected_rows == 0:
             logger.warning(f"Nenhum registro encontrado na tabela 'usuarios' para deletar o ID: {user_id}")
 
-        try:
-            supabase_admin_key = os.getenv("SUPABASE_SERVICE_KEY")
-            if not supabase_admin_key:
-                logger.warning("Chave de serviço SUPABASE_SERVICE_KEY não configurada. Deleção do usuário Auth pulada.")
-            elif supabase_admin_key == SUPABASE_KEY:
-                logger.warning(f"SUPABASE_SERVICE_KEY é igual a SUPABASE_KEY (pública). Deleção de usuário Auth não permitida para {user_id}.")
-            else:
-                supabase_admin_client = create_client(SUPABASE_URL, supabase_admin_key)
+        # Usar o cliente admin para apagar o usuário do Supabase Auth
+        if supabase_admin_client:
+            try:
                 supabase_admin_client.auth.admin.delete_user(user_id)
                 logger.info(f"Usuário {user_id} (UUID) deletado do Supabase Auth.")
-        except Exception as e_auth_delete:
-            logger.warning(f"Não foi possível deletar o usuário {user_id} do Supabase Auth: {str(e_auth_delete)}. Pode ser necessário remover manualmente.")
+            except Exception as e_auth_delete:
+                logger.warning(f"Não foi possível deletar o usuário {user_id} do Supabase Auth (chave de serviço pode não ter permissão ou usuário já inexistente): {str(e_auth_delete)}")
+        else:
+            logger.warning("SUPABASE_SERVICE_KEY não configurada ou cliente admin não inicializado. Deleção do usuário Auth pulada.")
+
 
         session.clear()
         flash("✅ Sua página e conta foram apagadas com sucesso.", "success")
@@ -278,10 +313,11 @@ def index():
 
 @app.route('/<profile>')
 def user_page(profile):
-    if profile == 'favicon.ico' or profile == 'robots.txt' or profile == 'sitemap.xml':
+    if profile == 'favicon.ico' or profile == 'robots.txt' or profile == 'sitemap.xml' or profile == 'super_admin':
         return abort(404)
     try:
-        res = supabase.table('usuarios').select('*').eq('profile', profile).limit(1).single().execute()
+        # Adicionado 'is_super_admin' na seleção para a página pública
+        res = supabase.table('usuarios').select('*, is_super_admin').eq('profile', profile).limit(1).single().execute()
 
         if not res.data:
             logger.warning(f"Perfil público não encontrado: {profile}")
@@ -495,10 +531,21 @@ def callback():
 
         user_data_db = get_user_by_id(user_supabase.id)
 
+        # Verificar se o usuário está banido
+        if user_data_db and not user_data_db.get('active', True): # is_active é False
+            logger.warning(f"Callback: Usuário {user_supabase.id} está banido. Impedindo login.")
+            flash("🚫 Sua conta foi desativada. Por favor, entre em contato com o suporte.", "error")
+            session.clear()
+            return jsonify({"error": "Conta desativada.", "redirect": url_for('index')}), 403
+
+
         if not user_data_db:
             logger.info(f"Callback: Novo usuário detectado com ID Supabase: {user_supabase.id}. Criando perfil...")
             base_for_slug = user_supabase.user_metadata.get('full_name', user_supabase.email.split('@')[0] if user_supabase.email else 'usuario')
             profile_slug = generate_unique_slug(base_for_slug)
+
+            # Verificar se o e-mail do novo usuário corresponde ao e-mail do super admin mestre
+            is_master_admin = (user_supabase.email and user_supabase.email.lower() == MASTER_ADMIN_EMAIL.lower())
 
             new_user_payload = {
                 'id': user_supabase.id,
@@ -506,7 +553,8 @@ def callback():
                 'profile': profile_slug,
                 'email': user_supabase.email,
                 'foto': user_supabase.user_metadata.get('avatar_url', ''),
-                'active': True,
+                'active': True, # Novo usuário sempre ativo
+                'is_super_admin': is_master_admin, # Marca como super admin se for o e-mail mestre
                 'bio': 'Olá! Bem-vindo(a) à minha página pessoal. Edite-me no painel de administração!',
                 'social_links': json.dumps([]),
                 'custom_buttons': json.dumps([]),
@@ -531,18 +579,20 @@ def callback():
                     logger.error(f"Callback: Falha ao inserir novo usuário no banco de dados 'usuarios'. Resposta Supabase: {insert_response}")
                     return jsonify({"error": "Falha ao criar perfil do usuário no banco de dados."}), 500
                 user_data_db = insert_response.data[0]
-                logger.info(f"Callback: Novo usuário ID {user_data_db['id']} criado com perfil '{user_data_db['profile']}'.")
+                logger.info(f"Callback: Novo usuário ID {user_data_db['id']} criado com perfil '{user_data_db['profile']}'. É Super Admin? {user_data_db['is_super_admin']}.")
             except Exception as e_insert:
                 logger.error(f"Callback: Exceção ao inserir novo usuário no banco de dados 'usuarios': {str(e_insert)}", exc_info=True)
                 return jsonify({"error": "Erro interno do servidor ao criar perfil."}), 500
         else:
-            logger.info(f"Callback: Usuário existente ID {user_data_db['id']} com perfil '{user_data_db['profile']}' logado.")
+            logger.info(f"Callback: Usuário existente ID {user_data_db['id']} com perfil '{user_data_db['profile']}' logado. É Super Admin? {user_data_db.get('is_super_admin', False)}.")
+
 
         session['user_id'] = user_supabase.id
         session['access_token'] = access_token_to_store
         session['refresh_token'] = refresh_token_to_store
         session['profile'] = user_data_db['profile']
         session['logado'] = True
+        session['is_super_admin'] = user_data_db.get('is_super_admin', False) # Armazena o status de super admin na sessão
 
         logger.info(f"Callback: Login bem-sucedido para usuário {user_supabase.id}. Redirecionando para admin/{user_data_db['profile']}.")
         return jsonify({
@@ -952,6 +1002,215 @@ def admin_panel(username):
     return render_template('admin.html', dados=user_data_db, **app.config)
 
 
+# Rota para o painel de super administração
+# Rota para o painel de super administração
+@app.route('/super_admin')
+def super_admin_panel():
+    if not session.get('logado') or not session.get('user_id'):
+        flash("🔒 Acesso restrito. Faça login.", "error")
+        return redirect(url_for('login_google'))
+
+    if not is_super_admin(session['user_id']):
+        flash("🚫 Você não tem permissão para acessar este painel de administração geral.", "error")
+        return redirect(url_for('admin_panel', username=session.get('profile')))
+
+    user_id = session['user_id']
+    page = request.args.get('page', 1, type=int)
+    search_query = request.args.get('search', '').strip()
+    sort_by = request.args.get('sort_by', 'recent').strip() # 'recent', 'alpha', 'admin'
+    
+    users_per_page = 50 
+    offset = (page - 1) * users_per_page
+
+    # Inicializar variáveis com valores padrão antes do bloco try
+    users = []          #
+    total_pages = 0     #
+    
+    try:
+        query = supabase.table('usuarios').select('id, nome, profile, email, is_super_admin, created_at, active') # Adicionado 'active'
+        
+        if search_query:
+            # Busca insensível a maiúsculas/minúsculas e "like"
+            query = query.or_(f"nome.ilike.%{search_query}%,email.ilike.%{search_query}%")
+
+        if sort_by == 'alpha': #
+            query = query.order('nome', desc=False)
+        elif sort_by == 'admin': #
+            query = query.order('is_super_admin', desc=True).order('nome', desc=False) # Admins primeiro, depois ordem alfabética
+        else: # 'recent' ou qualquer outro valor padrão
+            query = query.order('created_at', desc=True)
+        
+        # Paginacao
+        res = query.range(offset, offset + users_per_page - 1).execute()
+        users = res.data if res.data else []
+
+        # Contar total de usuários para paginação (ignorando limite/offset)
+        # Para obter a contagem total, incluímos 'count="exact"' no select
+        # e o execute() não precisa de parâmetros adicionais para isso.
+        count_query = supabase.table('usuarios').select('id', count='exact') # Adicionado count='exact' aqui
+        if search_query:
+            count_query = count_query.or_(f"nome.ilike.%{search_query}%,email.ilike.%{search_query}%")
+
+        # Execute a consulta de contagem. O PostgREST retornará a contagem no cabeçalho.
+        # Não precisamos de 'head=True' explicitamente aqui, pois o 'count' já indica o tipo de retorno.
+        count_response = count_query.execute()
+        
+        # A contagem total estará no cabeçalho da resposta
+        total_users_count = count_response.count if count_response.count is not None else 0
+        
+        total_pages = (total_users_count + users_per_page - 1) // users_per_page #
+
+    except Exception as e:
+        logger.error(f"Erro ao carregar usuários para o painel de super administração: {str(e)}", exc_info=True)
+        flash("❌ Erro ao carregar a lista de usuários.", "error")
+        # users e total_pages já estão definidos com valores padrão fora do try
+        # então não precisamos redefinir aqui
+        
+    return render_template('super_admin.html', 
+                           users=users, 
+                           page=page, 
+                           total_pages=total_pages,
+                           search_query=search_query,
+                           sort_by=sort_by,
+                           is_current_user_master_admin=(session.get('email') == MASTER_ADMIN_EMAIL.lower())
+                           )
+
+# Endpoint para ações de super administração (apagar/banir/tornar adm)
+@app.route('/super_admin/action', methods=['POST'])
+def super_admin_action():
+    if not session.get('logado') or not session.get('user_id'):
+        return jsonify({"success": False, "message": "Não autorizado. Sessão inválida."}), 401
+    
+    current_user_id = session['user_id']
+    # Busca os dados completos do usuário logado (current_admin_user_data)
+    # para usar na lógica de permissões, especialmente para o MASTER_ADMIN_EMAIL.
+    current_admin_user_data = get_user_by_id(current_user_id)
+
+    # Primeira verificação: o usuário logado É um super admin?
+    # Usamos o dado da sessão para performance, mas também fazemos um fallback
+    # para o dado do DB se a sessão não tiver is_super_admin (primeiro login, etc.)
+    if not session.get('is_super_admin') and not (current_admin_user_data and current_admin_user_data.get('is_super_admin', False)):
+        return jsonify({"success": False, "message": "Permissão negada. Você não é um super administrador."}), 403
+
+    user_id_target = request.form.get('user_id')
+    action = request.form.get('action') # 'delete', 'ban', 'unban', 'make_admin', 'remove_admin'
+    
+    if not user_id_target or not action:
+        return jsonify({"success": False, "message": "Parâmetros inválidos."}), 400
+
+    target_user_data = get_user_by_id(user_id_target)
+    if not target_user_data:
+        return jsonify({"success": False, "message": "Usuário alvo não encontrado."}), 404
+
+    # Prevenção: Super admin não pode se apagar/banir através do painel de super admin.
+    if user_id_target == current_user_id and (action == 'delete' or action == 'ban'):
+        return jsonify({"success": False, "message": "Você não pode apagar ou banir sua própria conta através do painel de administração geral."}), 403
+
+    try:
+        # Ações que requerem o supabase_admin_client (chave de serviço)
+        if not supabase_admin_client:
+            logger.error("Cliente Supabase Admin não inicializado. Não é possível realizar ações administrativas que requerem service_key.")
+            return jsonify({"success": False, "message": "Erro no servidor: Cliente administrativo não configurado."}), 500
+
+        # Lógica de proteção para 'remove_admin'
+        if action == 'remove_admin':
+            # Primeiro, proteja o administrador mestre
+            if target_user_data.get('email') and target_user_data['email'].lower() == MASTER_ADMIN_EMAIL.lower():
+                return jsonify({"success": False, "message": "Não é possível remover permissões do Administrador Mestre por aqui."}), 403
+            
+            # Verifique se o admin logado tem um e-mail válido para a comparação com o MASTER_ADMIN_EMAIL
+            if not current_admin_user_data or not current_admin_user_data.get('email'):
+                logger.error(f"Super Admin Action: Email do admin logado (ID: {current_user_id}) não encontrado ou é nulo. Impedindo remoção de admin.")
+                return jsonify({"success": False, "message": "Erro de validação do administrador logado. Tente relogar."}), 403
+
+            # Se o admin logado NÃO for o MASTER_ADMIN_EMAIL, ele não pode remover outros super admins
+            # (exceto o próprio mestre, que já foi protegido acima).
+            if current_admin_user_data['email'].lower() != MASTER_ADMIN_EMAIL.lower():
+                return jsonify({"success": False, "message": "Somente o Administrador Mestre pode remover permissões de outros super administradores."}), 403
+
+            # Se passou por todas as validações, remove o status de admin
+            supabase_admin_client.table('usuarios').update({'is_super_admin': False}).eq('id', user_id_target).execute()
+            logger.info(f"Usuário {user_id_target} não é mais super administrador.")
+            return jsonify({"success": True, "message": "Permissão de super administrador removida."}), 200
+
+        # Ações de deleção/banimento/torna admin
+        if action == 'delete':
+            # Apagar arquivos associados no Storage
+            files_to_delete = []
+            def get_storage_filename(url):
+                if url and isinstance(url, str) and supabase.storage.from_("usuarios").get_public_url("").startswith(url.rsplit('/',1)[0]):
+                    return url.split('/')[-1].split('?')[0]
+                return None
+
+            for field in ['foto', 'background']:
+                filename = get_storage_filename(target_user_data.get(field))
+                if filename: files_to_delete.append(filename)
+            if target_user_data.get('card_background_type') == 'image':
+                filename = get_storage_filename(target_user_data.get('card_background_value'))
+                if filename: files_to_delete.append(filename)
+
+            custom_buttons_str = target_user_data.get('custom_buttons', '[]')
+            try:
+                custom_buttons_list = json.loads(custom_buttons_str) if isinstance(custom_buttons_str, str) else custom_buttons_str
+                if isinstance(custom_buttons_list, list):
+                    for button in custom_buttons_list:
+                        if isinstance(button, dict) and button.get('iconType') == 'image_uploaded' and button.get('iconUrl'):
+                            filename = get_storage_filename(button.get('iconUrl'))
+                            if filename: files_to_delete.append(filename)
+            except json.JSONDecodeError:
+                logger.warning(f"Erro ao decodificar custom_buttons para deleção de arquivos do usuário {user_id_target}")
+
+            if files_to_delete:
+                try:
+                    valid_files_to_delete = [f for f in files_to_delete if f and '/' not in f]
+                    if valid_files_to_delete:
+                         supabase.storage.from_("usuarios").remove(valid_files_to_delete)
+                         logger.info(f"Arquivos de storage removidos para o usuário {user_id_target}: {valid_files_to_delete}")
+                except Exception as e_storage:
+                    logger.error(f"Erro ao remover arquivos do storage para usuário {user_id_target}: {str(e_storage)}")
+
+            # Deletar registro na tabela 'usuarios' usando o cliente ADMIN
+            delete_db_response = supabase_admin_client.table('usuarios').delete().eq('id', user_id_target).execute()
+            
+            if delete_db_response.data and len(delete_db_response.data) > 0:
+                logger.info(f"Usuário {user_id_target} deletado da tabela 'usuarios'.")
+            else:
+                logger.warning(f"Nenhum registro encontrado ou deletado na tabela 'usuarios' para o ID: {user_id_target}. Possível problema de RLS ou dado já inexistente.")
+
+            # Deletar do Supabase Auth
+            try:
+                supabase_admin_client.auth.admin.delete_user(user_id_target)
+                logger.info(f"Usuário {user_id_target} (UUID) deletado do Supabase Auth por super admin.")
+            except Exception as e_auth_delete:
+                logger.warning(f"Não foi possível deletar o usuário {user_id_target} do Supabase Auth (chave de serviço pode não ter permissão ou usuário já inexistente): {str(e_auth_delete)}")
+            
+            return jsonify({"success": True, "message": "Usuário apagado com sucesso."}), 200
+
+        elif action == 'ban': #
+            # Marcar usuário como inativo na tabela 'usuarios' usando o cliente ADMIN
+            supabase_admin_client.table('usuarios').update({'active': False}).eq('id', user_id_target).execute()
+            logger.info(f"Usuário {user_id_target} banido (marcado como inativo).")
+            # O login será impedido pelo callback_handler que verifica o campo 'active'.
+            return jsonify({"success": True, "message": "Usuário banido com sucesso."}), 200
+
+        elif action == 'unban': #
+            # Desbanir usuário (marcar como ativo) na tabela 'usuarios' usando o cliente ADMIN
+            supabase_admin_client.table('usuarios').update({'active': True}).eq('id', user_id_target).execute()
+            logger.info(f"Usuário {user_id_target} desbanido (marcado como ativo).")
+            return jsonify({"success": True, "message": "Usuário desbanido com sucesso."}), 200
+
+        elif action == 'make_admin': #
+            # Tornar usuário super administrador na tabela 'usuarios' usando o cliente ADMIN
+            supabase_admin_client.table('usuarios').update({'is_super_admin': True}).eq('id', user_id_target).execute()
+            logger.info(f"Usuário {user_id_target} se tornou super administrador.")
+            return jsonify({"success": True, "message": "Usuário tornou-se super administrador."}), 200
+
+        else:
+            return jsonify({"success": False, "message": "Ação desconhecida."}), 400
+
+    except Exception as e:
+        logger.error(f"Erro ao executar ação de super admin '{action}' para o usuário {user_id_target}: {str(e)}", exc_info=True)
+        return jsonify({"success": False, "message": f"Erro interno do servidor: {str(e)}"}), 500
 @app.route('/logout')
 def logout():
     user_id_logout = session.get('user_id', 'Desconhecido')

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Super Admin - CPages</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='admin.css') }}?v={{ range(1, 100000) | random }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dark-mode.css') }}?v={{ range(1, 100000) | random }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Estilos específicos para super_admin.html */
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: var(--bg-color-light);
+            color: var(--text-color-light);
+            font-family: 'Inter', sans-serif;
+        }
+        .super-admin-container {
+            max-width: 1400px;
+            width: 100%;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            flex-grow: 1;
+        }
+        .super-admin-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .super-admin-header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+        .super-admin-header p {
+            font-size: 1.1rem;
+            color: var(--text-color-light);
+        }
+        .super-admin-controls {
+            background: var(--card-bg-light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .search-bar {
+            flex-grow: 1;
+            min-width: 250px;
+        }
+        .search-bar input {
+            width: 100%;
+            padding: 0.7rem 1rem;
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--border-radius);
+            background-color: var(--input-bg-light);
+            color: var(--text-color-light);
+            font-size: 1rem;
+        }
+        .search-bar input::placeholder {
+            color: var(--placeholder-color-light);
+        }
+        .filter-sort {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+        .filter-sort label {
+            color: var(--text-color-light);
+            font-weight: 500;
+        }
+        .filter-sort select {
+            padding: 0.7rem 1rem;
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--border-radius);
+            background-color: var(--input-bg-light);
+            color: var(--text-color-light);
+            font-size: 1rem;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23333'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.7rem center;
+            background-size: 1.2em;
+            padding-right: 2.5rem;
+        }
+        .users-table-container {
+            overflow-x: auto;
+            background: var(--card-bg-light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+            padding: 1.5rem;
+        }
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px; /* Garante que a tabela não fique muito pequena em telas menores */
+        }
+        .users-table th, .users-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color-light);
+            color: var(--text-color-light);
+        }
+        .users-table th {
+            background-color: var(--button-secondary-bg-light);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            color: var(--button-secondary-text-light);
+        }
+        .users-table td {
+            font-size: 0.95rem;
+        }
+        .users-table tr:hover {
+            background-color: rgba(var(--primary-color-rgb), 0.05); /* Usa a cor primária com baixa opacidade */
+        }
+        .users-table td .profile-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .users-table td .profile-link:hover {
+            text-decoration: underline;
+        }
+        .users-table td .action-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: flex-end;
+        }
+        .users-table td .action-buttons button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .users-table td .action-buttons button i {
+            font-size: 1em;
+        }
+        .btn-action-delete { background-color: var(--danger-color); color: white; }
+        .btn-action-delete:hover { background-color: #d31666; transform: translateY(-1px); }
+        .btn-action-ban { background-color: #ff9800; color: white; } /* Laranja para banir */
+        .btn-action-ban:hover { background-color: #e68900; transform: translateY(-1px); }
+        .btn-action-unban { background-color: #4CAF50; color: white; } /* Verde para desbanir */
+        .btn-action-unban:hover { background-color: #43a047; transform: translateY(-1px); }
+        .btn-action-admin { background-color: var(--primary-color); color: white; }
+        .btn-action-admin:hover { background-color: var(--secondary-color); transform: translateY(-1px); }
+        .btn-action-remove-admin { background-color: #607d8b; color: white; } /* Cinza azulado para remover admin */
+        .btn-action-remove-admin:hover { background-color: #546e7a; transform: translateY(-1px); }
+
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: var(--card-bg-light);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-light);
+        }
+        .pagination-controls button {
+            padding: 8px 15px;
+            border: 1px solid var(--border-color-light);
+            border-radius: var(--border-radius);
+            background-color: var(--input-bg-light);
+            color: var(--text-color-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+        .pagination-controls button:hover:not(:disabled) {
+            background-color: var(--button-secondary-bg-light);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        .pagination-controls button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        .pagination-controls span {
+            font-weight: 500;
+            color: var(--text-color-light);
+        }
+
+        /* Flash messages - para garantir que aparecem corretamente */
+        .flash-messages {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            width: auto;
+            max-width: 350px;
+        }
+        .alert {
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 1rem;
+            animation: slideIn 0.3s ease-out forwards;
+            opacity: 0;
+            box-shadow: var(--box-shadow);
+            font-size: 0.95rem;
+        }
+        .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .alert-info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .alert-warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        /* Dark Mode adjustments for super_admin.html */
+        body.dark-mode .super-admin-header h1 {
+            color: var(--primary-color); /* Primary color remains */
+        }
+        body.dark-mode .super-admin-header p {
+            color: var(--text-color-light);
+        }
+        body.dark-mode .super-admin-controls,
+        body.dark-mode .users-table-container,
+        body.dark-mode .pagination-controls {
+            background: var(--card-bg-light);
+            box-shadow: var(--shadow-light);
+        }
+        body.dark-mode .search-bar input,
+        body.dark-mode .filter-sort select {
+            background-color: var(--input-bg-light);
+            color: var(--text-color-light);
+            border-color: var(--border-color-light);
+        }
+        body.dark-mode .search-bar input::placeholder {
+            color: var(--placeholder-color-light);
+        }
+        body.dark-mode .filter-sort select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23f8f9fa'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E"); /* White arrow for dark mode */
+        }
+        body.dark-mode .users-table th {
+            background-color: var(--button-secondary-bg-light);
+            color: var(--button-secondary-text-light);
+        }
+        body.dark-mode .users-table td {
+            color: var(--text-color-light);
+        }
+        body.dark-mode .users-table tr:hover {
+            background-color: rgba(var(--primary-color-rgb), 0.1);
+        }
+        body.dark-mode .users-table td .profile-link {
+            color: var(--link-color-light);
+        }
+        body.dark-mode .pagination-controls button {
+            background-color: var(--input-bg-light);
+            color: var(--text-color-light);
+            border-color: var(--border-color-light);
+        }
+        body.dark-mode .pagination-controls button:hover:not(:disabled) {
+            background-color: var(--button-secondary-bg-light);
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        body.dark-mode .pagination-controls span {
+            color: var(--text-color-light);
+        }
+        body.dark-mode .alert-success { background-color: #1a4d29; color: #72f09a; border: 1px solid #2d6b3f; } /* Darker green */
+        body.dark-mode .alert-error { background-color: #5c141d; color: #ff526d; border: 1px solid #8d2e3b; } /* Darker red */
+        body.dark-mode .alert-info { background-color: #123d45; color: #5ad8e9; border: 1px solid #276a77; } /* Darker cyan */
+        body.dark-mode .alert-warning { background-color: #6a4a00; color: #ffeb3b; border: 1px solid #a37b00; } /* Darker yellow */
+
+        .super-admin-controls .logout-btn {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 0.7rem 1.2rem;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1rem;
+        }
+        .super-admin-controls .logout-btn:hover {
+            background-color: #d31666;
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .super-admin-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .filter-sort {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.5rem;
+            }
+            .filter-sort select {
+                width: 100%;
+            }
+            .search-bar {
+                width: 100%;
+            }
+            .super-admin-controls .logout-btn {
+                width: 100%;
+                margin-top: 1rem;
+                justify-content: center;
+            }
+            .users-table th, .users-table td {
+                padding: 10px;
+                font-size: 0.85rem;
+            }
+            .users-table td .action-buttons button {
+                padding: 6px 8px;
+                font-size: 0.75rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .super-admin-header h1 {
+                font-size: 2rem;
+            }
+            .super-admin-header p {
+                font-size: 1rem;
+            }
+            .super-admin-controls {
+                padding: 1rem;
+            }
+            .users-table-container {
+                padding: 1rem;
+            }
+            .users-table th, .users-table td {
+                padding: 8px;
+                font-size: 0.8rem;
+            }
+            .users-table td .action-buttons button {
+                padding: 5px 7px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="super-admin-container">
+        <div class="super-admin-header">
+            <h1><i class="fas fa-user-shield"></i> Painel de Super Admin</h1>
+            <p>Gerencie todos os usuários da plataforma.</p>
+        </div>
+
+        <div class="super-admin-controls">
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Pesquisar por nome ou e-mail..." value="{{ search_query }}">
+            </div>
+            <div class="filter-sort">
+                <label for="sort-select">Ordenar por:</label>
+                <select id="sort-select">
+                    <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Mais Recentes</option>
+                    <option value="alpha" {% if sort_by == 'alpha' %}selected{% endif %}>Ordem Alfabética</option>
+                    <option value="admin" {% if sort_by == 'admin' %}selected{% endif %}>Administradores</option>
+                </select>
+            </div>
+            <a href="{{ url_for('logout') }}" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> Sair
+            </a>
+        </div>
+
+        <div class="users-table-container">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>URL do Perfil</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user.nome }}</td>
+                        <td><a href="/{{ user.profile }}" target="_blank" rel="noopener noreferrer" class="profile-link">/{{ user.profile }}</a></td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% if user.is_super_admin %}
+                                <span style="color: var(--primary-color); font-weight: bold;">Super Admin</span>
+                            {% elif not user.active %}
+                                <span style="color: var(--danger-color); font-weight: bold;">Banido</span>
+                            {% else %}
+                                Ativo
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                {% if user.id != session.user_id %} {# Não permite ações no próprio usuário #}
+                                    {% if not user.is_super_admin %} {# Não permite apagar ou banir admins #}
+                                        <button class="btn-action-delete" onclick="confirmAction('{{ user.id }}', 'delete', '{{ user.nome | e }}')">
+                                            <i class="fas fa-trash"></i> Apagar
+                                        </button>
+                                        {% if user.active %}
+                                            <button class="btn-action-ban" onclick="confirmAction('{{ user.id }}', 'ban', '{{ user.nome | e }}')">
+                                                <i class="fas fa-ban"></i> Banir
+                                            </button>
+                                        {% else %}
+                                            <button class="btn-action-unban" onclick="confirmAction('{{ user.id }}', 'unban', '{{ user.nome | e }}')">
+                                                <i class="fas fa-check-circle"></i> Desbanir
+                                            </button>
+                                        {% endif %}
+                                    {% endif %}
+
+                                    {% if user.is_super_admin %}
+                                        {% if is_current_user_master_admin or user.email != 'cayopereira9.8@gmail.com' %} {# Apenas master admin pode remover outros admins (não o master admin) #}
+                                            <button class="btn-action-remove-admin" onclick="confirmAction('{{ user.id }}', 'remove_admin', '{{ user.nome | e }}')">
+                                                <i class="fas fa-user-minus"></i> Remover Admin
+                                            </button>
+                                        {% else %}
+                                            <button class="btn-action-remove-admin" disabled title="Não é possível remover permissões do Administrador Mestre por aqui.">
+                                                <i class="fas fa-user-minus"></i> Remover Admin
+                                            </button>
+                                        {% endif %}
+                                    {% else %}
+                                        <button class="btn-action-admin" onclick="confirmAction('{{ user.id }}', 'make_admin', '{{ user.nome | e }}')">
+                                            <i class="fas fa-user-plus"></i> Tornar Admin
+                                        </button>
+                                    {% endif %}
+                                {% else %}
+                                    <span style="color: #6c757d; font-style: italic;">Sua conta</span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    {% if not users %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 20px;">Nenhum usuário encontrado.</td>
+                    </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination-controls">
+            <button onclick="changePage({{ page - 1 }})" {% if page == 1 %}disabled{% endif %}>
+                <i class="fas fa-chevron-left"></i> Anterior
+            </button>
+            <span>Página {{ page }} de {{ total_pages }}</span>
+            <button onclick="changePage({{ page + 1 }})" {% if page == total_pages %}disabled{% endif %}>
+                Próxima <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function applyFilters() {
+            const search = document.getElementById('search-input').value;
+            const sort = document.getElementById('sort-select').value;
+            let url = '{{ url_for("super_admin_panel") }}';
+            const params = new URLSearchParams();
+            if (search) params.append('search', search);
+            if (sort && sort !== 'recent') params.append('sort_by', sort);
+            window.location.href = url + '?' + params.toString();
+        }
+
+        document.getElementById('search-input').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                applyFilters();
+            }
+        });
+
+        document.getElementById('sort-select').addEventListener('change', function() {
+            applyFilters();
+        });
+
+        function changePage(pageNumber) {
+            const search = document.getElementById('search-input').value;
+            const sort = document.getElementById('sort-select').value;
+            let url = '{{ url_for("super_admin_panel") }}';
+            const params = new URLSearchParams();
+            params.append('page', pageNumber);
+            if (search) params.append('search', search);
+            if (sort && sort !== 'recent') params.append('sort_by', sort);
+            window.location.href = url + '?' + params.toString();
+        }
+
+        function confirmAction(userId, action, userName) {
+            let message = '';
+            let confirmText = '';
+            let icon = '';
+            let title = '';
+
+            if (action === 'delete') {
+                message = `Tem certeza que deseja APAGAR permanentemente a conta de "${userName}"? Todos os dados, incluindo a página pessoal e os arquivos, serão DELETADOS. Esta ação NÃO PODE SER DESFEITA.`;
+                confirmText = 'Sim, Apagar';
+                icon = 'fas fa-exclamation-triangle';
+                title = 'Confirmar Apagar Conta';
+            } else if (action === 'ban') {
+                message = `Tem certeza que deseja BANIR "${userName}"? A conta dele será desativada e ele não poderá mais fazer login na plataforma.`;
+                confirmText = 'Sim, Banir';
+                icon = 'fas fa-ban';
+                title = 'Confirmar Banimento';
+            } else if (action === 'unban') {
+                message = `Tem certeza que deseja DESBANIR "${userName}"? A conta dele será reativada e ele poderá fazer login novamente.`;
+                confirmText = 'Sim, Desbanir';
+                icon = 'fas fa-check-circle';
+                title = 'Confirmar Desbanimento';
+            } else if (action === 'make_admin') {
+                message = `Tem certeza que deseja tornar "${userName}" um SUPER ADMINISTRADOR? Ele terá acesso total a este painel de administração geral.`;
+                confirmText = 'Sim, Tornar Admin';
+                icon = 'fas fa-user-shield';
+                title = 'Confirmar Tornar Admin';
+            } else if (action === 'remove_admin') {
+                message = `Tem certeza que deseja REMOVER as permissões de SUPER ADMINISTRADOR de "${userName}"? Ele perderá o acesso a este painel.`;
+                confirmText = 'Sim, Remover Admin';
+                icon = 'fas fa-user-minus';
+                title = 'Confirmar Remover Admin';
+            } else {
+                alert('Ação desconhecida.');
+                return;
+            }
+
+            if (confirm(message)) {
+                sendAction(userId, action);
+            }
+        }
+
+        function sendAction(userId, action) {
+            fetch('{{ url_for("super_admin_action") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'user_id': userId,
+                    'action': action
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Sucesso: ' + data.message);
+                    window.location.reload(); // Recarrega a página para atualizar a lista
+                } else {
+                    alert('Erro: ' + (data.message || 'Ocorreu um erro inesperado.'));
+                }
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+                alert('Erro ao comunicar com o servidor: ' + error.message);
+            });
+        }
+    </script>
+    <script src="{{ url_for('static', filename='js/dark-mode.js') }}"></script>
+</body>
+</html>
